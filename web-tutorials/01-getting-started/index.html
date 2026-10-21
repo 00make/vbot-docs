@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VBOT EDU 快速开始 · 网页版教程</title>
+<style>
+/* ===== 风格契约 v2 · 预设 A 清爽技术文档风（与 lesson_01~03 一致） ===== */
+:root{
+  --bg:#ffffff; --fg:#1f2937; --muted:#6b7280;
+  --accent:#0e7490; --accent-dark:#155e75; --accent-light:#ecfeff;
+  --code-bg:#f3f4f6; --code-fg:#111827; --code-border:#e5e7eb;
+  --border:#e5e7eb; --card:#f9fafb;
+  --warn-bg:#fffbeb; --warn-bd:#f59e0b;
+  --danger-bg:#fef2f2; --danger-bd:#ef4444;
+  --tip-bg:#ecfeff; --tip-bd:#0e7490;
+  --ok-bg:#f0fdf4; --ok-bd:#22c55e;
+  --radius:10px; --max-width:880px; --toc-w:250px;
+  --font-body:"Microsoft YaHei","Source Han Sans CN",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"Cascadia Code",Consolas,"JetBrains Mono","Courier New",monospace;
+}
+/* ===== 风格契约结束 ===== */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.8;font-size:16px}
+a{color:var(--accent);text-decoration:none}
+a:hover{color:var(--accent-dark)}
+code{font-family:var(--font-mono);font-size:.875em;background:var(--code-bg);border:1px solid var(--code-border);border-radius:4px;padding:1px 6px}
+.wrap{max-width:960px;margin:0 auto;padding:48px 24px 32px}
+.hero{border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);background:linear-gradient(135deg,var(--accent-dark),var(--accent));color:#fff;padding:44px 40px}
+.hero .kicker{font-size:13px;letter-spacing:.18em;opacity:.85;text-transform:uppercase;margin-bottom:10px}
+.hero h1{font-size:34px;line-height:1.35;margin:0 0 12px}
+.hero p{margin:0;max-width:640px;font-size:15.5px;opacity:.92}
+.hero .badges{margin-top:20px}
+.badge{display:inline-block;font-size:12.5px;border-radius:99px;padding:3px 13px;margin:0 8px 6px 0;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.35)}
+h2{font-size:21px;color:var(--accent-dark);margin:44px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--accent-light)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:20px 0}
+.card{display:block;border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;background:var(--bg);color:var(--fg);transition:border-color .15s,background .15s}
+.card:hover{border-color:var(--accent);background:var(--accent-light);color:var(--fg)}
+.card .no{display:inline-block;font-size:12px;font-weight:700;color:#fff;background:var(--accent);border-radius:99px;padding:1px 11px;margin-bottom:10px}
+.card h3{margin:0 0 8px;font-size:18px;color:var(--accent-dark)}
+.card p{margin:0 0 14px;font-size:14px;color:var(--muted);line-height:1.7}
+.card .meta{font-size:12.5px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.card .go{font-size:14px;font-weight:600;color:var(--accent)}
+ul.check{list-style:none;padding:0;margin:12px 0}
+ul.check li{padding:4px 0 4px 28px;position:relative}
+ul.check li::before{content:"✓";position:absolute;left:4px;color:var(--accent);font-weight:700}
+.callout{border-left:4px solid var(--warn-bd);background:var(--warn-bg);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;margin:20px 0;font-size:14.5px}
+.callout .t{font-weight:700;display:block;margin-bottom:4px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left}
+th{background:var(--accent-light);color:var(--accent-dark)}
+tr:nth-child(even) td{background:var(--card)}
+footer.page{border-top:1px solid var(--border);margin-top:52px;padding:22px 0 8px;font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media (max-width:768px){
+  .wrap{padding:24px 16px 20px}
+  .hero{padding:28px 22px}
+  .hero h1{font-size:25px}
+}
+@media print{
+  body{font-size:12px}
+  .hero{background:#fff;color:var(--fg);border:1px solid var(--border)}
+  .badge{background:#fff;color:var(--fg);border:1px solid var(--border)}
+  a{color:var(--fg)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker">VBOT EDU · 网页版教程</div>
+  <h1>快速开始：从开箱到让机器狗迈出第一步</h1>
+  <p>三课打通「认识平台 → 网络接入 → /vel_cmd 20Hz 运控」的完整开发链路。面向人类开发者与 AI Coding Agent 双读者，所有示例均按固件 V1.6.0 实测口径编写。</p>
+  <div class="badges">
+    <span class="badge">3 课 · 约 35 分钟</span>
+    <span class="badge">固件基准 V1.6.0</span>
+    <span class="badge">ROS 2 Humble + Aorta(Zenoh)</span>
+  </div>
+</header>
+
+<h2>课程目录</h2>
+
+<div class="cards">
+  <a class="card" href="lesson_01.html">
+    <span class="no">Lesson 01</span>
+    <h3>走进 VBOT 大头 EDU</h3>
+    <p>产品全景、发布视频四幕拆解、核心规格总览，以及消费版 vs EDU 的六维开发者权限对比。</p>
+    <div class="meta"><span>概念讲解</span><span>对比选型</span><span>约 8 分钟</span></div>
+    <span class="go">开始学习 →</span>
+  </a>
+  <a class="card" href="lesson_02.html">
+    <span class="no">Lesson 02</span>
+    <h3>极速开箱与网络接入</h3>
+    <p>Type-C 有线直连与 1.6 板载 WiFi 直连两套方案、静态 IP 避坑、SSH 免密秒连与 Host Key 排错。</p>
+    <div class="meta"><span>操作步骤</span><span>故障排查</span><span>约 12 分钟</span></div>
+    <span class="go">开始学习 →</span>
+  </a>
+  <a class="card" href="lesson_03.html">
+    <span class="no">Lesson 03</span>
+    <h3>Hello World：/vel_cmd 20Hz 运控</h3>
+    <p>官方唯一底盘速度接口、500ms 看门狗原理，以及带 --confirm-motion 安全授权与急停兜底的完整脚本。</p>
+    <div class="meta"><span>代码实战</span><span>运动安全</span><span>约 15 分钟</span></div>
+    <span class="go">开始学习 →</span>
+  </a>
+</div>
+
+<h2>学习路径建议</h2>
+
+<table>
+  <thead>
+    <tr><th>你的目标</th><th>推荐路线</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>第一次接触 VBOT EDU</td><td>Lesson 01 → 02 → 03，顺序学完约 35 分钟</td></tr>
+    <tr><td>只想尽快让狗动起来</td><td>直接跳到 Lesson 02（网络）→ Lesson 03（Hello World）</td></tr>
+    <tr><td>用 Cursor / Claude Code 等 AI Agent 开发</td><td>把本教程页面直接喂给 Agent，配合 <code>vbot-docs/AGENTS.md</code> 路由规约使用</td></tr>
+  </tbody>
+</table>
+
+<h2>开始之前</h2>
+
+<ul class="check">
+  <li>机器狗已充能，开发机准备双头 Type-C 数据线或 Type-C 转 RJ45 网线</li>
+  <li>准备一块至少 2m × 2m 的平整开阔场地，运动测试时必须有人在旁监护</li>
+  <li>记住具身开发第一准则：<b>软件急停永远不能替代物理急停开关</b></li>
+</ul>
+
+<div class="callout">
+  <span class="t">⚠️ 接口版本警示</span>
+  本教程以固件 V1.6.0 为准。网络流传的 <code>/vbot/sportmode_cmd</code> 话题已彻底废弃，官方现行底盘速度接口为 <code>/vel_cmd</code>（<code>geometry_msgs/msg/Twist</code>，Domain ID 178）。
+</div>
+
+<footer class="page">
+  <span>源文档：<code>vbot-docs/01-getting-started/</code> · 风格契约 v2</span>
+  <span>VBOT EDU 开发者教程 · 维他动力生态</span>
+</footer>
+
+</div>
+</body>
+</html>

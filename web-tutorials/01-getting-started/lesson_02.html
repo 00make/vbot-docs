@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1.1 极速开箱与网络接入 | VBOT EDU 快速开始</title>
+<style>
+/* ===== 风格契约 v1 · 预设 A 清爽技术文档风（全教程统一，勿改） ===== */
+:root{
+  --bg:#ffffff; --fg:#1f2937; --muted:#6b7280;
+  --accent:#0e7490; --accent-dark:#155e75; --accent-light:#ecfeff;
+  --code-bg:#f3f4f6; --code-fg:#111827; --code-border:#e5e7eb;
+  --border:#e5e7eb; --card:#f9fafb;
+  --warn-bg:#fffbeb; --warn-bd:#f59e0b;
+  --danger-bg:#fef2f2; --danger-bd:#ef4444;
+  --tip-bg:#ecfeff; --tip-bd:#0e7490;
+  --ok-bg:#f0fdf4; --ok-bd:#22c55e;
+  --radius:10px; --max-width:880px; --toc-w:250px;
+  --font-body:"Microsoft YaHei","Source Han Sans CN",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"Cascadia Code",Consolas,"JetBrains Mono","Courier New",monospace;
+}
+/* ===== 风格契约结束 ===== */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.8;font-size:16px}
+a{color:var(--accent)}
+a:hover{color:var(--accent-dark)}
+code{font-family:var(--font-mono);font-size:.875em;background:var(--code-bg);border:1px solid var(--code-border);border-radius:4px;padding:1px 6px;color:var(--code-fg)}
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:16px 18px;overflow:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;color:var(--code-fg);margin:0}
+pre code{background:none;border:none;padding:0;font-size:inherit}
+
+/* 布局：左 TOC + 右正文 */
+.toc{position:fixed;top:0;left:0;bottom:0;width:var(--toc-w);background:var(--card);border-right:1px solid var(--border);padding:28px 16px;overflow:auto}
+.toc .brand{font-weight:700;color:var(--accent-dark);font-size:17px;margin-bottom:2px}
+.toc .sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.toc ol{list-style:none;margin:0;padding:0;counter-reset:toc}
+.toc li{counter-increment:toc;margin-bottom:2px}
+.toc a{display:block;padding:7px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font-size:13.5px}
+.toc a::before{content:counter(toc) ". ";color:var(--accent);font-weight:600}
+.toc a:hover{background:var(--accent-light);color:var(--accent-dark)}
+.toc .home{display:inline-block;margin-top:18px;font-size:13px;color:var(--accent);text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--bg)}
+main{margin-left:var(--toc-w)}
+.wrap{max-width:var(--max-width);margin:0 auto;padding:40px 32px 24px}
+
+/* 页头 */
+header.lesson{border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:32px}
+header.lesson .hero-img{width:100%;max-height:280px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);margin-top:18px}
+.badges{margin-bottom:12px}
+.badge{display:inline-block;font-size:12px;font-weight:600;border-radius:99px;padding:2px 12px;margin-right:8px;vertical-align:middle}
+.badge.no{background:var(--accent);color:#fff}
+.badge.safe{background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.badge.ver{background:var(--card);color:var(--muted);border:1px solid var(--border)}
+h1{font-size:30px;line-height:1.4;margin:0 0 10px;color:var(--accent-dark)}
+.meta{font-size:13.5px;color:var(--muted)}
+.meta a{color:var(--accent)}
+
+/* 标题层级 */
+h2{font-size:22px;color:var(--accent-dark);margin:48px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--accent-light)}
+h3{font-size:17.5px;color:var(--fg);margin:28px 0 10px}
+
+/* 提示框 */
+.callout{border-left:4px solid var(--tip-bd);background:var(--tip-bg);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;margin:20px 0;font-size:15px}
+.callout.warn{border-color:var(--warn-bd);background:var(--warn-bg)}
+.callout.danger{border-color:var(--danger-bd);background:var(--danger-bg)}
+.callout.ok{border-color:var(--ok-bd);background:var(--ok-bg)}
+.callout .t{font-weight:700;display:block;margin-bottom:4px}
+
+/* 直播口播折叠 */
+details.talk{border:1px dashed var(--accent);border-radius:var(--radius);background:var(--bg);margin:20px 0}
+details.talk summary{cursor:pointer;padding:12px 18px;color:var(--accent);font-weight:600;font-size:14.5px}
+details.talk .body{padding:0 18px 14px;color:var(--muted);font-size:14.5px}
+
+/* 图片 */
+figure{margin:24px 0;text-align:center}
+figure img{max-width:100%;border:1px solid var(--border);border-radius:var(--radius);background:#fff}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+
+/* 表格 */
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px}
+th,td{border:1px solid var(--border);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--accent-light);color:var(--accent-dark);font-weight:700}
+tr:nth-child(even) td{background:var(--card)}
+td .no{color:var(--danger-bd);font-weight:700}
+
+/* 编号步骤 */
+ol.steps{list-style:none;counter-reset:st;padding:0;margin:18px 0}
+ol.steps>li{counter-increment:st;position:relative;padding:0 0 18px 48px}
+ol.steps>li::before{content:counter(st);position:absolute;left:0;top:2px;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;text-align:center;line-height:32px;font-size:15px}
+ol.steps>li>b:first-child{display:block;margin-bottom:4px}
+
+/* CSS 拓扑图 */
+.topo{display:flex;align-items:stretch;justify-content:center;gap:0;margin:24px 0;flex-wrap:wrap}
+.topo .node{background:var(--card);border:2px solid var(--accent);border-radius:var(--radius);padding:12px 16px;min-width:170px;text-align:center;font-size:13.5px}
+.topo .node b{display:block;color:var(--accent-dark);font-size:14.5px;margin-bottom:2px}
+.topo .node code{font-size:12px}
+.topo .node.dev{border-color:var(--muted)}
+.topo .node.gw{border-style:dashed}
+.topo .link{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 10px;color:var(--muted);font-size:12px;min-width:96px}
+.topo .link .arrow{font-size:20px;color:var(--accent);line-height:1.2}
+
+/* 代码块 + 复制按钮 + Tabs */
+.codewrap{position:relative;margin:14px 0}
+.codewrap .lang{position:absolute;top:0;right:88px;font-size:11px;color:var(--muted);background:var(--bg);border:1px solid var(--code-border);border-bottom:none;border-radius:6px 6px 0 0;padding:1px 8px}
+.copy{position:absolute;top:8px;right:8px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;font-family:var(--font-body)}
+.copy:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.tabs{display:flex;gap:6px;margin:18px 0 0}
+.tabs button{border:1px solid var(--border);border-bottom:none;background:var(--card);padding:8px 18px;border-radius:10px 10px 0 0;cursor:pointer;font-size:14px;color:var(--muted);font-family:var(--font-body)}
+.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+.panel{display:none;border:1px solid var(--border);border-radius:0 var(--radius) var(--radius) var(--radius);padding:16px 18px;background:var(--bg)}
+.panel.on{display:block}
+
+/* 目标清单 */
+ul.goals{margin:12px 0;padding-left:0;list-style:none}
+ul.goals li{padding:4px 0 4px 28px;position:relative}
+ul.goals li::before{content:"✓";position:absolute;left:4px;color:var(--accent);font-weight:700}
+
+/* 页脚导航 */
+footer.nav{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--border);margin-top:56px;padding:24px 0 40px;flex-wrap:wrap}
+footer.nav a{flex:1;min-width:200px;border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;text-decoration:none;background:var(--card)}
+footer.nav a:hover{border-color:var(--accent);background:var(--accent-light)}
+footer.nav .dir{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
+footer.nav .ttl{display:block;font-size:15px;color:var(--accent-dark);font-weight:600}
+footer.nav a.home-link{flex:0 0 auto;text-align:center}
+
+/* 甘特时间线 */
+.gantt{margin:20px 0}
+.gantt .row{display:flex;align-items:center;margin:8px 0}
+.gantt .lbl{width:190px;font-size:13.5px;color:var(--fg);flex-shrink:0}
+.gantt .track{flex:1;position:relative;height:28px;background:var(--card);border:1px solid var(--border);border-radius:6px}
+.gantt .bar{position:absolute;top:3px;bottom:3px;background:linear-gradient(90deg,var(--accent),#22d3ee);border-radius:5px;color:#fff;font-size:11.5px;display:flex;align-items:center;padding:0 8px;white-space:nowrap;overflow:hidden}
+.gantt .axis{display:flex;margin-left:190px;font-size:11.5px;color:var(--muted)}
+.gantt .axis span{flex:1;text-align:left}
+
+/* 决策流程图 */
+.flow{display:flex;flex-direction:column;align-items:center;margin:24px 0}
+.fnode{border:2px solid var(--accent);background:var(--accent-light);border-radius:var(--radius);padding:10px 18px;font-size:14px;text-align:center;max-width:460px}
+.fnode b{color:var(--accent-dark)}
+.fnode.start{border-radius:99px;background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.fnode.decision{background:var(--warn-bg);border-color:var(--warn-bd)}
+.fnode.end{border-radius:99px;background:var(--ok-bg);border-color:var(--ok-bd);color:#15803d;font-weight:600}
+.fdown{color:var(--accent);font-size:18px;line-height:1.5;text-align:center}
+.fdown small{display:block;font-size:12px;color:var(--muted)}
+.fbranch{display:flex;gap:28px;justify-content:center;align-items:flex-start;flex-wrap:wrap;margin:4px 0}
+.fcol{display:flex;flex-direction:column;align-items:center}
+.fcol .tag-y{font-size:12px;font-weight:700;color:#15803d;background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+.fcol .tag-n{font-size:12px;font-weight:700;color:#92400e;background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+
+/* 交互小实验 */
+.lab{background:var(--card);border:1px solid var(--accent);border-radius:var(--radius);padding:18px 20px;margin:26px 0}
+.lab h4{margin:0 0 6px;color:var(--accent-dark);font-size:16px}
+.lab p{margin:4px 0;font-size:14px;color:var(--muted)}
+.labrow{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;align-items:center}
+.lab input{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font-mono);font-size:14px;width:220px;background:var(--bg);color:var(--fg)}
+.lab button{padding:8px 18px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:14px;font-family:var(--font-body)}
+.lab button:hover{background:var(--accent-dark)}
+.result{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:14px;display:none}
+.result.ok{display:block;background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.result.bad{display:block;background:var(--danger-bg);color:#b91c1c;border:1px solid var(--danger-bd)}
+.result.warn{display:block;background:var(--warn-bg);color:#92400e;border:1px solid var(--warn-bd)}
+.lab pre{margin-top:10px}
+
+/* 移动端 */
+@media (max-width:768px){
+  .toc{position:static;width:auto;border-right:none;border-bottom:1px solid var(--border);padding:18px 16px}
+  .toc ol{columns:2}
+  main{margin-left:0}
+  .wrap{padding:24px 18px 12px}
+  h1{font-size:24px}
+  .topo{flex-direction:column;align-items:center}
+  .topo .link{min-width:auto;padding:6px 0}
+  .topo .link .arrow{transform:rotate(90deg)}
+  .gantt .lbl{width:110px;font-size:12px}
+  .gantt .axis{margin-left:110px}
+  .fbranch{flex-direction:column;align-items:center;gap:8px}
+}
+/* 打印 */
+@media print{
+  .toc,.copy,.tabs{display:none}
+  main{margin-left:0}
+  .panel{display:block!important;border:none;padding:8px 0}
+  body{font-size:12px}
+  a{color:var(--fg);text-decoration:none}
+}
+</style>
+</head>
+<body>
+
+<nav class="toc" id="nav">
+  <div class="brand">VBOT EDU 快速开始</div>
+  <div class="sub">模块 01 · Lesson 02</div>
+  <ol>
+    <li><a href="#s0">接入全流程全景</a></li>
+    <li><a href="#s1">硬件端口与连接拓扑</a></li>
+    <li><a href="#s2">方案 A：Type-C 有线直连</a></li>
+    <li><a href="#s3">静态 IP 避坑配置</a></li>
+    <li><a href="#s4">方案 B：板载 WiFi 直连</a></li>
+    <li><a href="#s5">SSH 免密秒连通道</a></li>
+    <li><a href="#s6">高频排错：Host Key 冲突</a></li>
+    <li><a href="#s7">本课小结</a></li>
+  </ol>
+  <a class="home" href="index.html">← 返回目录</a>
+</nav>
+
+<main>
+<div class="wrap">
+
+<header class="lesson">
+  <div class="badges">
+    <span class="badge no">Lesson 02</span>
+    <span class="badge safe">安全级别：只读配置</span>
+    <span class="badge ver">固件基准 V1.6.0</span>
+  </div>
+  <h1>极速开箱与网络接入</h1>
+  <p class="meta">预计阅读 12 分钟 · 前置课程：<a href="lesson_01.html">1.0 走进 VBOT 大头 EDU</a> · 硬件准备：机器狗已充能、Type-C 数据线或 WiFi 终端</p>
+  <img class="hero-img" src="../../assets/01-brand-hardware/vbot-dog-photo-2.png" alt="VBOT 大头 EDU 实机场景照" loading="lazy">
+</header>
+
+<details class="talk">
+  <summary>🎙️ 展开直播口播导语（讲师版）</summary>
+  <div class="body">
+    <p>“各位极客开发者、直播间的朋友们，大家晚上好！欢迎来到 VBOT EDU 具身智能大师课！很多朋友刚把这只沉甸甸的四足机器狗从航空箱里抱出来，第一件事就是‘连接电脑’。这一步看似人畜无害，其实一线现场暗坑无数！有的同学手一抖把电脑 IP 配成了 <code>.2</code>，跟机器狗自己撞车撞得两头失联；有的同学换了一台测试机，被 SSH 的 Host Key 报错拒之门外……今天这节课，我们把‘有线千兆接入’与‘1.6 固件新增板载 Wi-Fi 直连’两套打法倾囊相授，手把手教你配置 ed25519 密钥，让你只要在键盘上敲下 <code>ssh vbot</code> 四个字符，就能实现 1 秒免密直达！”</p>
+  </div>
+</details>
+
+<h2 id="goals" style="margin-top:24px;border-bottom:none;padding-bottom:0;font-size:17.5px">本课学习目标</h2>
+<ul class="goals">
+  <li>说清机器狗"双计算单元"的 IP 拓扑：计算主板 <code>192.168.126.2</code> 与主控网关板 <code>192.168.127.10</code></li>
+  <li>用 Type-C 有线网口完成静态 IP 配置并 ping 通机器狗</li>
+  <li>用 V1.6.0 新增的板载 WiFi 直连模式免网线接入</li>
+  <li>配好 ed25519 免密与 SSH 别名，实现 <code>ssh vbot</code> 一秒登录</li>
+  <li>独立排除 Host Key 变更冲突</li>
+</ul>
+
+<h2 id="s0">接入全流程全景：15 分钟从开箱到 SSH 登录</h2>
+
+<p>先看整体节奏——首次接入的五个阶段与预计耗时（熟练后全程可压缩到 5 分钟以内）：</p>
+
+<div class="gantt" role="img" aria-label="接入流程甘特图：开箱检查3分钟、物理连线3分钟、静态IP配置3分钟、ping测试1分钟、SSH免密配置5分钟">
+  <div class="row"><span class="lbl">① 开箱检查与充能确认</span><div class="track"><div class="bar" style="left:0%;width:20%">0–3 min</div></div></div>
+  <div class="row"><span class="lbl">② 物理连线 / 连接 AP 热点</span><div class="track"><div class="bar" style="left:20%;width:20%">3–6 min</div></div></div>
+  <div class="row"><span class="lbl">③ 静态 IP 配置（避坑重点）</span><div class="track"><div class="bar" style="left:40%;width:20%">6–9 min</div></div></div>
+  <div class="row"><span class="lbl">④ ping 连通性测试</span><div class="track"><div class="bar" style="left:60%;width:7%">9–10</div></div></div>
+  <div class="row"><span class="lbl">⑤ SSH 免密 + 别名配置</span><div class="track"><div class="bar" style="left:67%;width:33%">10–15 min</div></div></div>
+  <div class="axis"><span>0</span><span>5</span><span>10</span><span>15 min</span></div>
+</div>
+
+<h3>接入方式决策流程</h3>
+
+<p>两套接入打法怎么选？跟着下面的决策流走：</p>
+
+<div class="flow" role="img" aria-label="接入决策流程图：根据是否高频运控选择有线或 WiFi 方案">
+  <div class="fnode start">🔋 机器狗上电，指示灯进入待命呼吸状态</div>
+  <div class="fdown">↓</div>
+  <div class="fnode decision">❓ 是否要做高频运动控制 / 大模型部署 / 黑客松现场调测？</div>
+  <div class="fbranch">
+    <div class="fcol">
+      <span class="tag-y">是</span>
+      <div class="fnode"><b>方案 A：Type-C 有线直连</b><br>eth2 · 最低延迟、最强抗干扰</div>
+      <div class="fdown">↓</div>
+      <div class="fnode">手动静态 IP<br><code>192.168.126.100/24</code>，网关留空</div>
+    </div>
+    <div class="fcol">
+      <span class="tag-n">否（轻量调试）</span>
+      <div class="fnode"><b>方案 B：板载 WiFi 直连</b><br>需固件 ≥ V1.6.0 · 免网线</div>
+      <div class="fdown">↓</div>
+      <div class="fnode">连接 <code>VBOT-EDU-XXXX</code> 热点<br>DHCP 自动获取 <code>192.168.127.x</code></div>
+    </div>
+  </div>
+  <div class="fdown">↓ <small>两条路在此汇合</small></div>
+  <div class="fnode">连通性测试：<code>ping 192.168.126.2</code>（WiFi 模式为 <code>192.168.127.2</code>）</div>
+  <div class="fdown">↓</div>
+  <div class="fnode">配置 ed25519 免密 + SSH 别名 → <code>ssh vbot</code></div>
+  <div class="fdown">↓</div>
+  <div class="fnode end">✅ 接入完成，进入 1.2 Hello World 运控</div>
+</div>
+
+<h2 id="s1">一、硬件端口与连接拓扑</h2>
+
+<p>VBOT 狗身具备两个核心计算单元，接入前必须先分清你要连的是哪一块板：</p>
+
+<ol class="steps">
+  <li><b>计算主板（<code>192.168.126.2</code>）</b>搭载 128 TOPS 算力、Ubuntu 22.04 LTS 与 ROS 2 Humble，是开发者编写算法和运控代码的宿主机——<b>日常开发连的就是它</b>。</li>
+  <li><b>主控网关板（<code>192.168.127.10</code>）</b>运行实时系统（RTOS），掌管整机电源管理、低级外设、Wi-Fi 与蓝牙。</li>
+</ol>
+
+<div class="topo" role="img" aria-label="网络拓扑：开发者电脑经 eth2 连接计算主板，计算主板互联主控网关板">
+  <div class="node dev"><b>开发者电脑</b><code>192.168.126.100</code><br>静态 IP</div>
+  <div class="link"><span class="arrow">⇄</span>有线网线 /<br>Type-C 转接</div>
+  <div class="node"><b>机身扩展网口 eth2</b>→ 计算主板<br><code>192.168.126.2</code><br>Ubuntu 22.04 · SSH/ROS 2</div>
+  <div class="link"><span class="arrow">⇄</span>板间互联</div>
+  <div class="node gw"><b>主控网关板</b>RTOS<br><code>192.168.127.10</code><br>WiFi / 蓝牙 / 电源</div>
+</div>
+
+<figure>
+  <img src="../../assets/01-brand-hardware/vbot-dog-edu.png" alt="VBOT EDU 四足机器人标准外观" loading="lazy">
+  <figcaption>图 1：VBOT EDU 四足机器人标准外观，机身腹部与背部预留模块化扩展接口（含 Type-C 扩展口）</figcaption>
+</figure>
+
+<h2 id="s2">二、接入方案 A：Type-C 有线网口直连（最稳固）</h2>
+
+<p>有线连接具备最高优先级、最低延迟和最强抗干扰能力，是<b>高频运动控制、大模型部署与黑客松现场调测的首选方式</b>。</p>
+
+<h3>1. 物理连线</h3>
+<ol class="steps">
+  <li><b>插入机器狗端</b>使用配备的 Type-C 转千兆网口转接头，插入机器狗背部/腹部的扩展 Type-C 口（对应板载 <code>eth2</code> 物理网卡）。</li>
+  <li><b>连接电脑端</b>另一端用网线连接至你的电脑网口。</li>
+</ol>
+
+<h2 id="s3">2. 本地电脑网卡静态 IP 配置（避坑关键！）</h2>
+
+<p>为避免 DHCP 自动分配失败，必须将电脑连接机器狗的网卡设置为<b>静态（Static）IP</b>：</p>
+
+<table>
+  <thead>
+    <tr><th>参数项</th><th>推荐配置值</th><th>深度工程解析</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>IP 地址</b></td>
+      <td><code>192.168.126.100</code></td>
+      <td><span class="no">⚠️ 严禁配置为 192.168.126.2！</span>配成 <code>.2</code> 会导致电脑与机器狗 IP 严重冲突，网络死锁！</td>
+    </tr>
+    <tr>
+      <td><b>子网掩码</b></td>
+      <td><code>255.255.255.0</code>（/24）</td>
+      <td>确保与 <code>192.168.126.x</code> 处于同一广播域</td>
+    </tr>
+    <tr>
+      <td><b>默认网关</b></td>
+      <td><b>留空（不填）</b></td>
+      <td>留空可防止此网卡接管电脑外网访问路由，避免电脑无法上网查文档</td>
+    </tr>
+    <tr>
+      <td><b>DNS</b></td>
+      <td><b>留空（不填）</b></td>
+      <td>局域网直连无需解析域名</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="tabs" data-group="os">
+  <button class="on" data-t="p1">Windows PowerShell（管理员）</button>
+  <button data-t="p2">macOS / Linux 终端</button>
+</div>
+<div class="panel on" id="p1">
+  <div class="codewrap"><span class="lang">powershell</span><button class="copy">复制</button>
+<pre><code># 将 "以太网" 替换为你实际的外接网卡名称
+New-NetIPAddress -InterfaceAlias "以太网" -IPAddress 192.168.126.100 -PrefixLength 24</code></pre>
+  </div>
+</div>
+<div class="panel" id="p2">
+  <div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code>sudo ifconfig en0 192.168.126.100 netmask 255.255.255.0 up</code></pre>
+  </div>
+</div>
+
+<h3>3. 连通性测试</h3>
+<p>在终端中执行 Ping 命令：</p>
+<div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code>ping 192.168.126.2</code></pre>
+</div>
+<div class="callout ok"><span class="t">✅ 预期输出</span>正常返回类似 <code>64 bytes from 192.168.126.2: icmp_seq=1 ttl=64 time=0.8 ms</code>，说明物理链路与 IP 路由已完全畅通！</div>
+
+<div class="lab">
+  <h4>🧪 小实验：静态 IP 冲突检测器</h4>
+  <p>动手配置前，先把你打算填的 IP 输进来测一测——看看会不会撞上机器狗：</p>
+  <div class="labrow">
+    <input id="ipin" type="text" value="192.168.126.100" placeholder="你的电脑 IP" aria-label="电脑静态 IP">
+    <input id="gwin" type="text" placeholder="默认网关（留空 = 正确答案）" aria-label="默认网关">
+    <button id="ipbtn" type="button">检测</button>
+  </div>
+  <div id="ipres" class="result" role="status"></div>
+</div>
+
+<h2 id="s4">三、接入方案 B：1.6 固件板载 WiFi 直连（告别网线）</h2>
+
+<div class="callout"><span class="t">📌 版本要求</span>在 <b>V1.6.0 及以上版本固件</b>中，官方正式上线了板载 Wi-Fi 直连调试能力，彻底摆脱了外接转接头与网线的物理束缚。</div>
+
+<ol class="steps">
+  <li><b>进入开发者 Wi-Fi 模式</b>机器狗上电开机，等待状态指示灯进入待命呼吸状态；手机 APP 连接机器狗，在「系统设置」→「开发者选项」中开启「板载 WiFi 调试模式」，或通过长按背部调试按钮 3 秒触发。</li>
+  <li><b>连接 AP 热点</b>电脑无线网卡搜索名为 <code>VBOT-EDU-XXXX</code> 的 Wi-Fi 热点并连接（默认初始密码详见机身铭牌或官方出厂卡片）。</li>
+  <li><b>确认获取到的 IP</b>连接成功后，电脑将自动通过 DHCP 获取 <code>192.168.127.x</code> 网段 IP，计算板在此网段下的映射入口通常为 <code>192.168.127.2</code>。</li>
+</ol>
+
+<figure>
+  <img src="../../assets/03-dev-env/ssh-access-init.png" alt="初次通过命令行连接与网络接口检查流程" loading="lazy">
+  <figcaption>图 2：初次通过命令行连接与网络接口检查流程</figcaption>
+</figure>
+
+<h2 id="s5">四、建立 SSH 免密秒连通道</h2>
+
+<div class="callout warn"><span class="t">🔑 默认登录凭证</span>用户：<code>vbot</code> · 初始密码：<code>vbot</code>。首次登录后建议立即执行 <code>passwd</code> 修改密码。</div>
+
+<h3>1. 生成并推送 ed25519 密钥对</h3>
+<p>在本地终端中生成高安全性密钥并复制到机器狗：</p>
+<div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code># 本地生成密钥（已有则跳过）
+ssh-keygen -t ed25519 -C "vbot-developer"
+
+# 将公钥推送至机器狗（需输入一次默认密码 vbot）
+ssh-copy-id vbot@192.168.126.2</code></pre>
+</div>
+
+<h3>2. 配置 SSH 别名（~/.ssh/config）</h3>
+<p>在本地电脑的 <code>~/.ssh/config</code>（Windows 位于 <code>C:\Users\&lt;你的用户名&gt;\.ssh\config</code>）追加以下配置：</p>
+<div class="codewrap"><span class="lang">ssh-config</span><button class="copy">复制</button>
+<pre><code>Host vbot
+    HostName 192.168.126.2
+    User vbot
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 30
+    ServerAliveCountMax 3</code></pre>
+</div>
+
+<div class="lab">
+  <h4>🧪 小实验：SSH 别名配置生成器</h4>
+  <p>按你的实际接入方式改一改参数，一键生成可直接粘贴进 <code>~/.ssh/config</code> 的配置块：</p>
+  <div class="labrow">
+    <input id="al-in" type="text" value="vbot" placeholder="别名" aria-label="SSH 别名">
+    <input id="hn-in" type="text" value="192.168.126.2" placeholder="HostName" aria-label="HostName">
+    <input id="us-in" type="text" value="vbot" placeholder="User" aria-label="用户名">
+    <button id="cfgbtn" type="button">生成配置</button>
+  </div>
+  <div class="codewrap" id="cfgwrap" style="display:none"><span class="lang">ssh-config</span><button class="copy">复制</button>
+<pre><code id="cfgout"></code></pre>
+  </div>
+  <div class="callout" style="margin-bottom:0"><span class="t">💡 提示</span>WiFi 直连（方案 B）请把 HostName 改成 <code>192.168.127.2</code>；两台狗都常用？生成两份配置、别名分别叫 <code>vbot-a</code> / <code>vbot-b</code> 即可。</div>
+</div>
+
+<h3>3. 一秒登录自检</h3>
+<p>现在，只需在任何终端中输入四个字符：</p>
+<div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code>ssh vbot</code></pre>
+</div>
+<p>直接免密进入设备系统！执行自检命令验证硬件与系统版本：</p>
+<div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code>uname -a
+# Linux vbot 5.10.x-aarch64 #1 SMP Ubuntu 22.04 LTS</code></pre>
+</div>
+
+<figure>
+  <img src="../../assets/03-dev-env/ssh-access.png" alt="通过 SSH 成功登录计算主板并验证系统环境" loading="lazy">
+  <figcaption>图 3：通过 SSH 成功登录计算主板，验证 Linux 内核与 Ubuntu 22.04 LTS 系统环境</figcaption>
+</figure>
+
+<h2 id="s6">五、高频排错：清除 SSH Host Key 变更冲突</h2>
+
+<p>如果借用了另一台同 IP 的机器狗（黑客松现场尤其常见），可能会看到：</p>
+<div class="callout danger"><span class="t">🚨 WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!</span>SSH 检测到同 IP 主机的指纹与本地缓存不一致，会直接拒绝连接。这不是故障，而是防中间人攻击的安全机制——换狗必现。</div>
+
+<p>在本地电脑执行一行命令清除旧指纹：</p>
+<div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code>ssh-keygen -R 192.168.126.2</code></pre>
+</div>
+<p>重新执行 <code>ssh vbot</code> 即可顺畅连接。</p>
+
+<h2 id="s7">本课小结</h2>
+
+<table>
+  <thead>
+    <tr><th>接入方式</th><th>入口地址</th><th>适用场景</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Type-C 有线直连（方案 A）</td><td><code>192.168.126.2</code></td><td>高频运控、大模型部署、现场调测首选</td></tr>
+    <tr><td>板载 WiFi 直连（方案 B，≥V1.6.0）</td><td><code>192.168.127.2</code></td><td>免网线快速调试、移动演示</td></tr>
+  </tbody>
+</table>
+
+<ul class="goals">
+  <li>电脑静态 IP 用 <code>192.168.126.100</code>，严禁 <code>.2</code>，网关/DNS 留空</li>
+  <li><code>ssh vbot</code> 四字符免密直达，密钥用 ed25519</li>
+  <li>换狗报 Host Key 警告 → <code>ssh-keygen -R</code> 一行解决</li>
+</ul>
+
+<div class="callout"><span class="t">⏭️ 下一课预告</span>网络通了之后，是时候让机器狗迈出物理世界的第一步了——下一课我们将使用官方现行唯一的底盘速度接口 <code>/vel_cmd</code>，手写一个带看门狗保护、带安全急停兜底的 20Hz 运控脚本：<a href="lesson_03.html">1.2 极速跑通 Hello World</a>。</div>
+
+</div>
+
+<div class="wrap" style="padding-top:0">
+<footer class="nav">
+  <a href="lesson_01.html"><span class="dir">← 上一课</span><span class="ttl">1.0 走进 VBOT 大头 EDU</span></a>
+  <a class="home-link" href="index.html"><span class="dir">目录</span><span class="ttl">返回目录</span></a>
+  <a href="lesson_03.html" style="text-align:right"><span class="dir">下一课 →</span><span class="ttl">1.2 Hello World：/vel_cmd 运控</span></a>
+</footer>
+</div>
+
+</main>
+
+<script>
+document.querySelectorAll('.tabs').forEach(function(g){
+  g.addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b)return;
+    g.querySelectorAll('button').forEach(function(x){x.classList.remove('on')});
+    b.classList.add('on');
+    var wrap=g.parentElement;
+    wrap.querySelectorAll(':scope > .panel').forEach(function(p){p.classList.remove('on')});
+    var t=wrap.querySelector('#'+b.dataset.t); if(t)t.classList.add('on');
+  });
+});
+document.querySelectorAll('.copy').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var pre=btn.parentElement.querySelector('pre');
+    navigator.clipboard.writeText(pre.textContent).then(function(){
+      btn.textContent='已复制'; setTimeout(function(){btn.textContent='复制'},1500);
+    });
+  });
+});
+var ipbtn=document.getElementById('ipbtn');
+if(ipbtn){ipbtn.addEventListener('click',function(){
+  var ip=document.getElementById('ipin').value.trim();
+  var gw=document.getElementById('gwin').value.trim();
+  var res=document.getElementById('ipres');
+  var cls='ok',msg='';
+  if(!/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.test(ip)){
+    cls='bad'; msg='❌ IP 格式不合法，应为点分十进制，例如 192.168.126.100';
+  }else if(ip==='192.168.126.2'){
+    cls='bad'; msg='🚨 严重冲突！192.168.126.2 是计算主板自己的 IP，配成它会导致两头失联、网络死锁。请改用 192.168.126.100。';
+  }else if(/^192\.168\.126\./.test(ip)){
+    var x=parseInt(ip.split('.')[3],10);
+    if(x===0||x===255){cls='bad';msg='❌ .0 是网络地址、.255 是广播地址，都不能分配给主机。';}
+    else if(x>1&&x<255){cls='ok';msg='✅ 位于 126 网段且不与主板 .2 冲突，可以正常使用（推荐固定用 .100 方便记忆）。';}
+    else{cls='warn';msg='⚠️ 地址可用，但 .1 常被预留给网关设备，建议避开，用 .100 更稳。';}
+  }else if(/^192\.168\.127\./.test(ip)){
+    cls='warn'; msg='⚠️ 这是 WiFi 直连（方案 B）的 127 网段。若你走 Type-C 有线直连，应配置 192.168.126.x 网段。';
+  }else{
+    cls='bad'; msg='❌ 与机器狗 192.168.126.0/24 不在同一网段，ping 192.168.126.2 将不通。子网掩码请确认填 255.255.255.0。';
+  }
+  if(gw){msg+='　｜　⚠️ 检测到网关填写为「'+gw.replace(/</g,'&lt;')+'」：直连场景网关应留空，否则此网卡会接管电脑外网路由，导致无法上网查文档。';if(cls==='ok')cls='warn';}
+  res.className='result '+cls; res.textContent=msg;
+});}
+var cfgbtn=document.getElementById('cfgbtn');
+if(cfgbtn){cfgbtn.addEventListener('click',function(){
+  var al=document.getElementById('al-in').value.trim()||'vbot';
+  var hn=document.getElementById('hn-in').value.trim()||'192.168.126.2';
+  var us=document.getElementById('us-in').value.trim()||'vbot';
+  document.getElementById('cfgout').textContent=
+    'Host '+al+'\n    HostName '+hn+'\n    User '+us+'\n    IdentityFile ~/.ssh/id_ed25519\n    ServerAliveInterval 30\n    ServerAliveCountMax 3';
+  document.getElementById('cfgwrap').style.display='block';
+});}
+</script>
+</body>
+</html>

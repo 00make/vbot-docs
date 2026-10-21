@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1.0 走进 VBOT 大头 EDU | VBOT EDU 快速开始</title>
+<style>
+/* ===== 风格契约 v1 · 预设 A 清爽技术文档风（全教程统一，勿改） ===== */
+:root{
+  --bg:#ffffff; --fg:#1f2937; --muted:#6b7280;
+  --accent:#0e7490; --accent-dark:#155e75; --accent-light:#ecfeff;
+  --code-bg:#f3f4f6; --code-fg:#111827; --code-border:#e5e7eb;
+  --border:#e5e7eb; --card:#f9fafb;
+  --warn-bg:#fffbeb; --warn-bd:#f59e0b;
+  --danger-bg:#fef2f2; --danger-bd:#ef4444;
+  --tip-bg:#ecfeff; --tip-bd:#0e7490;
+  --ok-bg:#f0fdf4; --ok-bd:#22c55e;
+  --radius:10px; --max-width:880px; --toc-w:250px;
+  --font-body:"Microsoft YaHei","Source Han Sans CN",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"Cascadia Code",Consolas,"JetBrains Mono","Courier New",monospace;
+}
+/* ===== 风格契约结束 ===== */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.8;font-size:16px}
+a{color:var(--accent)}
+a:hover{color:var(--accent-dark)}
+code{font-family:var(--font-mono);font-size:.875em;background:var(--code-bg);border:1px solid var(--code-border);border-radius:4px;padding:1px 6px;color:var(--code-fg)}
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:16px 18px;overflow:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;color:var(--code-fg);margin:0}
+pre code{background:none;border:none;padding:0;font-size:inherit}
+
+/* 布局：左 TOC + 右正文 */
+.toc{position:fixed;top:0;left:0;bottom:0;width:var(--toc-w);background:var(--card);border-right:1px solid var(--border);padding:28px 16px;overflow:auto}
+.toc .brand{font-weight:700;color:var(--accent-dark);font-size:17px;margin-bottom:2px}
+.toc .sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.toc ol{list-style:none;margin:0;padding:0;counter-reset:toc}
+.toc li{counter-increment:toc;margin-bottom:2px}
+.toc a{display:block;padding:7px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font-size:13.5px}
+.toc a::before{content:counter(toc) ". ";color:var(--accent);font-weight:600}
+.toc a:hover{background:var(--accent-light);color:var(--accent-dark)}
+.toc .home{display:inline-block;margin-top:18px;font-size:13px;color:var(--accent);text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--bg)}
+main{margin-left:var(--toc-w)}
+.wrap{max-width:var(--max-width);margin:0 auto;padding:40px 32px 24px}
+
+/* 页头 */
+header.lesson{border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:32px}
+header.lesson .hero-img{width:100%;max-height:280px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);margin-top:18px}
+.badges{margin-bottom:12px}
+.badge{display:inline-block;font-size:12px;font-weight:600;border-radius:99px;padding:2px 12px;margin-right:8px;vertical-align:middle}
+.badge.no{background:var(--accent);color:#fff}
+.badge.safe{background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.badge.ver{background:var(--card);color:var(--muted);border:1px solid var(--border)}
+h1{font-size:30px;line-height:1.4;margin:0 0 10px;color:var(--accent-dark)}
+.meta{font-size:13.5px;color:var(--muted)}
+.meta a{color:var(--accent)}
+
+/* 标题层级 */
+h2{font-size:22px;color:var(--accent-dark);margin:48px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--accent-light)}
+h3{font-size:17.5px;color:var(--fg);margin:28px 0 10px}
+
+/* 提示框 */
+.callout{border-left:4px solid var(--tip-bd);background:var(--tip-bg);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;margin:20px 0;font-size:15px}
+.callout.warn{border-color:var(--warn-bd);background:var(--warn-bg)}
+.callout.danger{border-color:var(--danger-bd);background:var(--danger-bg)}
+.callout.ok{border-color:var(--ok-bd);background:var(--ok-bg)}
+.callout .t{font-weight:700;display:block;margin-bottom:4px}
+
+/* 直播口播折叠 */
+details.talk{border:1px dashed var(--accent);border-radius:var(--radius);background:var(--bg);margin:20px 0}
+details.talk summary{cursor:pointer;padding:12px 18px;color:var(--accent);font-weight:600;font-size:14.5px}
+details.talk .body{padding:0 18px 14px;color:var(--muted);font-size:14.5px}
+
+/* 图片 */
+figure{margin:24px 0;text-align:center}
+figure img{max-width:100%;border:1px solid var(--border);border-radius:var(--radius);background:#fff}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+
+/* 表格 */
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px}
+th,td{border:1px solid var(--border);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--accent-light);color:var(--accent-dark);font-weight:700}
+tr:nth-child(even) td{background:var(--card)}
+td .no{color:var(--danger-bd);font-weight:700}
+
+/* 编号步骤 */
+ol.steps{list-style:none;counter-reset:st;padding:0;margin:18px 0}
+ol.steps>li{counter-increment:st;position:relative;padding:0 0 18px 48px}
+ol.steps>li::before{content:counter(st);position:absolute;left:0;top:2px;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;text-align:center;line-height:32px;font-size:15px}
+ol.steps>li>b:first-child{display:block;margin-bottom:4px}
+
+/* CSS 拓扑图 */
+.topo{display:flex;align-items:stretch;justify-content:center;gap:0;margin:24px 0;flex-wrap:wrap}
+.topo .node{background:var(--card);border:2px solid var(--accent);border-radius:var(--radius);padding:12px 16px;min-width:170px;text-align:center;font-size:13.5px}
+.topo .node b{display:block;color:var(--accent-dark);font-size:14.5px;margin-bottom:2px}
+.topo .node code{font-size:12px}
+.topo .node.dev{border-color:var(--muted)}
+.topo .node.gw{border-style:dashed}
+.topo .link{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 10px;color:var(--muted);font-size:12px;min-width:96px}
+.topo .link .arrow{font-size:20px;color:var(--accent);line-height:1.2}
+
+/* 代码块 + 复制按钮 + Tabs */
+.codewrap{position:relative;margin:14px 0}
+.codewrap .lang{position:absolute;top:0;right:88px;font-size:11px;color:var(--muted);background:var(--bg);border:1px solid var(--code-border);border-bottom:none;border-radius:6px 6px 0 0;padding:1px 8px}
+.copy{position:absolute;top:8px;right:8px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;font-family:var(--font-body)}
+.copy:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.tabs{display:flex;gap:6px;margin:18px 0 0}
+.tabs button{border:1px solid var(--border);border-bottom:none;background:var(--card);padding:8px 18px;border-radius:10px 10px 0 0;cursor:pointer;font-size:14px;color:var(--muted);font-family:var(--font-body)}
+.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+.panel{display:none;border:1px solid var(--border);border-radius:0 var(--radius) var(--radius) var(--radius);padding:16px 18px;background:var(--bg)}
+.panel.on{display:block}
+
+/* 目标清单 */
+ul.goals{margin:12px 0;padding-left:0;list-style:none}
+ul.goals li{padding:4px 0 4px 28px;position:relative}
+ul.goals li::before{content:"✓";position:absolute;left:4px;color:var(--accent);font-weight:700}
+
+/* 页脚导航 */
+footer.nav{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--border);margin-top:56px;padding:24px 0 40px;flex-wrap:wrap}
+footer.nav a{flex:1;min-width:200px;border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;text-decoration:none;background:var(--card)}
+footer.nav a:hover{border-color:var(--accent);background:var(--accent-light)}
+footer.nav .dir{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
+footer.nav .ttl{display:block;font-size:15px;color:var(--accent-dark);font-weight:600}
+footer.nav a.home-link{flex:0 0 auto;text-align:center}
+
+/* 甘特时间线 */
+.gantt{margin:20px 0}
+.gantt .row{display:flex;align-items:center;margin:8px 0}
+.gantt .lbl{width:190px;font-size:13.5px;color:var(--fg);flex-shrink:0}
+.gantt .track{flex:1;position:relative;height:28px;background:var(--card);border:1px solid var(--border);border-radius:6px}
+.gantt .bar{position:absolute;top:3px;bottom:3px;background:linear-gradient(90deg,var(--accent),#22d3ee);border-radius:5px;color:#fff;font-size:11.5px;display:flex;align-items:center;padding:0 8px;white-space:nowrap;overflow:hidden}
+.gantt .axis{display:flex;margin-left:190px;font-size:11.5px;color:var(--muted)}
+.gantt .axis span{flex:1;text-align:left}
+
+/* 决策流程图 */
+.flow{display:flex;flex-direction:column;align-items:center;margin:24px 0}
+.fnode{border:2px solid var(--accent);background:var(--accent-light);border-radius:var(--radius);padding:10px 18px;font-size:14px;text-align:center;max-width:460px}
+.fnode b{color:var(--accent-dark)}
+.fnode.start{border-radius:99px;background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.fnode.decision{background:var(--warn-bg);border-color:var(--warn-bd)}
+.fnode.end{border-radius:99px;background:var(--ok-bg);border-color:var(--ok-bd);color:#15803d;font-weight:600}
+.fdown{color:var(--accent);font-size:18px;line-height:1.5;text-align:center}
+.fdown small{display:block;font-size:12px;color:var(--muted)}
+.fbranch{display:flex;gap:28px;justify-content:center;align-items:flex-start;flex-wrap:wrap;margin:4px 0}
+.fcol{display:flex;flex-direction:column;align-items:center}
+.fcol .tag-y{font-size:12px;font-weight:700;color:#15803d;background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+.fcol .tag-n{font-size:12px;font-weight:700;color:#92400e;background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+
+/* 交互小实验 */
+.lab{background:var(--card);border:1px solid var(--accent);border-radius:var(--radius);padding:18px 20px;margin:26px 0}
+.lab h4{margin:0 0 6px;color:var(--accent-dark);font-size:16px}
+.lab p{margin:4px 0;font-size:14px;color:var(--muted)}
+.labrow{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;align-items:center}
+.lab input{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font-mono);font-size:14px;width:220px;background:var(--bg);color:var(--fg)}
+.lab button{padding:8px 18px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:14px;font-family:var(--font-body)}
+.lab button:hover{background:var(--accent-dark)}
+.result{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:14px;display:none}
+.result.ok{display:block;background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.result.bad{display:block;background:var(--danger-bg);color:#b91c1c;border:1px solid var(--danger-bd)}
+.result.warn{display:block;background:var(--warn-bg);color:#92400e;border:1px solid var(--warn-bd)}
+.lab pre{margin-top:10px}
+
+/* 移动端 */
+@media (max-width:768px){
+  .toc{position:static;width:auto;border-right:none;border-bottom:1px solid var(--border);padding:18px 16px}
+  .toc ol{columns:2}
+  main{margin-left:0}
+  .wrap{padding:24px 18px 12px}
+  h1{font-size:24px}
+  .topo{flex-direction:column;align-items:center}
+  .topo .link{min-width:auto;padding:6px 0}
+  .topo .link .arrow{transform:rotate(90deg)}
+  .gantt .lbl{width:110px;font-size:12px}
+  .gantt .axis{margin-left:110px}
+  .fbranch{flex-direction:column;align-items:center;gap:8px}
+}
+/* 打印 */
+@media print{
+  .toc,.copy,.tabs{display:none}
+  main{margin-left:0}
+  .panel{display:block!important;border:none;padding:8px 0}
+  body{font-size:12px}
+  a{color:var(--fg);text-decoration:none}
+}
+
+/* ===== 本课专属追加：统计卡片网格 ===== */
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px 0}
+.stat{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius);padding:14px 16px}
+.stat b{display:block;font-family:var(--font-mono);font-size:23px;line-height:1.25;color:var(--accent-dark)}
+.stat b small{font-family:var(--font-body);font-size:11.5px;font-weight:600;color:var(--muted);margin-left:3px}
+.stat span{display:block;margin-top:5px;font-size:12.5px;line-height:1.55;color:var(--muted)}
+
+/* ===== 本课专属追加：发布视频四幕时间线 ===== */
+.timeline{position:relative;margin:24px 0 6px}
+.timeline::before{content:"";position:absolute;left:102px;top:8px;bottom:8px;width:2px;background:linear-gradient(180deg,var(--accent),#22d3ee)}
+.tl{display:flex;align-items:flex-start;margin-bottom:16px}
+.tl .time{flex:0 0 96px;padding:6px 6px 0 0;text-align:right;font-family:var(--font-mono);font-size:11.5px;font-weight:700;color:var(--accent);line-height:1.5}
+.tl .dot{flex:0 0 14px;width:14px;height:14px;margin-top:6px;border:3px solid var(--accent);border-radius:50%;background:var(--bg);position:relative;z-index:1}
+.tl .body{flex:1;margin-left:16px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;font-size:14.5px}
+.tl .body b{display:block;color:var(--accent-dark);font-size:15px;margin-bottom:2px}
+.tl .body p{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.7}
+
+/* ===== 本课专属追加：六维对比与架构分流 ===== */
+.tablescroll{overflow-x:auto;margin:18px 0}
+.tablescroll table{margin:0;min-width:640px}
+.tablescroll.cmp table{min-width:720px}
+.cmp td.con{color:#7f1d1d}
+.cmp td.con b{color:#b91c1c}
+.cmp td.edu{background:var(--ok-bg)}
+.cmp td.edu b{color:#15803d}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);align-items:start;gap:16px;margin:24px 0}
+.split .pane{border:1px solid var(--border);border-radius:var(--radius);padding:14px 14px 6px;background:var(--bg)}
+.split .pane.bad{border-color:var(--danger-bd);background:var(--danger-bg)}
+.split .pane.good{border-color:var(--ok-bd);background:var(--ok-bg)}
+.split .pane-h{text-align:center;font-size:12.5px;font-weight:700;margin-bottom:12px;color:var(--muted)}
+.split .pane.bad .pane-h{color:#b91c1c}
+.split .pane.good .pane-h{color:#15803d}
+.split .fnode{max-width:none;font-size:13px;padding:8px 12px;background:var(--bg)}
+.split .pane.good .fnode{border-color:var(--ok-bd)}
+.split .pane.bad .fnode{border-color:var(--danger-bd)}
+.split .fdown{font-size:15px;line-height:1.4;color:var(--muted)}
+.split .pane.good .fdown{color:#15803d}
+.split .pane.bad .fdown{color:#b91c1c}
+.split .flowtri{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:2px 0}
+.split .flowtri span{font-size:11.5px;background:var(--bg);border:1px solid var(--accent);color:var(--accent-dark);border-radius:99px;padding:2px 9px}
+
+/* ===== 本课专属追加：NPU 算力预算器 ===== */
+.lab h3{margin:0 0 6px;color:var(--accent-dark);font-size:16px}
+.npugrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;margin:14px 0}
+.npugrid label{display:flex;gap:8px;align-items:flex-start;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13.5px;line-height:1.5;cursor:pointer}
+.npugrid label:hover{border-color:var(--accent)}
+.npugrid input{flex:0 0 auto;width:16px;height:16px;margin:3px 0 0;padding:0;border:none;background:none;accent-color:var(--accent)}
+.npugrid label small{display:block;color:var(--muted);font-size:11.5px}
+.meter{height:16px;margin:8px 0 6px;background:var(--bg);border:1px solid var(--border);border-radius:99px;overflow:hidden}
+.meter .fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--accent),#22d3ee);transition:width .25s ease}
+.meter .fill.warn{background:linear-gradient(90deg,#d97706,#fbbf24)}
+.meter .fill.bad{background:linear-gradient(90deg,#dc2626,#f87171)}
+.readout{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-family:var(--font-mono);font-size:12.5px;color:var(--muted)}
+.readout b{color:var(--accent-dark)}
+
+/* 本课专属移动端补充 */
+@media (max-width:768px){
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .stat b{font-size:20px}
+  .timeline::before{left:72px}
+  .tl .time{flex:0 0 66px;padding-right:4px;font-size:10.5px}
+  .tl .body{margin-left:12px;padding:10px 12px}
+  .npugrid{grid-template-columns:1fr}
+  .split{grid-template-columns:1fr}
+  .tablescroll table{min-width:560px}
+}
+@media (max-width:480px){
+  .stats{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav class="toc" id="nav">
+  <div class="brand">VBOT EDU 快速开始</div>
+  <div class="sub">模块 01 · Lesson 01</div>
+  <ol>
+    <li><a href="#s1">产品全景：会“看人”的大头</a></li>
+    <li><a href="#s2">发布视频四幕拆解</a></li>
+    <li><a href="#s3">核心规格总览</a></li>
+    <li><a href="#s4">消费版 vs EDU 六维对比</a></li>
+    <li><a href="#s5">交互实验：NPU 算力预算</a></li>
+    <li><a href="#s6">萌新准备清单</a></li>
+    <li><a href="#s7">本课小结与下一课</a></li>
+  </ol>
+  <a class="home" href="index.html">← 返回目录</a>
+</nav>
+
+<main>
+<div class="wrap">
+
+<header class="lesson">
+  <div class="badges">
+    <span class="badge no">Lesson 01</span>
+    <span class="badge safe">安全级别：信息型</span>
+    <span class="badge ver">固件基准 V1.6.0</span>
+  </div>
+  <h1>走进 VBOT 大头 EDU：产品全景、硬件规格与具身智能新物种</h1>
+  <p class="meta">预计阅读 15 分钟 · 前置课程：无（本模块起点） · 建议准备：一条双头 Type-C 数据线与 2m × 2m 开阔场地</p>
+  <img class="hero-img" src="../../assets/01-brand-hardware/vbot-dog-photo-1.png" alt="VBOT 大头 EDU 在实操环境中站立，头部主动注视前方" loading="lazy">
+</header>
+
+<details class="talk">
+  <summary>🎙️ 展开直播口播导语（讲师版全文）</summary>
+  <div class="body">
+    <p>“各位极客开发者、老师、同学们，以及守在直播间前对具身智能充满好奇的小伙伴们，大家晚上好！欢迎来到 VBOT EDU 具身智能大师课的第 0 讲！提到四足机器狗，大家脑海里跳出来的形象往往是冰冷、硬核、甚至有点距离感的工业机器——没有表情，没有五官，只有一个冷冰冰的黑色机身在地上机械地踱步。但今天站在大家面前的这一只，完全颠覆了传统四足机器人的想象！”</p>
+    <p>“请看它——这就是维他动力（VitaDynamics）专为具身智能开发者打造的旗舰伙伴：<b>VBOT 大头 EDU 版</b>！它最醒目的标志，就是机头上方那颗拥有双自由度动态俯仰、搭载高清互动表情屏的‘大脑袋’！它不仅能摇头、眨眼、向你做鬼脸、转头注视你的目光，更重要的是，它是一台拥有 128 TOPS 超强板载算力、14 个高扭矩关节电机、全栈开放 Ubuntu 22.04 LTS 与 ROS 2 / Aorta 通信架构的‘移动具身智能实验台’！无论你是刚入门具身智能的在校大学生、创客极客，还是正在用 Cursor / Claude Code 探索 Agent 控制的大模型开发者，这台机器狗都将是你从‘纯软件虚拟世界’踏入‘物理现实世界’的第一台终极伙伴。今天，我们就用 15 分钟，带你彻底揭开它的神秘面纱！”</p>
+  </div>
+</details>
+
+<h2 id="goals" style="margin-top:24px;border-bottom:none;padding-bottom:0;font-size:17.5px">本课学习目标</h2>
+<ul class="goals">
+  <li>说清“大头”的价值：双自由度头部 + LCD 表情屏如何带来视线对齐（Eye-contact）</li>
+  <li>记住六个关键数字：128 TOPS / 14 关节 / 24.5 N·m / 16 kg / 5 kg / 594 Wh</li>
+  <li>复述 37 秒官方发布视频四幕的技术亮点</li>
+  <li>按六大系统查阅核心规格，不被参数表淹没</li>
+  <li>用六维对比讲清“为什么研发必须选 EDU 版”</li>
+</ul>
+
+<h2 id="s1">一、产品全景：一只会“看人”的四足机器人</h2>
+
+<p>传统四足机器人常常“有身无首”：没有五官、没有朝向感，只能按预设轨迹机械踱步。VBOT 大头 EDU 的分水岭，就在机头上方那颗<b>双自由度动态头部</b>——Pitch（俯仰）与 Yaw（偏航）两个轴让它能抬头、低头、左右转头，正面嵌着的高清互动液晶屏则负责眨眼、微笑、做鬼脸。它不是卖萌的装饰件，而是给具身交互补上了最关键的<b>视线对齐（Eye-contact）</b>接口。</p>
+
+<p>在这颗“大头”之下，是一台按开发者需求堆料到底的移动实验台：<b>128 TOPS</b> 板载 NPU 算力、<b>14 个</b>高扭矩关节，以及从底层就完全开放的 <b>Ubuntu 22.04 LTS + ROS 2 Humble + Aorta (Zenoh)</b> 软件栈。它把“实验室里的算法”和“物理世界里的运动”接到了同一条总线上。</p>
+
+<div class="stats" aria-label="VBOT 大头 EDU 六项关键指标">
+  <div class="stat"><b>128<small>TOPS</small></b><span>NPU 边缘 AI 算力（INT8），可机载运行 YOLOv11、MediaPipe、Whisper 与端侧 VLM</span></div>
+  <div class="stat"><b>14<small>关节</small></b><span>四足 12 关节（3 自由度/腿 × 4）+ 头部 2 自由度（Pitch 俯仰 / Yaw 偏航）</span></div>
+  <div class="stat"><b>24.5<small>N·m</small></b><span>自研 VGeer 关节电机峰值力矩，集成双绝对值磁编码器</span></div>
+  <div class="stat"><b>16<small>kg</small></b><span>整机自重（含电池），高刚性铝合金骨架 + 模块化 ABS 护壳</span></div>
+  <div class="stat"><b>5<small>kg</small></b><span>额定负载，负重下仍可保持 1.5 m/s 连续动态巡航</span></div>
+  <div class="stat"><b>594<small>Wh</small></b><span>智能动力锂电池组，综合工况续航 2.0 ~ 4.0 小时</span></div>
+</div>
+
+<h3>为什么“大头”不是装饰</h3>
+
+<p>没有头的四足机器人，只能靠声音或机身朝向让人“猜”它在关注什么。而有了 Pitch / Yaw 双轴与表情屏之后，开发者可以把声源方向（DOA）或人脸坐标映射成头部角度，让机器狗<b>真的看向目标</b>；配合屏幕上眼神、眨眼、微笑的切换，交互从“它听见了”升级为“它注意到你了”。</p>
+
+<div class="callout ok"><span class="t">✅ 开发者视角</span>头部双自由度是一个可编程的“注意力接口”。导医、导购、陪伴看护这类场景，最自然的交互起点往往不是一句语音回复，而是一次准确的转头对视。</div>
+
+<h3>全栈开放：三个名字要记住</h3>
+
+<ul class="goals">
+  <li><b>Ubuntu 22.04 LTS (Jammy)</b>：完整 Linux 控制台与 root / sudo 权限，想装什么库由你决定</li>
+  <li><b>ROS 2 Humble</b>：与学术界、产业界主流开源生态无缝对接的机器人中间件</li>
+  <li><b>Aorta (Zenoh)</b>：机载高吞吐主干总线，开放 46 个核心话题，负责把传感器与运控数据低延迟地送到你手里</li>
+</ul>
+
+<h2 id="s2">二、官方发布视频四幕拆解（37 秒）</h2>
+
+<p>官方发布的《维他动力大头 EDU 发布视频》是一支 37 秒、1080 × 1920 的竖屏高动态演示。短短半分钟里，它把“能跑、能看、能听、能扩展”四件事各用一幕讲完。下面按时间轴逐幕拆解，方便你在直播讲解或团队内部分享时直接引用。</p>
+
+<div class="timeline" aria-label="官方发布视频四幕时间线">
+  <div class="tl">
+    <div class="time">00:00<br>–00:08</div>
+    <div class="dot"></div>
+    <div class="body">
+      <b>第一幕 · 高动态敏捷运控</b>
+      <p>机器狗在平地与阶梯地形中极速起步，以高频 Trot（小跑）步态平稳穿行；遭遇外力踢击或台阶颠簸时，四足瞬间完成微秒级逆动力学重规划，毫无滞涩地恢复重心。</p>
+      <p>底层底气来自 14 颗 VGeer 高集成度一体化关节电机（峰值扭矩 24.5 N·m），以及 RTOS 网关板的毫秒级力矩控制闭环。</p>
+    </div>
+  </div>
+  <div class="tl">
+    <div class="time">00:08<br>–00:18</div>
+    <div class="dot"></div>
+    <div class="body">
+      <b>第二幕 · 有温度的“大头”情感交互</b>
+      <p>镜头聚焦标志性的头部机构：Pitch（俯仰）与 Yaw（偏航）双轴动态转动，正面高清液晶屏随人声指令切换眼神、眨眼、微笑，机器狗还自然抬起右前足向观众挥爪问好。</p>
+      <p>它打破了传统四足“有身无首、缺乏朝向感知”的交互盲区，为医院导医、商圈导购、陪伴看护提供了天然的视线对齐（Eye-contact）接口。</p>
+    </div>
+  </div>
+  <div class="tl">
+    <div class="time">00:18<br>–00:28</div>
+    <div class="dot"></div>
+    <div class="body">
+      <b>第三幕 · 空间听觉与伴随行走</b>
+      <p>用户在侧方发出语音呼唤，头部 4 麦克风阵列精准捕捉声源到达角（DOA），整机在 0.3 秒内同步转头并调整步速，与用户保持并排行走。</p>
+      <p>结合 360° 16 线激光雷达的局部避障与 SC230AI 双目深度视觉，它不只是“看得见”，还能“听声辨位”。</p>
+    </div>
+  </div>
+  <div class="tl">
+    <div class="time">00:28<br>–00:37</div>
+    <div class="dot"></div>
+    <div class="body">
+      <b>第四幕 · 开放为极客而生</b>
+      <p>机身背部的模块化快拆结构亮相：开发者可快速加装高负荷背筐、外置雷达支架，甚至直接在背板接入 PiPER 六轴机械臂做移动抓取作业。</p>
+      <p>EDU 的承诺是向所有开发者完全开放底层通信总线、提供完整 root 权限与丰富 ROS 2 驱动，绝不设人为技术壁垒。</p>
+    </div>
+  </div>
+</div>
+
+<div class="callout"><span class="t">🎬 一句话总结这支片子</span>前 8 秒证明“身体够强”，中间 20 秒证明“有头会听”，最后 9 秒证明“接口够开”——这正是它与普通消费级四足最不一样的三件事。</div>
+
+<h2 id="s3">三、核心规格总览：六组参数看完整机</h2>
+
+<p>下面这张表整理自维他动力官方产品规格库（vbot.cn/Detail），按六大系统分组。读表时别只盯数字，重点看第二列后半句——它说明这项指标对开发者意味着什么。</p>
+
+<figure>
+  <img src="../../assets/01-brand-hardware/vbot-dog-edu.png" alt="VBOT 大头 EDU 白底整机照，双自由度交互头部与模块化拓展身躯" loading="lazy">
+  <figcaption>图 1：VBOT 大头 EDU 标准外观——标志性的“大头”双自由度交互头部与模块化拓展身躯</figcaption>
+</figure>
+
+<table>
+  <thead>
+    <tr><th style="width:26%">规格项</th><th>官方工程指标与开发者意义</th></tr>
+  </thead>
+  <tbody>
+    <tr><th colspan="2">计算大脑</th></tr>
+    <tr><td><b>主控处理器（SoC）</b></td><td>地瓜（DiGua）<b>S100P</b> 异构高算力平台</td></tr>
+    <tr><td><b>CPU 核心架构</b></td><td>8 核心 <b>ARM Cortex-A78AE</b> 高性能低功耗车规级处理器</td></tr>
+    <tr><td><b>NPU 边缘 AI 算力</b></td><td><b>128 TOPS @ INT8</b>，支持机载运行 YOLOv11、MediaPipe、Whisper 及端侧 VLM 视觉大模型</td></tr>
+    <tr><td><b>操作系统与中间件</b></td><td><b>Ubuntu 22.04 LTS (Jammy)</b> + <b>ROS 2 Humble</b> + <b>Aorta (Zenoh)</b> 原生总线</td></tr>
+  </tbody>
+  <tbody>
+    <tr><th colspan="2">动力与关节</th></tr>
+    <tr><td><b>关节电机总数</b></td><td><b>14 个</b>：四足 12 关节（3 自由度/腿 × 4）+ 头部 2 自由度（Pitch 俯仰 + Yaw 偏航）</td></tr>
+    <tr><td><b>电机型号与性能</b></td><td>自研 <b>VGeer</b> 高速力矩电机，峰值力矩 <b>24.5 N·m</b>，集成双绝对值磁编码器</td></tr>
+    <tr><td><b>运动性能与步态</b></td><td>支持 Trot（小跑）、Walk（慢走）、Crawl（爬行）、Stair（楼梯步态）、自立站起、跳跃自恢复</td></tr>
+  </tbody>
+  <tbody>
+    <tr><th colspan="2">全景感知</th></tr>
+    <tr><td><b>激光测距系统</b></td><td>顶部集成 <b>360° 16 线半固态激光雷达</b>，有效测距 0.1 m ~ 30 m，建图精度达厘米级</td></tr>
+    <tr><td><b>视觉系统</b></td><td>前向集成 <b>SC230AI 双目立体视觉相机</b>，支持 H.264/H.265 硬件实时编解码</td></tr>
+    <tr><td><b>听觉交互系统</b></td><td>头部集成 <b>4 麦克风环形空间阵列</b>，支持声源定位（DOA）、波束成形降噪与 AEC 回声消除</td></tr>
+    <tr><td><b>惯性导航与定位</b></td><td>内置工业级 <b>6 轴 IMU</b>（高精加速度计 + 陀螺仪）与 GNSS 定位模块</td></tr>
+  </tbody>
+  <tbody>
+    <tr><th colspan="2">机身与负载</th></tr>
+    <tr><td><b>整机自重（含电池）</b></td><td>约 <b>16.0 kg</b>，高刚性轻量化铝合金机身骨架 + 模块化 ABS 护壳</td></tr>
+    <tr><td><b>物理外形尺寸</b></td><td>站立态约 <b>650 mm（长）× 380 mm（宽）× 450 mm（高）</b></td></tr>
+    <tr><td><b>额定负载能力</b></td><td><b>5.0 kg</b>，可在额定负重下保持 <b>1.5 m/s</b> 连续动态巡航与运动编排</td></tr>
+    <tr><td><b>结构极限负重</b></td><td><b>12.0 kg</b>，可承受机械臂瞬时冲击或大重量外挂设备</td></tr>
+  </tbody>
+  <tbody>
+    <tr><th colspan="2">电池与续航</th></tr>
+    <tr><td><b>动力电池规格</b></td><td><b>594 Wh</b> 超大容量智能动力锂电池组，支持快速拔插锁紧机构</td></tr>
+    <tr><td><b>持续作业续航</b></td><td>综合工况 <b>2.0 ~ 4.0 小时</b>；空载平稳站立待机可达 6 小时以上</td></tr>
+    <tr><td><b>外设动力取电口</b></td><td>机身预留独立 <b>24V DC / 10A（峰值 15A）</b>稳压电源输出接口，专供机械臂与高功耗外设</td></tr>
+  </tbody>
+  <tbody>
+    <tr><th colspan="2">外设与通信</th></tr>
+    <tr><td><b>有线通信网口</b></td><td>机身侧方集成 <b>Type-C 多功能扩展口</b>（模拟千兆以太网 <code>eth2</code>，免驱免外接扩展坞）</td></tr>
+    <tr><td><b>工业级总线</b></td><td><b>双路隔离 CAN-FD 接口</b>，最高支持 1 Mbps / 5 Mbps，完美匹配 PiPER 六轴机械臂</td></tr>
+    <tr><td><b>无线网络传输</b></td><td><b>Wi-Fi 6 (802.11ax)</b> + <b>蓝牙 5.2</b> + <b>UWB 超宽带空间定位</b>（由网关板 RTOS 托管）</td></tr>
+  </tbody>
+</table>
+
+<div class="callout"><span class="t">📌 读表提示</span>“128 TOPS”是 NPU 的峰值算力，不等于任意模型都能跑满；电池续航 2.0 ~ 4.0 小时也是综合工况值。真正做方案时，请把算力、负载与续航当成一组相互制约的预算来分配。</div>
+
+<h2 id="s4">四、消费版 vs EDU：六维开发者权限对比</h2>
+
+<p>“市面上便宜的消费级机器狗也能跑能跳，为什么做研发必须选 EDU？”答案不在硬件参数，而在<b>你能碰到多深</b>。下面六个维度，基本覆盖了从“玩”到“做研究”的全部差距。</p>
+
+<div class="tablescroll cmp">
+<table>
+  <thead>
+    <tr><th style="width:14%">对比维度</th><th style="width:26%">普通消费级 / 基础演示版</th><th style="width:30%">VBOT 大头 EDU 开发者版</th><th>开发者影响与价值</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>1. 系统权限与终端</b></td>
+      <td class="con"><b>闭源沙盒固件</b>；仅开放手机 App 遥控（Level 0）；无系统终端登录通道，无 root / sudo 权限</td>
+      <td class="edu"><b>完全开放 Linux 控制台</b>；开放 <code>ssh vbot@192.168.126.2</code>；拥有全功能 root / sudo 权限</td>
+      <td>可自主安装任意 Python 库、C++ 依赖、编译定制 ROS 2 包，打造属于你的系统环境</td>
+    </tr>
+    <tr>
+      <td><b>2. 通信中间件底座</b></td>
+      <td class="con"><b>厂商私有二进制加密协议</b>；外接上位机需逆向破解；延迟高、丢包严重</td>
+      <td class="edu">原生搭载 <b>Aorta (Zenoh)</b> 边缘高吞吐主干总线（46 核心开放话题）+ <b>ROS 2 Humble</b> 桥接子集</td>
+      <td>工业级、零拷贝、极低延迟通信，与学术界和产业界顶尖开源生态无缝对接</td>
+    </tr>
+    <tr>
+      <td><b>3. 原始传感器数据流</b></td>
+      <td class="con">仅能在手机 App 里看<b>压缩后的标清图传</b>；无法获取激光雷达点云与音频 PCM 原始流</td>
+      <td class="edu"><b>全传感器裸数据高频广播</b>：激光雷达点云切片、双目 H.265/RGB 解畸变帧、IMU 100Hz 原始加速度、14 关节编码器数据</td>
+      <td>满足 SLAM 建图、Nav2 自主导航、目标识别检测、3D 点云避障等科研与商用落地需求</td>
+    </tr>
+    <tr>
+      <td><b>4. 头部交互系统</b></td>
+      <td class="con">无独立头部，或仅固定俯仰角度的塑料装饰壳；<b>无互动屏幕</b>；表情完全固定</td>
+      <td class="edu"><b>2 自由度动态头部（Pitch / Yaw）</b> + 正面高清互动液晶屏 + 4 麦克风阵列</td>
+      <td>支持动态眼神凝视、表情帧缓冲直接写入（Framebuffer/UI）、多模态情感计算与交互</td>
+    </tr>
+    <tr>
+      <td><b>5. 硬件电气扩展</b></td>
+      <td class="con"><b>无外部电源引出</b>，无标准工业总线；外挂传感器极易烧毁电池主板</td>
+      <td class="edu">专用 <b>Type-C 千兆免驱网口</b>、<b>双路隔离 CAN-FD</b>、独立 <b>24V/10A 大功率供电口</b></td>
+      <td>即插即用加装 PiPER 六轴机械臂、双目工业全景相机、Orin / RDK 外部算力板等复杂外设</td>
+    </tr>
+    <tr>
+      <td><b>6. AI 与开发范式</b></td>
+      <td class="con">依赖按键映射与<b>离线固定宏动作</b>；无法接入大语言模型（LLM / VLM）</td>
+      <td class="edu"><b>原生 Agent-Native 架构</b>：内置 RCP 任务编排系统、MCP（Model Context Protocol）18080 服务</td>
+      <td>开发者可直接通过自然语言提示词，让大模型（GPT-4o / Qwen）驱动具身动作闭环</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout ok"><span class="t">✅ 选型结论</span>如果目标只是“拍视频、做展示”，消费版够用；只要你要<b>读原始数据、改控制逻辑、接自己的模型</b>，EDU 版几乎是唯一解——差别不在性能高低，而在权限边界。</div>
+
+<h3>架构分流：两条完全不同的技术路径</h3>
+
+<p>把六个维度压缩成一张链路图，就是下面这样：左边只能“用”，右边可以“改”。</p>
+
+<div class="split" role="img" aria-label="架构对比：普通消费版为手机 App 经闭源黑盒到固定宏动作；EDU 版为开发者终端经 SSH 或 Type-C 进入 Ubuntu Root，经 Aorta 46 话题分发到 ROS 2、RCP、MCP 与硬件">
+  <div class="pane bad">
+    <div class="pane-h">普通消费版 · Level 0 封闭遥控</div>
+    <div class="fnode">手机 App 遥控</div>
+    <div class="fdown">↓</div>
+    <div class="fnode">闭源加密黑盒</div>
+    <div class="fdown">↓ 只能调用</div>
+    <div class="fnode">固定走跑宏动作</div>
+  </div>
+  <div class="pane good">
+    <div class="pane-h">VBOT 大头 EDU · 开发者全权限</div>
+    <div class="fnode">AI Agent / 开发者终端</div>
+    <div class="fdown">↓ SSH / Type-C <code>eth2</code></div>
+    <div class="fnode">Ubuntu 22.04 LTS（Root）</div>
+    <div class="fdown">↓</div>
+    <div class="fnode">Aorta (Zenoh) · 46 Topics</div>
+    <div class="fdown">↓ 三路分流</div>
+    <div class="flowtri"><span>ROS 2 Humble</span><span>RCP 动作图</span><span>MCP :18080</span></div>
+    <div class="fdown">↓</div>
+    <div class="fnode">CAN-FD / 24V 机械臂 / 14 关节</div>
+  </div>
+</div>
+
+<h2 id="s5">五、🧪 交互小实验：给 128 TOPS 做一次预算</h2>
+
+<p>128 TOPS 听起来很多，但它是<b>整机共享</b>的：视觉、语音、建图、策略网络都在同一块 NPU 上排队。下面把几种常见负载折算成粗略的算力占用，勾选你打算“同时常驻”的任务，看看预算还剩下多少。</p>
+
+<div class="lab">
+  <h3>算力预算器：勾选要同时常驻的负载</h3>
+  <p>勾选即刻累加，读数与进度条实时反馈：占用超过 80% 转黄，超过 100% 转红。默认按 1 路计算；把并发路数调到 6 路以上，就能看到黄色甚至红色预警。</p>
+
+  <div class="npugrid">
+    <label><input type="checkbox" data-tops="1.5" data-name="YOLOv11 目标检测"><span>YOLOv11 目标检测<small>≈ 1.5 TOPS · 视觉主任务常驻</small></span></label>
+    <label><input type="checkbox" data-tops="0.5" data-name="MediaPipe 姿态估计"><span>MediaPipe 姿态估计<small>≈ 0.5 TOPS · 人体关键点</small></span></label>
+    <label><input type="checkbox" data-tops="1.0" data-name="Whisper 语音识别"><span>Whisper 语音识别<small>≈ 1.0 TOPS · 语音转写常开</small></span></label>
+    <label><input type="checkbox" data-tops="18" data-name="端侧 VLM（2B 级）"><span>端侧 VLM（2B 级）<small>≈ 18 TOPS · 视觉问答</small></span></label>
+    <label><input type="checkbox" data-tops="2" data-name="SLAM / 避障"><span>SLAM / 避障<small>≈ 2.0 TOPS · 建图与局部规划</small></span></label>
+  </div>
+
+  <div class="labrow">
+    <label for="npu-mul" style="font-size:13.5px;color:var(--muted)">并发路数</label>
+    <input id="npu-mul" type="number" min="1" max="8" step="1" value="1" style="width:90px" aria-label="并发路数">
+    <span style="font-size:12.5px;color:var(--muted)">多路摄像头 / 多路视频流并行时，按路数放大估算</span>
+    <button id="npu-reset" type="button">清空选择</button>
+  </div>
+
+  <div class="readout">
+    <span>已用 <b id="npu-used">0.0</b> / 128 TOPS</span>
+    <span>占比 <b id="npu-pct">0</b>%</span>
+    <span>余量 <b id="npu-left">128.0</b> TOPS</span>
+  </div>
+  <div class="meter" id="npu-meter" role="progressbar" aria-label="NPU 算力占用" aria-valuemin="0" aria-valuemax="128" aria-valuenow="0">
+    <div class="fill" id="npu-fill"></div>
+  </div>
+  <div id="npu-res" class="result" role="status"></div>
+
+  <p>以上为工程估算，非官方跑分；实际占用随模型精度、输入分辨率、帧率与算子实现而波动，仅用于建立“预算感”。</p>
+</div>
+
+<div class="callout warn"><span class="t">⚠️ NPU 有余量，不代表 CPU 也闲着</span>高负载感知推理还要抢占 CPU 做前处理与后处理。上机时建议用 <code>taskset -c 2-7</code> 把推理进程限定在 2~7 号核心，为运控与通信留出 0~1 号核心。</div>
+
+<div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code># 只让推理进程跑在 CPU 2~7，把 0~1 留给运控与通信
+taskset -c 2-7 python3 your_infer.py</code></pre>
+</div>
+
+<h2 id="s6">六、萌新第一问：我需要提前准备什么？</h2>
+
+<p>如果你刚踏入机器人领域，请先放轻松：你<b>不需要</b>精通逆运动学矩阵推导，也<b>不需要</b>几百小时的嵌入式焊接经验。把下面两份清单准备好，就足够开始第一课了。</p>
+
+<h3>硬件准备</h3>
+
+<ul class="goals">
+  <li><b>开发主机</b>：一台安装了 Ubuntu 20.04 / 22.04、macOS，或 Windows（推荐启用 WSL2）的笔记本电脑</li>
+  <li><b>连接线缆</b>：一根质量合格的双头 Type-C 数据线，或 Type-C 转 RJ45 千兆网线，用于接入机身侧方的 <code>eth2</code> 维护口</li>
+  <li><b>安全场地</b>：一块至少 2m × 2m 的平整开阔空地；前几次测试建议铺防滑地毯或选干净地面，并清除脚边杂物</li>
+</ul>
+
+<h3>软件与思维准备</h3>
+
+<ul class="goals">
+  <li><b>基础终端技能</b>：会打开终端敲 <code>ssh</code>、<code>ping</code>，能运行基本的 Python 脚本</li>
+  <li><b>拥抱 AI Coding Agent</b>：文档库已针对 Cursor、Claude Code、Windsurf 等助手深度优化，遇到不懂的概念，随时把文档喂给 AI</li>
+  <li><b>心法准则</b>：牢记具身开发的金科玉律，时刻怀揣对物理硬件的敬畏之心</li>
+</ul>
+
+<div class="callout danger"><span class="t">🚨 先记住这句话再上电</span>“在虚拟世界里报错只是红字，在物理世界里失控机器狗是真的会撞墙！”按下回车之前，先确认场地清空、急停可达、周围没有人。</div>
+
+<h2 id="s7">七、本课小结与下一课</h2>
+
+<p>这一课没有一行代码，但你应该已经能回答三个问题：它和普通机器狗差在哪、它的硬指标是什么、以及为什么开发者必须选 EDU。把答案压缩成三句话：</p>
+
+<table>
+  <thead>
+    <tr><th style="width:22%">记住这件事</th><th>一句话答案</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><b>交互形态</b></td><td>双自由度头部（Pitch / Yaw）+ LCD 表情屏，“看向你”是可编程能力，不是装饰</td></tr>
+    <tr><td><b>硬件底座</b></td><td>128 TOPS + 14 关节 + 594 Wh，既能跑端侧大模型，也能背负 5 kg 额定负载</td></tr>
+    <tr><td><b>开放程度</b></td><td>Ubuntu 22.04 root + ROS 2 Humble + Aorta (Zenoh) 46 话题全开放，这才是 EDU 的本质</td></tr>
+  </tbody>
+</table>
+
+<div class="callout"><span class="t">⏭️ 下一课预告</span>认识完硬件，下一步把它连上。1.1 将带你完成 Type-C 有线直连的静态 IP 配置（含“严禁 .2”的避坑点）、V1.6.0 新增的板载 WiFi 直连，以及 <code>ssh vbot</code> 免密登录：<a href="lesson_02.html">1.1 极速开箱与网络接入</a>。</div>
+
+</div>
+
+<div class="wrap" style="padding-top:0">
+<footer class="nav">
+  <a href="index.html"><span class="dir">目录</span><span class="ttl">返回目录</span></a>
+  <a href="lesson_02.html" style="text-align:right"><span class="dir">下一课 →</span><span class="ttl">1.1 极速开箱与网络接入</span></a>
+</footer>
+</div>
+
+</main>
+
+<script>
+document.querySelectorAll('.copy').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var pre=btn.parentElement.querySelector('pre');
+    if(!pre) return;
+    navigator.clipboard.writeText(pre.textContent).then(function(){
+      btn.textContent='已复制'; setTimeout(function(){btn.textContent='复制'},1500);
+    });
+  });
+});
+(function(){
+  var boxes=Array.prototype.slice.call(document.querySelectorAll('.npugrid input[type="checkbox"]'));
+  if(!boxes.length) return;
+  var CAP=128;
+  var fill=document.getElementById('npu-fill');
+  var meter=document.getElementById('npu-meter');
+  var usedEl=document.getElementById('npu-used');
+  var leftEl=document.getElementById('npu-left');
+  var pctEl=document.getElementById('npu-pct');
+  var res=document.getElementById('npu-res');
+  var mul=document.getElementById('npu-mul');
+  function update(){
+    var base=0,count=0;
+    boxes.forEach(function(b){
+      if(b.checked){ base+=parseFloat(b.getAttribute('data-tops')); count++; }
+    });
+    var routes=1;
+    if(mul){
+      routes=parseInt(mul.value,10);
+      if(isNaN(routes)||routes<1){ routes=1; }
+      if(routes>8){ routes=8; }
+    }
+    var used=base*routes;
+    var pct=used/CAP*100;
+    var cls=pct>100?'bad':(pct>80?'warn':'ok');
+    fill.style.width=Math.min(pct,100)+'%';
+    fill.className='fill'+(cls==='ok'?'':' '+cls);
+    usedEl.textContent=used.toFixed(1);
+    leftEl.textContent=(CAP-used).toFixed(1);
+    pctEl.textContent=pct.toFixed(0);
+    meter.setAttribute('aria-valuenow',used.toFixed(1));
+    if(count===0){ res.className='result'; res.textContent=''; return; }
+    res.className='result '+cls;
+    var scope=(routes>1?'按 '+routes+' 路并发、':'')+'已选 '+count+' 项负载，';
+    if(pct>100){
+      res.textContent='🚨 预算爆表：'+scope+'占用 '+used.toFixed(1)+' TOPS，超出 128 TOPS 上限约 '+(used-CAP).toFixed(1)+' TOPS。请降低输入分辨率或帧率、换更小的模型，或把大模型推理挪到外部算力板。';
+    }else if(pct>80){
+      res.textContent='⚠️ 接近上限：'+scope+'占用 '+used.toFixed(1)+' TOPS（'+pct.toFixed(0)+'%），只剩 '+(CAP-used).toFixed(1)+' TOPS 余量。NPU 抖动与运控抢占很容易顶到天花板，建议再砍一项或减少并发路数。';
+    }else{
+      res.textContent='✅ 预算从容：'+scope+'占用 '+used.toFixed(1)+' TOPS（'+pct.toFixed(0)+'%），余量 '+(CAP-used).toFixed(1)+' TOPS。';
+    }
+  }
+  boxes.forEach(function(b){ b.addEventListener('change',update); });
+  if(mul){ mul.addEventListener('input',update); }
+  var rst=document.getElementById('npu-reset');
+  if(rst){ rst.addEventListener('click',function(){ boxes.forEach(function(b){ b.checked=false; }); if(mul){ mul.value=1; } update(); }); }
+  update();
+})();
+</script>
+</body>
+</html>

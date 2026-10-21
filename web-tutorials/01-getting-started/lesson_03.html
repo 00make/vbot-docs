@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1.2 极速跑通 Hello World：/vel_cmd 20Hz 运控 | VBOT EDU 快速开始</title>
+<style>
+/* ===== 风格契约 v1 · 预设 A 清爽技术文档风（全教程统一，勿改） ===== */
+:root{
+  --bg:#ffffff; --fg:#1f2937; --muted:#6b7280;
+  --accent:#0e7490; --accent-dark:#155e75; --accent-light:#ecfeff;
+  --code-bg:#f3f4f6; --code-fg:#111827; --code-border:#e5e7eb;
+  --border:#e5e7eb; --card:#f9fafb;
+  --warn-bg:#fffbeb; --warn-bd:#f59e0b;
+  --danger-bg:#fef2f2; --danger-bd:#ef4444;
+  --tip-bg:#ecfeff; --tip-bd:#0e7490;
+  --ok-bg:#f0fdf4; --ok-bd:#22c55e;
+  --radius:10px; --max-width:880px; --toc-w:250px;
+  --font-body:"Microsoft YaHei","Source Han Sans CN",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"Cascadia Code",Consolas,"JetBrains Mono","Courier New",monospace;
+}
+/* ===== 风格契约结束 ===== */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.8;font-size:16px}
+a{color:var(--accent)}
+a:hover{color:var(--accent-dark)}
+code{font-family:var(--font-mono);font-size:.875em;background:var(--code-bg);border:1px solid var(--code-border);border-radius:4px;padding:1px 6px;color:var(--code-fg)}
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:16px 18px;overflow:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;color:var(--code-fg);margin:0}
+pre code{background:none;border:none;padding:0;font-size:inherit}
+
+/* 布局：左 TOC + 右正文 */
+.toc{position:fixed;top:0;left:0;bottom:0;width:var(--toc-w);background:var(--card);border-right:1px solid var(--border);padding:28px 16px;overflow:auto}
+.toc .brand{font-weight:700;color:var(--accent-dark);font-size:17px;margin-bottom:2px}
+.toc .sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.toc ol{list-style:none;margin:0;padding:0;counter-reset:toc}
+.toc li{counter-increment:toc;margin-bottom:2px}
+.toc a{display:block;padding:7px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font-size:13.5px}
+.toc a::before{content:counter(toc) ". ";color:var(--accent);font-weight:600}
+.toc a:hover{background:var(--accent-light);color:var(--accent-dark)}
+.toc .home{display:inline-block;margin-top:18px;font-size:13px;color:var(--accent);text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--bg)}
+main{margin-left:var(--toc-w)}
+.wrap{max-width:var(--max-width);margin:0 auto;padding:40px 32px 24px}
+
+/* 页头 */
+header.lesson{border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:32px}
+header.lesson .hero-img{width:100%;max-height:280px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);margin-top:18px}
+.badges{margin-bottom:12px}
+.badge{display:inline-block;font-size:12px;font-weight:600;border-radius:99px;padding:2px 12px;margin-right:8px;vertical-align:middle}
+.badge.no{background:var(--accent);color:#fff}
+.badge.safe{background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.badge.ver{background:var(--card);color:var(--muted);border:1px solid var(--border)}
+h1{font-size:30px;line-height:1.4;margin:0 0 10px;color:var(--accent-dark)}
+.meta{font-size:13.5px;color:var(--muted)}
+.meta a{color:var(--accent)}
+
+/* 标题层级 */
+h2{font-size:22px;color:var(--accent-dark);margin:48px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--accent-light)}
+h3{font-size:17.5px;color:var(--fg);margin:28px 0 10px}
+
+/* 提示框 */
+.callout{border-left:4px solid var(--tip-bd);background:var(--tip-bg);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;margin:20px 0;font-size:15px}
+.callout.warn{border-color:var(--warn-bd);background:var(--warn-bg)}
+.callout.danger{border-color:var(--danger-bd);background:var(--danger-bg)}
+.callout.ok{border-color:var(--ok-bd);background:var(--ok-bg)}
+.callout .t{font-weight:700;display:block;margin-bottom:4px}
+
+/* 直播口播折叠 */
+details.talk{border:1px dashed var(--accent);border-radius:var(--radius);background:var(--bg);margin:20px 0}
+details.talk summary{cursor:pointer;padding:12px 18px;color:var(--accent);font-weight:600;font-size:14.5px}
+details.talk .body{padding:0 18px 14px;color:var(--muted);font-size:14.5px}
+
+/* 图片 */
+figure{margin:24px 0;text-align:center}
+figure img{max-width:100%;border:1px solid var(--border);border-radius:var(--radius);background:#fff}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+
+/* 表格 */
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px}
+th,td{border:1px solid var(--border);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--accent-light);color:var(--accent-dark);font-weight:700}
+tr:nth-child(even) td{background:var(--card)}
+td .no{color:var(--danger-bd);font-weight:700}
+
+/* 编号步骤 */
+ol.steps{list-style:none;counter-reset:st;padding:0;margin:18px 0}
+ol.steps>li{counter-increment:st;position:relative;padding:0 0 18px 48px}
+ol.steps>li::before{content:counter(st);position:absolute;left:0;top:2px;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;text-align:center;line-height:32px;font-size:15px}
+ol.steps>li>b:first-child{display:block;margin-bottom:4px}
+
+/* 代码块 + 复制按钮 + Tabs */
+.codewrap{position:relative;margin:14px 0}
+.codewrap .lang{position:absolute;top:0;right:88px;font-size:11px;color:var(--muted);background:var(--bg);border:1px solid var(--code-border);border-bottom:none;border-radius:6px 6px 0 0;padding:1px 8px}
+.copy{position:absolute;top:8px;right:8px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;font-family:var(--font-body)}
+.copy:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.tabs{display:flex;gap:6px;margin:18px 0 0}
+.tabs button{border:1px solid var(--border);border-bottom:none;background:var(--card);padding:8px 18px;border-radius:10px 10px 0 0;cursor:pointer;font-size:14px;color:var(--muted);font-family:var(--font-body)}
+.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+.panel{display:none;border:1px solid var(--border);border-radius:0 var(--radius) var(--radius) var(--radius);padding:16px 18px;background:var(--bg)}
+.panel.on{display:block}
+
+/* 目标清单 */
+ul.goals{margin:12px 0;padding-left:0;list-style:none}
+ul.goals li{padding:4px 0 4px 28px;position:relative}
+ul.goals li::before{content:"✓";position:absolute;left:4px;color:var(--accent);font-weight:700}
+
+/* 页脚导航 */
+footer.nav{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--border);margin-top:56px;padding:24px 0 40px;flex-wrap:wrap}
+footer.nav a{flex:1;min-width:200px;border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;text-decoration:none;background:var(--card)}
+footer.nav a:hover{border-color:var(--accent);background:var(--accent-light)}
+footer.nav .dir{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
+footer.nav .ttl{display:block;font-size:15px;color:var(--accent-dark);font-weight:600}
+footer.nav a.home-link{flex:0 0 auto;text-align:center}
+
+/* 交互小实验 */
+.lab{background:var(--card);border:1px solid var(--accent);border-radius:var(--radius);padding:18px 20px;margin:26px 0}
+.lab h4{margin:0 0 6px;color:var(--accent-dark);font-size:16px}
+.lab p{margin:4px 0;font-size:14px;color:var(--muted)}
+.labrow{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;align-items:center}
+.lab input{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font-mono);font-size:14px;width:220px;background:var(--bg);color:var(--fg)}
+.lab button{padding:8px 18px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:14px;font-family:var(--font-body)}
+.lab button:hover{background:var(--accent-dark)}
+.result{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:14px;display:none}
+.result.ok{display:block;background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.result.bad{display:block;background:var(--danger-bg);color:#b91c1c;border:1px solid var(--danger-bd)}
+.result.warn{display:block;background:var(--warn-bg);color:#92400e;border:1px solid var(--warn-bd)}
+.lab pre{margin-top:10px}
+
+/* 移动端 */
+@media (max-width:768px){
+  .toc{position:static;width:auto;border-right:none;border-bottom:1px solid var(--border);padding:18px 16px}
+  .toc ol{columns:2}
+  main{margin-left:0}
+  .wrap{padding:24px 18px 12px}
+  h1{font-size:24px}
+  .topo{flex-direction:column;align-items:center}
+  .topo .link{min-width:auto;padding:6px 0}
+  .topo .link .arrow{transform:rotate(90deg)}
+  .gantt .lbl{width:110px;font-size:12px}
+  .gantt .axis{margin-left:110px}
+  .fbranch{flex-direction:column;align-items:center;gap:8px}
+}
+/* 打印 */
+@media print{
+  .toc,.copy,.tabs{display:none}
+  main{margin-left:0}
+  .panel{display:block!important;border:none;padding:8px 0}
+  body{font-size:12px}
+  a{color:var(--fg);text-decoration:none}
+}
+
+/* ===== 本课专属组件（仅追加；沿用上方变量，不改动配色/字体/间距体系） ===== */
+.badge.danger{background:var(--danger-bg);color:#b91c1c;border:1px solid var(--danger-bd)}
+
+/* 页头危险提示条 */
+.dangerbar{display:flex;gap:14px;align-items:flex-start;background:var(--danger-bg);border:1px solid var(--danger-bd);border-left:6px solid var(--danger-bd);border-radius:var(--radius);padding:14px 18px;margin:22px 0 0;font-size:14.5px;line-height:1.75}
+.dangerbar .ico{font-size:22px;line-height:1.3;flex-shrink:0}
+.dangerbar .txt{flex:1}
+.dangerbar b{color:#b91c1c}
+
+/* 看门狗时序图 */
+.seq{border:1px solid var(--border);background:var(--card);border-radius:var(--radius);padding:16px 18px;margin:22px 0}
+.seq .cap{font-weight:700;color:var(--accent-dark);font-size:14.5px;margin-bottom:10px}
+.seq-axis{display:flex;justify-content:space-between;margin:0 0 4px 152px;font-size:11.5px;color:var(--muted)}
+.srow{display:flex;align-items:center;gap:10px;margin:10px 0}
+.slabel{width:142px;flex-shrink:0;font-size:12.5px;line-height:1.5}
+.slabel span{display:block;color:var(--muted);font-size:11px}
+.lane{position:relative;flex:1;height:34px;background:var(--bg);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.lane .dot{position:absolute;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--ok-bd)}
+.lane .gap{position:absolute;top:0;bottom:0;left:52%;right:0;background:repeating-linear-gradient(135deg,rgba(239,68,68,.16) 0 8px,rgba(239,68,68,.05) 8px 16px);border-left:2px dashed var(--danger-bd);display:flex;align-items:center;justify-content:center}
+.lane .gap b{font-size:10.5px;color:#b91c1c;background:var(--danger-bg);border:1px solid var(--danger-bd);border-radius:8px;padding:1px 8px;white-space:normal;line-height:1.35;text-align:center;max-width:94%}
+.seqlegend{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--muted)}
+.seqlegend .k{display:inline-flex;align-items:center;gap:6px}
+.seqlegend .k i{width:9px;height:9px;border-radius:50%;background:var(--ok-bd);display:inline-block}
+.seqlegend .k i.red{width:20px;height:10px;border-radius:2px;background:repeating-linear-gradient(135deg,rgba(239,68,68,.25) 0 6px,rgba(239,68,68,.08) 6px 12px);border:1px dashed var(--danger-bd)}
+
+/* 状态灯 + 进度条 */
+.lamp{display:inline-block;width:14px;height:14px;border-radius:50%;background:#d1d5db;box-shadow:0 0 0 3px rgba(107,114,128,.14);vertical-align:-2px;margin-right:8px}
+.lamp.run{background:var(--ok-bd);box-shadow:0 0 0 3px rgba(34,197,94,.2);animation:lampPulse 1.4s ease-in-out infinite}
+.lamp.stop{background:var(--danger-bd);box-shadow:0 0 0 3px rgba(239,68,68,.22)}
+@keyframes lampPulse{0%,100%{opacity:1}50%{opacity:.4}}
+.lab .lab-h{margin:0 0 6px;color:var(--accent-dark);font-size:16px}
+.lab .wdstatus{font-size:14.5px;font-weight:600;color:var(--accent-dark);margin:8px 0 0}
+.lab .wdstatus.stop{color:#b91c1c}
+.meter{height:12px;background:var(--code-bg);border:1px solid var(--border);border-radius:99px;overflow:hidden;margin:12px 0 6px}
+.meter .fill{height:100%;width:0;background:var(--ok-bd);transition:width .1s linear,background-color .2s}
+.meter .fill.stop{background:var(--danger-bd)}
+.metercap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+
+/* 参数滑块 */
+.sliders{margin:12px 0 4px}
+.srow2{display:grid;grid-template-columns:130px 1fr 96px;gap:12px;align-items:center;margin:10px 0}
+.srow2 label{font-size:13.5px;color:var(--fg)}
+.srow2 output{font-family:var(--font-mono);font-size:12.5px;color:var(--accent-dark);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:2px 6px;text-align:center}
+.lab input[type=range]{width:100%;padding:0;border:none;background:transparent;height:22px;accent-color:var(--accent)}
+
+/* 安全检查清单卡片 */
+.checklist{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}
+.chk{border:1px solid var(--ok-bd);border-left:4px solid var(--ok-bd);background:var(--ok-bg);border-radius:0 var(--radius) var(--radius) 0;padding:12px 16px;font-size:13.8px;line-height:1.7}
+.chk.warn{border-color:var(--warn-bd);background:var(--warn-bg)}
+.chk b{display:block;color:#15803d;margin-bottom:2px;font-size:14px}
+.chk.warn b{color:#92400e}
+
+@media (max-width:768px){
+  .seq-axis{margin-left:106px}
+  .slabel{width:96px;font-size:11.5px}
+  .slabel span{font-size:10px}
+  .lane{height:30px}
+  .lane .dot{width:6px;height:6px;margin:-3px 0 0 -3px}
+  .lane .gap b{font-size:9.5px;padding:0 6px;white-space:normal;line-height:1.3;text-align:center;border-radius:6px}
+  .checklist{grid-template-columns:1fr}
+  .srow2{grid-template-columns:96px 1fr 82px;gap:8px}
+  .dangerbar{flex-direction:row;gap:10px;padding:12px 14px}
+}
+</style>
+</head>
+<body>
+
+<nav class="toc" id="nav">
+  <div class="brand">VBOT EDU 快速开始</div>
+  <div class="sub">模块 01 · Lesson 03</div>
+  <ol>
+    <li><a href="#s1">控制接口剖析与避坑</a></li>
+    <li><a href="#s2">为什么必须维持 20Hz</a></li>
+    <li><a href="#s3">编写 hello_motion.py</a></li>
+    <li><a href="#s4">实机运行与验证</a></li>
+    <li><a href="#s5">实验一：看门狗模拟器</a></li>
+    <li><a href="#s6">实验二：命令生成器</a></li>
+    <li><a href="#s7">安全检查清单</a></li>
+    <li><a href="#s8">本课小结</a></li>
+  </ol>
+  <a class="home" href="index.html">← 返回目录</a>
+</nav>
+
+<main>
+<div class="wrap">
+
+<header class="lesson">
+  <div class="badges">
+    <span class="badge no">Lesson 03</span>
+    <span class="badge danger">安全级别：运动控制（motion_control）</span>
+    <span class="badge ver">固件基准 V1.6.0</span>
+  </div>
+  <h1>极速跑通 Hello World：<code style="font-size:.82em">/vel_cmd</code> 20Hz 运控</h1>
+  <p class="meta">预计阅读 15 分钟 · 前置课程：<a href="lesson_02.html">1.1 极速开箱与网络接入</a> · 硬件准备：已 SSH 登录计算主板，机器狗置于 ≥2m×2m 平整无障碍地面</p>
+  <div class="dangerbar" role="note">
+    <span class="ico">🚨</span>
+    <div class="txt"><b>运动控制风险提示：</b>本课代码会让机器狗在物理世界真实行走。执行任何带 <code>--confirm-motion</code> 的命令前，必须做到三点：<b>物理急停开关握在手边</b>、<b>场地为 ≥2m×2m 的平整开阔区域且无人员障碍物</b>、<b>先跑一遍离线预览确认参数</b>。软件急停 ≠ 物理急停，紧急情况下请直接拍下物理急停。</div>
+  </div>
+</header>
+
+<details class="talk">
+  <summary>🎙️ 展开直播口播导语（讲师版）</summary>
+  <div class="body">
+    <p>“对于四足机器人而言，在黑漆漆的终端里打印几个英文字符那根本不叫‘Hello World’！只有当 14 个电机协同发力、四肢平稳站起并迈出扎实的第一步时，才叫真正的具身智能成人礼！但是，很多新手一上来就踩进历史大坑：对着网上搜出来的旧教程，疯狂向 <code>/vbot/sportmode_cmd</code> 发包，结果狗跟死了一样纹丝不动！为什么？因为那是个废弃接口！今天这节课，我们使用官方现行唯一的底盘速度接口 <code>/vel_cmd</code>，带大家手写一个带看门狗保护、带安全急停兜底的 20Hz 高频运控脚本！”</p>
+  </div>
+</details>
+
+<h2 id="goals" style="margin-top:24px;border-bottom:none;padding-bottom:0;font-size:17.5px">本课学习目标</h2>
+<ul class="goals">
+  <li>说清 <code>/vbot/sportmode_cmd</code> 为何在 V1.6.0 失效，并牢记唯一现行接口 <code>/vel_cmd</code> 的完整规范</li>
+  <li>解释 500ms 看门狗与 20Hz 连续投喂之间的关系，不再出现“单发一条、只抽搐一下”</li>
+  <li>读懂并落地 <code>hello_motion.py</code> 的三重保护：<code>--confirm-motion</code>、20Hz timer、零速急停</li>
+  <li>按三步完成环境加载、离线预览与首次实跑验证</li>
+  <li>在真机加 <code>--confirm-motion</code> 之前，独立完成运动安全检查</li>
+</ul>
+
+<h2 id="s1">一、控制接口剖析与避坑</h2>
+
+<p>让机器狗走路，第一件事不是写代码，而是选对接口。V1.6.0 固件只保留一个实时底盘速度入口；而网络上大量旧教程，仍然指向一个已经被删除的话题。</p>
+
+<div class="callout danger"><span class="t">🚨 历史陷阱：<code>/vbot/sportmode_cmd</code> 已彻底废弃</span>在 V1.6.0 固件中，<code>/vbot/sportmode_cmd</code> <b>没有任何系统节点订阅</b>。你向它发布多少条消息都会被<b>静默丢弃</b>：不报错、不提示、机器狗纹丝不动。看到旧博客或旧视频里出现这个话题，请立刻关掉——它不是“另一种写法”，而是<b>已废弃接口</b>。</div>
+
+<h3>官方唯一现行接口</h3>
+
+<p>V1.6.0 的实时底盘速度控制只有一个入口，参数如下：</p>
+
+<table>
+  <thead>
+    <tr><th>项目</th><th>官方规范</th><th>说明</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><b>话题名称</b></td><td><code>/vel_cmd</code></td><td>官方唯一现行实时底盘速度接口</td></tr>
+    <tr><td><b>消息类型</b></td><td><code>geometry_msgs/msg/Twist</code></td><td><code>linear.x</code> 控制前进/后退，<code>angular.z</code> 控制转向</td></tr>
+    <tr><td><b>所属中间件</b></td><td>ROS 2 Humble / Aorta Bridge</td><td>计算主板与主控网关板之间的通信桥</td></tr>
+    <tr><td><b>Domain ID</b></td><td><code>178</code></td><td>必须设置 <code>export ROS_DOMAIN_ID=178</code>，与机器狗保持一致</td></tr>
+    <tr><td><b>发布频率</b></td><td><b>10Hz ~ 20Hz</b>（推荐 20Hz）</td><td>低于该频率会被 500ms 看门狗判定为上层失联</td></tr>
+  </tbody>
+</table>
+
+<p><code>Twist</code> 消息有六个自由度字段，但底盘速度控制实际只消费其中两个：<code>linear.x</code>（线速度，单位 m/s）与 <code>angular.z</code>（角速度，单位 rad/s）。其余字段保持 0 即可，本课脚本也会在急停时把它们全部归零。</p>
+
+<h2 id="s2">二、为什么必须维持 20Hz 连续发包</h2>
+
+<p>机器狗底层运控节点内置了<b>通信看门狗（Hardware Watchdog）</b>。它不信任“一条指令管一辈子”的控制方式——一旦上层控制节点崩溃或网络断开，机器狗必须自己停下来。</p>
+
+<ul class="goals">
+  <li>若在 <b>0.5 秒（500ms）</b>内没有收到任何新的速度指令，底层立即判定上层失联，<b>自动进入安全悬停模式并归零速度</b></li>
+  <li>因此，单次发布一条消息，机器狗只会“抽搐一下”；必须以 <b>10Hz ~ 20Hz</b> 的周期持续投递速度向量</li>
+  <li>20Hz 意味着每 50ms 一帧：一个 500ms 窗口内有约 10 次投喂机会，网络抖动丢掉几帧也不至于触发悬停</li>
+</ul>
+
+<div class="seq" role="img" aria-label="看门狗时序图：上行 20Hz 每 50 毫秒连续投喂速度指令；下行断流超过 500 毫秒后触发看门狗自动悬停归零">
+  <div class="cap">看门狗时序：连续投喂 vs 断流超时（时间轴 0–1000ms）</div>
+  <div class="seq-axis"><span>0 ms</span><span>250 ms</span><span>500 ms</span><span>750 ms</span><span>1000 ms</span></div>
+  <div class="srow">
+    <div class="slabel">20Hz 连续投喂<span>每 50ms 一帧</span></div>
+    <div class="lane">
+      <span class="dot" style="left:2.5%"></span><span class="dot" style="left:7.5%"></span><span class="dot" style="left:12.5%"></span><span class="dot" style="left:17.5%"></span><span class="dot" style="left:22.5%"></span><span class="dot" style="left:27.5%"></span><span class="dot" style="left:32.5%"></span><span class="dot" style="left:37.5%"></span><span class="dot" style="left:42.5%"></span><span class="dot" style="left:47.5%"></span><span class="dot" style="left:52.5%"></span><span class="dot" style="left:57.5%"></span><span class="dot" style="left:62.5%"></span><span class="dot" style="left:67.5%"></span><span class="dot" style="left:72.5%"></span><span class="dot" style="left:77.5%"></span><span class="dot" style="left:82.5%"></span><span class="dot" style="left:87.5%"></span><span class="dot" style="left:92.5%"></span><span class="dot" style="left:97.5%"></span>
+    </div>
+  </div>
+  <div class="srow">
+    <div class="slabel">中途断流（超时）<span>最后一帧后不再投喂</span></div>
+    <div class="lane">
+      <span class="dot" style="left:3%"></span><span class="dot" style="left:8%"></span><span class="dot" style="left:13%"></span><span class="dot" style="left:18%"></span><span class="dot" style="left:23%"></span><span class="dot" style="left:28%"></span><span class="dot" style="left:33%"></span><span class="dot" style="left:38%"></span><span class="dot" style="left:43%"></span><span class="dot" style="left:48%"></span>
+      <span class="gap"><b>500ms 无新指令 → 看门狗触发 / 自动悬停归零</b></span>
+    </div>
+  </div>
+  <div class="seqlegend">
+    <span class="k"><i></i>正常投喂的 Twist 帧</span>
+    <span class="k"><i class="red"></i>断流超时区：速度归零并悬停</span>
+    <span class="k">判定阈值：500ms</span>
+  </div>
+</div>
+
+<h3>500ms 是安全底线，不是目标频率</h3>
+
+<p>看门狗只在“超过 500ms 没有新指令”时触发，但这并不意味着你可以每 499ms 发一帧。真实链路里还有网络抖动、调度延迟与消息排队；一旦某一帧迟到，机器狗就会突然悬停。稳定做法是把周期压到 50ms（20Hz），留出约 10 倍的容错余量。</p>
+
+<div class="callout warn"><span class="t">⚠️ 不要用“手动发一条”做测试</span>在终端里手动 <code>ros2 topic pub</code> 一条 <code>Twist</code>，间隔通常远超 500ms。机器狗只会抖一下，然后立刻悬停——这并不代表接口不通，而是你看门狗正常工作了。下一步，我们把连续投喂写进脚本。</div>
+
+<h2 id="s3">三、编写生产级脚本 <code>hello_motion.py</code></h2>
+
+<p>通过 lesson_02 的 <code>ssh vbot</code> 登录计算主板，在任意工作目录用 <code>nano</code> 或 <code>vim</code> 新建 <code>hello_motion.py</code>，把下面的源码<b>原样</b>贴入并保存。脚本只依赖 ROS 2 Humble 自带的 <code>rclpy</code> 与 <code>geometry_msgs</code>，不需要安装任何额外依赖。</p>
+
+<h3>动手前：先看懂四处关键设计</h3>
+
+<ul class="goals">
+  <li><b>安全授权闸门</b>：<code>--confirm-motion</code> 默认关闭；未授权时脚本在 <code>rclpy.init()</code> 之前就打印预览并 <code>sys.exit(0)</code>，不会创建发布者，更不会发出一条速度指令。</li>
+  <li><b>20Hz 心跳</b>：<code>create_timer(1.0 / 20.0)</code> 每 50ms 回调一次，在设定时长内持续向 <code>/vel_cmd</code> 投喂 <code>Twist</code>。</li>
+  <li><b>零速急停</b>：<code>emergency_stop()</code> 连续发布 5 次全零 <code>Twist</code>，每次间隔 20ms，避免单帧丢失导致机器狗仍收到旧速度。</li>
+  <li><b>异常兜底</b>：<code>KeyboardInterrupt</code> 与 <code>SystemExit</code> 都会触发急停，<code>finally</code> 中销毁节点并关闭 <code>rclpy</code>，不给“卡在运动状态”留机会。</li>
+</ul>
+
+<div class="codewrap"><span class="lang">python</span><button class="copy">复制</button>
+<pre><code>#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+VBOT EDU 极速入门：/vel_cmd 20Hz 连续速度控制示例
+版权所有 (C) 2026 VBOT 开发者社区
+"""
+
+import sys
+import time
+import argparse
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+
+class VbotMotionController(Node):
+    def __init__(self, target_linear_x=0.2, target_angular_z=0.0, duration=3.0):
+        super().__init__('vbot_hello_motion_node')
+        # 创建发布者，连接到核心话题 /vel_cmd
+        self.publisher = self.create_publisher(Twist, '/vel_cmd', 10)
+        
+        self.target_linear_x = target_linear_x
+        self.target_angular_z = target_angular_z
+        self.duration = duration
+        
+        # 设定 20Hz 循环定时器 (0.05s)
+        self.frequency = 20.0
+        self.timer_period = 1.0 / self.frequency
+        self.timer = self.create_timer(self.timer_period, self.timer_callback)
+        
+        self.start_time = time.time()
+        self.is_stopping = False
+        self.get_logger().info(f"🚀 控制节点已就绪：线速度={target_linear_x}m/s, 角速度={target_angular_z}rad/s, 持续={duration}s")
+
+    def timer_callback(self):
+        elapsed = time.time() - self.start_time
+        msg = Twist()
+
+        if elapsed &lt; self.duration and not self.is_stopping:
+            # 正常前进阶段
+            msg.linear.x = float(self.target_linear_x)
+            msg.angular.z = float(self.target_angular_z)
+            self.publisher.publish(msg)
+            self.get_logger().info(f"[{elapsed:.2f}s] 发布速度: vx={msg.linear.x:.2f}, wz={msg.angular.z:.2f}", throttle_duration_sec=0.5)
+        else:
+            # 达到预定时间，发送零速度停车并安全退出
+            self.emergency_stop()
+            self.get_logger().info("🏁 动作执行完毕，已平稳停车！")
+            self.destroy_timer(self.timer)
+            raise SystemExit
+
+    def emergency_stop(self):
+        """下发全零速度，确保硬件安全"""
+        self.is_stopping = True
+        stop_msg = Twist()
+        stop_msg.linear.x = 0.0
+        stop_msg.linear.y = 0.0
+        stop_msg.linear.z = 0.0
+        stop_msg.angular.x = 0.0
+        stop_msg.angular.y = 0.0
+        stop_msg.angular.z = 0.0
+        for _ in range(5):  # 连续投递 5 次确保送达
+            self.publisher.publish(stop_msg)
+            time.sleep(0.02)
+
+def main():
+    parser = argparse.ArgumentParser(description="VBOT 基础运控 Hello World")
+    parser.add_argument("--speed", type=float, default=0.2, help="线速度 (m/s)，建议 0.1 ~ 0.5")
+    parser.add_argument("--turn", type=float, default=0.0, help="旋转角速度 (rad/s)")
+    parser.add_argument("--duration", type=float, default=3.0, help="运动持续时间 (秒)")
+    parser.add_argument("--confirm-motion", action="store_true", help="显式运动安全授权标志")
+    args = parser.parse_args()
+
+    if not args.confirm_motion:
+        print("⚠️ [安全保护拦截] 未指定 --confirm-motion 参数！")
+        print(f"👉 预览目标动作：以 {args.speed} m/s 前进，持续 {args.duration} 秒。")
+        print("若确认机器狗周围无人员与障碍物，请添加 --confirm-motion 重新执行。")
+        sys.exit(0)
+
+    rclpy.init()
+    controller = VbotMotionController(
+        target_linear_x=args.speed,
+        target_angular_z=args.turn,
+        duration=args.duration
+    )
+
+    try:
+        rclpy.spin(controller)
+    except (KeyboardInterrupt, SystemExit):
+        controller.get_logger().warn("⚠️ 接收到退出信号，紧急下发全零速度刹车！")
+        controller.emergency_stop()
+    finally:
+        controller.destroy_node()
+        rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()</code></pre>
+</div>
+
+<h3>读完之后：三重保护为什么缺一不可</h3>
+
+<p><b>授权闸门</b>保证“没确认就不动”，避免复制粘贴后误触；<b>20Hz timer</b>保证“动起来不会因看门狗断流而突然悬停”；<b>零速急停</b>保证“结束或异常时一定停”。三者分别对应事前、事中、事后，任何一层都不能省。</p>
+
+<div class="callout danger"><span class="t">🛑 脚本里的急停只是软件急停</span><code>emergency_stop()</code> 依赖 ROS 节点仍然存活、网络仍然通畅。如果进程被强杀、系统卡死或无线链路中断，它无法保证生效。<b>物理急停开关永远优先</b>，实跑时手不要离开它。</div>
+
+<h2 id="s4">四、实机运行与验证</h2>
+
+<p>以下命令全部在机器狗计算主板的 SSH 终端执行，工作目录就是 <code>hello_motion.py</code> 所在目录。按顺序走完三步，中间不要跳步。</p>
+
+<ol class="steps">
+  <li>
+    <b>加载 ROS 2 环境</b>
+    确保环境变量已注入（默认已写入 <code>/etc/profile</code> 或用户 <code>.bashrc</code>，新终端通常已自动生效，但首次实跑前仍建议显式执行一次）：
+    <div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code>source /opt/vita/ros/humble/setup.bash
+export ROS_DOMAIN_ID=178</code></pre>
+    </div>
+  </li>
+  <li>
+    <b>离线安全预览（不带 <code>--confirm-motion</code>）</b>
+    这一步<b>不会让机器狗动</b>：脚本只打印目标动作并退出。先确认速度与时长是否符合预期：
+    <div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code>python3 hello_motion.py --speed 0.2 --duration 2.0</code></pre>
+    </div>
+    <p>预期终端输出：</p>
+    <div class="codewrap"><span class="lang">text</span><button class="copy">复制</button>
+<pre><code>⚠️ [安全保护拦截] 未指定 --confirm-motion 参数！
+👉 预览目标动作：以 0.2 m/s 前进，持续 2.0 秒。
+若确认机器狗周围无人员与障碍物，请添加 --confirm-motion 重新执行。</code></pre>
+    </div>
+  </li>
+  <li>
+    <b>迈出第一步（带 <code>--confirm-motion</code>）</b>
+    <div class="callout danger" style="margin-top:8px"><span class="t">🛑 执行前逐项确认</span>机器狗已放在 <b>≥2m×2m 的平整开阔地面</b>，周围无人、无杂物、无台阶；<b>有人在旁监护</b>；<b>物理急停开关就在手边</b>。任何一项不满足，请先回去准备，不要执行下面的命令。</div>
+    <div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code>python3 hello_motion.py --speed 0.2 --duration 2.0 --confirm-motion</code></pre>
+    </div>
+  </li>
+</ol>
+
+<div class="callout ok"><span class="t">🏁 预期现象</span>机器狗稳稳迈开四肢、以 0.2 m/s 匀速向前行走约 2 秒，随后自动刹车并停在原地；终端会打印发布速度日志，最后出现 <code>🏁 动作执行完毕，已平稳停车！</code>。恭喜——你已经跨过了具身智能机器人开发最高的一道坎。</div>
+
+<h2 id="s5">五、🧪 交互小实验 1：看门狗模拟器</h2>
+
+<div class="lab">
+  <h3 class="lab-h">🧪 看门狗模拟器</h3>
+  <p>页面加载 1 秒后自动进入运行态。先看进度条一格一格走向 500ms；超时后状态灯变红。之后不断点击按钮“喂狗”，试着让它一直保持绿色。</p>
+  <div class="labrow">
+    <button id="wdfeed" type="button">📡 发送速度指令（喂狗）</button>
+  </div>
+  <div class="wdstatus" id="wdstatus"><span class="lamp" id="wdlamp"></span><span id="wdtext">⏸ 待机：1 秒后自动开始投喂…</span></div>
+  <div class="meter"><div class="fill" id="wdfill"></div></div>
+  <div class="metercap"><span id="wdremain">500 ms 倒计时尚未开始</span><span>已投喂 <b id="wdfeeds">0</b> 帧</span></div>
+</div>
+
+<p>说明：真实节点里这条链路由 <b>20Hz timer</b> 保证——每 50ms 自动投喂一帧，根本不需要你手点。模拟器用 100ms 轮询只是为了让你看清倒计时的过程；<b>500ms 是安全底线，而不是目标频率</b>。真机上请把周期稳定在 50ms，别贴着 500ms 的红线跑。</p>
+
+<h2 id="s6">六、🧪 交互小实验 2：安全参数命令生成器</h2>
+
+<div class="lab">
+  <h3 class="lab-h">🧪 安全参数命令生成器</h3>
+  <p>拖动滑块选择线速度与持续时间，下方命令会即时更新。复制后粘贴到 SSH 终端即可执行；命令默认已带 <code>--confirm-motion</code>，执行前请务必先完成上一节的离线预览与现场确认。</p>
+  <div class="sliders">
+    <div class="srow2">
+      <label for="spd">线速度</label>
+      <input id="spd" type="range" min="0.1" max="0.5" step="0.1" value="0.2" aria-label="线速度，单位米每秒">
+      <output id="spdv" for="spd">0.2 m/s</output>
+    </div>
+    <div class="srow2">
+      <label for="dur">持续时间</label>
+      <input id="dur" type="range" min="1" max="5" step="0.5" value="2" aria-label="运动持续时间，单位秒">
+      <output id="durv" for="dur">2.0 s</output>
+    </div>
+  </div>
+  <div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code id="gencmd">python3 hello_motion.py --speed 0.2 --duration 2.0 --confirm-motion</code></pre>
+  </div>
+  <div id="genwarn" class="result ok">✅ 入门安全区间：0.2 m/s 适合首次实跑，仍请先执行离线预览。</div>
+  <p style="margin-top:8px">生成器只负责拼参数，不负责替你确认现场安全——物理急停与开阔场地永远要人来把关。</p>
+</div>
+
+<h2 id="s7">七、安全检查清单</h2>
+
+<p>按下回车之前，逐条核对下面四项。建议把这一节当作每次实跑的固定动作，而不是读一遍就忘的说明。</p>
+
+<div class="checklist">
+  <div class="chk"><b>✅ 场地与监护</b>至少 <b>2m×2m</b> 的平整、无障碍地面；首次实跑务必安排一人在旁监护，随时准备断电。</div>
+  <div class="chk warn"><b>⚠️ 先跑离线预览</b>先用<b>不带</b> <code>--confirm-motion</code> 的命令确认速度与时长，再追加参数实跑；不要跳过预览直接实跑。</div>
+  <div class="chk warn"><b>🛑 物理急停在手边</b>手不要离开物理急停开关。<b>软件急停 ≠ 物理急停</b>：节点崩溃或网络断开时，只有物理急停可靠。</div>
+  <div class="chk"><b>🔋 电池与关节温度</b>上报数据前确认电池电量充足、关节温度正常，避免低电量保护或过热降频打断动作。</div>
+</div>
+
+<div class="callout danger"><span class="t">🚨 一条不满足，就不要加 <code>--confirm-motion</code></span>运动控制没有“先跑起来再说”。场地、监护、物理急停、离线预览四项中任何一项没准备好，都请停在这一步——机器狗不会因为你的代码写得漂亮就避开桌腿。</div>
+
+<h2 id="s8">八、本课小结</h2>
+
+<p>把这一课的事实压缩成一张表，下次调试时直接对照：</p>
+
+<table>
+  <thead>
+    <tr><th>事实项</th><th>本课结论</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><b>现行接口</b></td><td><code>/vel_cmd</code>（官方唯一现行实时底盘速度接口）</td></tr>
+    <tr><td><b>消息类型</b></td><td><code>geometry_msgs/msg/Twist</code>，主要用 <code>linear.x</code> 与 <code>angular.z</code></td></tr>
+    <tr><td><b>Domain ID</b></td><td><code>178</code>（<code>export ROS_DOMAIN_ID=178</code>）</td></tr>
+    <tr><td><b>发布频率</b></td><td><b>20Hz</b>（每 50ms 一帧），最低不低于 10Hz</td></tr>
+    <tr><td><b>看门狗</b></td><td>500ms 未收到新速度指令 → 自动零速悬停</td></tr>
+    <tr><td><b>已废弃</b></td><td><code>/vbot/sportmode_cmd</code>：无节点订阅，指令被静默丢弃，禁止使用</td></tr>
+  </tbody>
+</table>
+
+<ul class="goals">
+  <li>接口只认 <code>/vel_cmd</code> + <code>Twist</code>，Domain 固定 178</li>
+  <li>20Hz 连续投喂是常态，500ms 只是看门狗的安全底线</li>
+  <li>实跑三步：加载环境 → 离线预览 → 加 <code>--confirm-motion</code>；物理急停始终在手边</li>
+</ul>
+
+<div class="callout"><span class="t">⏭️ 进阶方向：02 架构模块</span>你刚刚打通的是“应用层 → <code>/vel_cmd</code> → 底层运控”这条最短链路。这条指令如何被送进 14 个关节？计算主板与主控网关板如何分工？Aorta（Zenoh）总线在中间做了什么？这些答案都在 <b>02 架构拓扑与通信机制</b> 模块中（教程建设中，暂未开放链接）。届时你会看到这一步背后的“双大脑”通信全貌。</div>
+
+</div>
+
+<div class="wrap" style="padding-top:0">
+<footer class="nav">
+  <a href="lesson_02.html"><span class="dir">← 上一课</span><span class="ttl">1.1 极速开箱与网络接入</span></a>
+  <a class="home-link" href="index.html"><span class="dir">目录</span><span class="ttl">返回目录</span></a>
+</footer>
+</div>
+
+</main>
+
+<script>
+function copyFallback(text){
+  var ta=document.createElement('textarea');
+  ta.value=text;
+  ta.setAttribute('readonly','');
+  ta.style.position='fixed';
+  ta.style.left='-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try{document.execCommand('copy');}catch(e){}
+  document.body.removeChild(ta);
+}
+document.querySelectorAll('.copy').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var pre=btn.parentElement.querySelector('pre');
+    if(!pre)return;
+    var text=pre.textContent;
+    var done=function(){
+      btn.textContent='已复制';
+      setTimeout(function(){btn.textContent='复制';},1500);
+    };
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(function(){copyFallback(text);done();});
+    }else{
+      copyFallback(text);done();
+    }
+  });
+});
+
+var wdBtn=document.getElementById('wdfeed');
+if(wdBtn){
+  var wdText=document.getElementById('wdtext');
+  var wdLamp=document.getElementById('wdlamp');
+  var wdFill=document.getElementById('wdfill');
+  var wdRemain=document.getElementById('wdremain');
+  var wdFeeds=document.getElementById('wdfeeds');
+  var wdStatus=document.getElementById('wdstatus');
+  var lastFeed=0, running=false, feeds=0;
+
+  function feed(){
+    lastFeed=Date.now();
+    running=true;
+    feeds++;
+    wdFeeds.textContent=feeds;
+    wdLamp.className='lamp run';
+    wdStatus.className='wdstatus';
+    wdText.textContent='🟢 运行中，速度 vx=0.2 m/s';
+    wdFill.classList.remove('stop');
+    wdFill.style.width='0%';
+    wdRemain.textContent='刚刚投喂，500 ms 倒计时重新开始';
+  }
+
+  wdBtn.addEventListener('click',feed);
+
+  setInterval(function(){
+    if(!running)return;
+    var elapsed=Date.now()-lastFeed;
+    if(elapsed>=500){
+      running=false;
+      wdFill.classList.add('stop');
+      wdFill.style.width='100%';
+      wdLamp.className='lamp stop';
+      wdStatus.className='wdstatus stop';
+      wdText.textContent='⚠️ 看门狗触发：已自动下发零速，机器狗悬停';
+      wdRemain.textContent='断流已达 '+elapsed+' ms · 超过 500ms 阈值';
+      return;
+    }
+    wdFill.style.width=Math.min(elapsed/500*100,100)+'%';
+    wdFill.classList.toggle('stop',elapsed>350);
+    wdRemain.textContent='距 500ms 看门狗触发还剩 '+Math.max(0,500-elapsed)+' ms';
+  },100);
+
+  setTimeout(feed,1000);
+}
+
+var spd=document.getElementById('spd');
+if(spd){
+  var dur=document.getElementById('dur');
+  var spdv=document.getElementById('spdv');
+  var durv=document.getElementById('durv');
+  var gencmd=document.getElementById('gencmd');
+  var genwarn=document.getElementById('genwarn');
+
+  function gen(){
+    var v=parseFloat(spd.value);
+    var t=parseFloat(dur.value);
+    var vs=v.toFixed(1);
+    var ts=t.toFixed(1);
+    spdv.textContent=vs+' m/s';
+    durv.textContent=ts+' s';
+    gencmd.textContent='python3 hello_motion.py --speed '+vs+' --duration '+ts+' --confirm-motion';
+    if(v>0.4){
+      genwarn.className='result warn';
+      genwarn.textContent='⚠️ 高速仅建议熟练后在开阔场地使用：'+vs+' m/s 已超出入门推荐区间，请确保场地 ≥2m×2m、有人在旁监护且物理急停在手边。';
+    }else{
+      genwarn.className='result ok';
+      genwarn.textContent='✅ 入门安全区间：'+vs+' m/s 适合首次实跑，仍请先执行离线预览。';
+    }
+  }
+
+  spd.addEventListener('input',gen);
+  dur.addEventListener('input',gen);
+  gen();
+}
+</script>
+</body>
+</html>
