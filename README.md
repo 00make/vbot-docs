@@ -71,26 +71,26 @@ vbot-docs/
 ## 📸 嵌入的高清图片资产索引
 
 - **外观与仿真**：
-  - `![VBOT EDU 四足机器人](assets/01-brand-hardware/vbot-dog-edu.png)`
-  - `![VBOT 机器狗机身特写](assets/01-brand-hardware/vbot-dog-photo-1.png)`
-  - `![Vbot Viewer 在线模型编辑器](assets/02-simulation/vbot-viewer-editor.jpg)`
+  - ![VBOT EDU 四足机器人](assets/01-brand-hardware/vbot-dog-edu.png)
+  - ![VBOT 机器狗机身特写](assets/01-brand-hardware/vbot-dog-photo-1.png)
+  - ![Vbot Viewer 在线模型编辑器](assets/02-simulation/vbot-viewer-editor.jpg)
 - **LinBot 聆灵陪诊**：
-  - `![去医院找聆灵大头特写](assets/04-cases-linbot/04-demo-去医院找聆灵大头特写.jpg)`
-  - `![智能药篮与视觉哨兵系统](assets/04-cases-linbot/04-demo-智能药篮与视觉哨兵系统.jpg)`
-  - `![找零零团队与聆灵展台实拍](assets/04-cases-linbot/04-photo-找零零团队与聆灵展台实拍.jpg)`
+  - ![去医院找聆灵大头特写](assets/04-cases-linbot/04-demo-去医院找聆灵大头特写.jpg)
+  - ![智能药篮与视觉哨兵系统](assets/04-cases-linbot/04-demo-智能药篮与视觉哨兵系统.jpg)
+  - ![找零零团队与聆灵展台实拍](assets/04-cases-linbot/04-photo-找零零团队与聆灵展台实拍.jpg)
 - **YogaGo 伽伽狗**：
-  - `![为什么做一只瑜伽机器狗](assets/05-cases-yogago/03-cover-为什么做一只瑜伽机器狗.jpg)`
-  - `![伽伽狗现场下犬式动作演示](assets/05-cases-yogago/03-action-伽伽狗现场下犬式动作演示.jpg)`
-  - `![伽伽狗现场直立动作演示](assets/05-cases-yogago/03-action-伽伽狗现场直立动作演示.jpg)`
+  - ![为什么做一只瑜伽机器狗](assets/05-cases-yogago/03-cover-为什么做一只瑜伽机器狗.jpg)
+  - ![伽伽狗现场下犬式动作演示](assets/05-cases-yogago/03-action-伽伽狗现场下犬式动作演示.jpg)
+  - ![伽伽狗现场直立动作演示](assets/05-cases-yogago/03-action-伽伽狗现场直立动作演示.jpg)
 - **牛来芭比潮玩机甲**：
-  - `![当四足机器人穿上3D打印外壳](assets/06-cases-moobie/05-cover-当四足机器人穿上3D打印外壳.jpg)`
-  - `![牛头点钻与面部装饰过程](assets/06-cases-moobie/05-demo-牛头点钻与面部装饰过程.jpg)`
-  - `![大模型情绪计算与动作执行五大环节技术架构](assets/06-cases-moobie/05-diagram-大模型情绪计算与动作执行五大环节技术架构.png)`
-  - `![黑客松现场路演高人气围观九宫格](assets/06-cases-moobie/05-photo-黑客松现场路演高人气围观九宫格.jpg)`
+  - ![当四足机器人穿上3D打印外壳](assets/06-cases-moobie/05-cover-当四足机器人穿上3D打印外壳.jpg)
+  - ![牛头点钻与面部装饰过程](assets/06-cases-moobie/05-demo-牛头点钻与面部装饰过程.jpg)
+  - ![大模型情绪计算与动作执行五大环节技术架构](assets/06-cases-moobie/05-diagram-大模型情绪计算与动作执行五大环节技术架构.png)
+  - ![黑客松现场路演高人气围观九宫格](assets/06-cases-moobie/05-photo-黑客松现场路演高人气围观九宫格.jpg)
 - **开发与协作**：
-  - `![她的视界多体协作](assets/07-cases-other/02-photo-她的视界多体协作.png)`
-  - `![SSH 初始配置](assets/03-dev-env/ssh-access-init.png)`
-  - `![SSH 接入与自检](assets/03-dev-env/ssh-access.png)`
+  - ![她的视界多体协作](assets/07-cases-other/02-photo-她的视界多体协作.png)
+  - ![SSH 初始配置](assets/03-dev-env/ssh-access-init.png)
+  - ![SSH 接入与自检](assets/03-dev-env/ssh-access.png)
 
 ---
 
