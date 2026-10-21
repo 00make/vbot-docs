@@ -11,7 +11,7 @@
     {
       "id": "device.edu_overview",
       "module": "01-getting-started",
-      "summary": "掌握 VBOT 大头 EDU 版产品全景、地瓜 S100P 128TOPS 算力、14 关节电机、双脑硬件规格、普通消费版 vs 大头 EDU 版六维区别与官方发布视频核心场景剖析",
+      "summary": "掌握 VBOT 大头 EDU 版产品全景、地瓜 S100P 128TOPS 算力、14 关节电机、双脑硬件规格、市面消费级 / 大头消费版 / 大头 EDU 三方六维区别（EDU 的 vbot 为普通用户，1.6 固件未开放 root/sudo）与官方发布视频核心场景剖析",
       "interface_kind": "product_overview",
       "reference_doc": "01-getting-started/1.0-vbot-edu-overview.md",
       "safety_level": "informational"

@@ -237,6 +237,15 @@ footer.nav a.home-link{flex:0 0 auto;text-align:center}
 .readout{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-family:var(--font-mono);font-size:12.5px;color:var(--muted)}
 .readout b{color:var(--accent-dark)}
 
+/* 本课专属追加：三方对比表（只增规则，不改风格契约） */
+.tablescroll.cmp.cmp3 table{min-width:1060px}
+.cmp td.mid{background:#f8fafc;color:#334155}
+.cmp td.mid b{color:#0f766e}
+.split .pane.neutral{border-color:var(--border);background:#f8fafc}
+.split .pane.neutral .pane-h{color:#475569}
+.split .pane.neutral .fnode{border-color:var(--border)}
+.split .pane.neutral .fdown{color:#94a3b8}
+
 /* 本课专属移动端补充 */
 @media (max-width:768px){
   .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -262,7 +271,7 @@ footer.nav a.home-link{flex:0 0 auto;text-align:center}
     <li><a href="#s1">产品全景：会“看人”的大头</a></li>
     <li><a href="#s2">发布视频四幕拆解</a></li>
     <li><a href="#s3">核心规格总览</a></li>
-    <li><a href="#s4">消费版 vs EDU 六维对比</a></li>
+    <li><a href="#s4">市面 / 消费版 / EDU 三方对比</a></li>
     <li><a href="#s5">交互实验：NPU 算力预算</a></li>
     <li><a href="#s6">萌新准备清单</a></li>
     <li><a href="#s7">本课小结与下一课</a></li>
@@ -298,7 +307,7 @@ footer.nav a.home-link{flex:0 0 auto;text-align:center}
   <li>记住六个关键数字：128 TOPS / 14 关节 / 24.5 N·m / 16 kg / 5 kg / 594 Wh</li>
   <li>复述 37 秒官方发布视频四幕的技术亮点</li>
   <li>按六大系统查阅核心规格，不被参数表淹没</li>
-  <li>用六维对比讲清“为什么研发必须选 EDU 版”</li>
+  <li>用三方六维对比讲清“消费版有什么、EDU 多给你什么”</li>
 </ul>
 
 <h2 id="s1">一、产品全景：一只会“看人”的四足机器人</h2>
@@ -325,7 +334,7 @@ footer.nav a.home-link{flex:0 0 auto;text-align:center}
 <h3>全栈开放：三个名字要记住</h3>
 
 <ul class="goals">
-  <li><b>Ubuntu 22.04 LTS (Jammy)</b>：完整 Linux 控制台与 root / sudo 权限，想装什么库由你决定</li>
+  <li><b>Ubuntu 22.04 LTS (Jammy)</b>：可登录的 Linux 控制台（<code>vbot</code> 普通用户，当前 1.6 固件未开放 root / sudo），用户空间里想装什么 Python 库由你决定</li>
   <li><b>ROS 2 Humble</b>：与学术界、产业界主流开源生态无缝对接的机器人中间件</li>
   <li><b>Aorta (Zenoh)</b>：机载高吞吐主干总线，开放 46 个核心话题，负责把传感器与运控数据低延迟地送到你手里</li>
 </ul>
@@ -376,7 +385,7 @@ footer.nav a.home-link{flex:0 0 auto;text-align:center}
     <div class="body">
       <b>第四幕 · 开放为极客而生</b>
       <p>机身背部的模块化快拆结构亮相：开发者可快速加装高负荷背筐、外置雷达支架，甚至直接在背板接入 PiPER 六轴机械臂做移动抓取作业。</p>
-      <p>EDU 的承诺是向所有开发者完全开放底层通信总线、提供完整 root 权限与丰富 ROS 2 驱动，绝不设人为技术壁垒。</p>
+      <p>EDU 的承诺是向开发者开放底层通信总线与 46 个核心话题、提供可登录的 Linux 控制台与丰富 ROS 2 驱动，把“能改多深”交回开发者手里。</p>
     </div>
   </div>
 </div>
@@ -439,76 +448,84 @@ footer.nav a.home-link{flex:0 0 auto;text-align:center}
 
 <div class="callout"><span class="t">📌 读表提示</span>“128 TOPS”是 NPU 的峰值算力，不等于任意模型都能跑满；电池续航 2.0 ~ 4.0 小时也是综合工况值。真正做方案时，请把算力、负载与续航当成一组相互制约的预算来分配。</div>
 
-<h2 id="s4">四、消费版 vs EDU：六维开发者权限对比</h2>
+<h2 id="s4">四、市面消费级 / 大头消费版 / 大头 EDU：三方六维对比</h2>
 
-<p>“市面上便宜的消费级机器狗也能跑能跳，为什么做研发必须选 EDU？”答案不在硬件参数，而在<b>你能碰到多深</b>。下面六个维度，基本覆盖了从“玩”到“做研究”的全部差距。</p>
+<p>“便宜的消费级机器狗能跑能跳，VBOT 自己的大头消费版也有会动的大头和表情屏，那做研发为什么还要选 EDU？”答案不在硬件参数，也不在功能多少，而在<b>开发者能不能进场</b>。</p>
 
-<div class="tablescroll cmp">
+<div class="callout warn"><span class="t">⚠️ 先把口径摆正</span>大头消费版<b>不是功能残缺版</b>：2 自由度头部、互动液晶屏、表情与语音大模型它同样具备，面向普通用户开箱即用。下面把三方分列，避免把“给使用者做的产品”和“给开发者做的平台”混为一谈。</div>
+
+<div class="tablescroll cmp cmp3">
 <table>
   <thead>
-    <tr><th style="width:14%">对比维度</th><th style="width:26%">普通消费级 / 基础演示版</th><th style="width:30%">VBOT 大头 EDU 开发者版</th><th>开发者影响与价值</th></tr>
+    <tr><th style="width:12%">对比维度</th><th style="width:20%">市面普通消费级四足</th><th style="width:22%">VBOT 大头消费版<br>（面向使用者）</th><th style="width:24%">VBOT 大头 EDU<br>（面向开发者）</th><th>开发者影响与价值</th></tr>
   </thead>
   <tbody>
     <tr>
       <td><b>1. 系统权限与终端</b></td>
-      <td class="con"><b>闭源沙盒固件</b>；仅开放手机 App 遥控（Level 0）；无系统终端登录通道，无 root / sudo 权限</td>
-      <td class="edu"><b>完全开放 Linux 控制台</b>；开放 <code>ssh vbot@192.168.126.2</code>；拥有全功能 root / sudo 权限</td>
-      <td>可自主安装任意 Python 库、C++ 依赖、编译定制 ROS 2 包，打造属于你的系统环境</td>
+      <td class="con"><b>闭源沙盒固件</b>；仅开放手机 App 遥控；无系统终端登录通道</td>
+      <td class="mid">开箱体验由官方整体维护；<b>不开放 SSH 终端</b>与开发者登录通道</td>
+      <td class="edu">开放 Linux 控制台与 <code>ssh vbot@192.168.126.2</code>；<code>vbot</code> 是<b>普通用户</b>，当前 1.6 固件<b>未开放 root / sudo</b></td>
+      <td>可在家目录与 <code>/userdata/vbot</code> 装 Python/Conda、配 Git、用 <code>colcon</code> 编译自己的 ROS 2 包；<code>apt</code> 装系统包、改系统网络、启停服务需走外接上位机或官方支持</td>
     </tr>
     <tr>
       <td><b>2. 通信中间件底座</b></td>
       <td class="con"><b>厂商私有二进制加密协议</b>；外接上位机需逆向破解；延迟高、丢包严重</td>
+      <td class="mid">机内总线不对用户开放，<b>无外接上位机通道</b></td>
       <td class="edu">原生搭载 <b>Aorta (Zenoh)</b> 边缘高吞吐主干总线（46 核心开放话题）+ <b>ROS 2 Humble</b> 桥接子集</td>
       <td>工业级、零拷贝、极低延迟通信，与学术界和产业界顶尖开源生态无缝对接</td>
     </tr>
     <tr>
       <td><b>3. 原始传感器数据流</b></td>
       <td class="con">仅能在手机 App 里看<b>压缩后的标清图传</b>；无法获取激光雷达点云与音频 PCM 原始流</td>
+      <td class="mid">雷达 / 相机 / IMU 供官方内置的避障、跟随、语音能力<b>自用</b>，不向用户输出裸数据</td>
       <td class="edu"><b>全传感器裸数据高频广播</b>：激光雷达点云切片、双目 H.265/RGB 解畸变帧、IMU 100Hz 原始加速度、14 关节编码器数据</td>
       <td>满足 SLAM 建图、Nav2 自主导航、目标识别检测、3D 点云避障等科研与商用落地需求</td>
     </tr>
     <tr>
       <td><b>4. 头部交互系统</b></td>
       <td class="con">无独立头部，或仅固定俯仰角度的塑料装饰壳；<b>无互动屏幕</b>；表情完全固定</td>
-      <td class="edu"><b>2 自由度动态头部（Pitch / Yaw）</b> + 正面高清互动液晶屏 + 4 麦克风阵列</td>
-      <td>支持动态眼神凝视、表情帧缓冲直接写入（Framebuffer/UI）、多模态情感计算与交互</td>
+      <td class="mid"><b>同样具备 2 自由度头部（Pitch / Yaw）+ 高清互动液晶屏 + 4 麦克风阵列</b>，表情与声光反馈开箱即用（官方预置资源）</td>
+      <td class="edu">同一套硬件，<b>并开放程序化写入通道</b>：表情帧、头部角度可由开发者代码实时驱动</td>
+      <td>支持自建表情资产、动态眼神凝视、表情帧缓冲直接写入（Framebuffer/UI）、多模态情感计算与交互</td>
     </tr>
     <tr>
       <td><b>5. 硬件电气扩展</b></td>
       <td class="con"><b>无外部电源引出</b>，无标准工业总线；外挂传感器极易烧毁电池主板</td>
+      <td class="mid">以整机一体化形态交付，<b>不面向用户开放外接取电与总线使能</b></td>
       <td class="edu">专用 <b>Type-C 千兆免驱网口</b>、<b>双路隔离 CAN-FD</b>、独立 <b>24V/10A 大功率供电口</b></td>
-      <td>即插即用加装 PiPER 六轴机械臂、双目工业全景相机、Orin / RDK 外部算力板等复杂外设</td>
+      <td>加装 PiPER 六轴机械臂、双目工业全景相机、Orin / RDK 外部算力板等复杂外设（板载 CAN 使能需系统权限，见 4.2 降级方案）</td>
     </tr>
     <tr>
       <td><b>6. AI 与开发范式</b></td>
       <td class="con">依赖按键映射与<b>离线固定宏动作</b>；无法接入大语言模型（LLM / VLM）</td>
-      <td class="edu"><b>原生 Agent-Native 架构</b>：内置 RCP 任务编排系统、MCP（Model Context Protocol）18080 服务</td>
+      <td class="mid"><b>内置官方语音助手与大模型对话体验</b>，唤醒词与技能由官方预置，闭环不可替换</td>
+      <td class="edu"><b>原生 Agent-Native 架构</b>：开放 RCP 任务编排系统、MCP（Model Context Protocol）18080 服务，可接自有模型</td>
       <td>开发者可直接通过自然语言提示词，让大模型（GPT-4o / Qwen）驱动具身动作闭环</td>
     </tr>
   </tbody>
 </table>
 </div>
 
-<div class="callout ok"><span class="t">✅ 选型结论</span>如果目标只是“拍视频、做展示”，消费版够用；只要你要<b>读原始数据、改控制逻辑、接自己的模型</b>，EDU 版几乎是唯一解——差别不在性能高低，而在权限边界。</div>
+<div class="callout ok"><span class="t">✅ 选型结论</span>如果目标是“买一台会卖萌、能对话的机器狗”，大头消费版的能力已经齐了；只要你要<b>读原始数据、改控制逻辑、接自己的模型</b>，就必须上 EDU 版——差别不在功能高低，而在<b>有没有开发者入口</b>，以及这个入口能伸多深（EDU 给的是终端与话题，不是 root）。</div>
 
-<h3>架构分流：两条完全不同的技术路径</h3>
+<h3>架构分流：使用者路径 vs 开发者路径</h3>
 
-<p>把六个维度压缩成一张链路图，就是下面这样：左边只能“用”，右边可以“改”。</p>
+<p>把六个维度压缩成一张链路图，就是下面这样：左边是<b>完整可用但不可改</b>的整机体验，右边是<b>可登录、可编译、可收发话题</b>的开发平台。</p>
 
-<div class="split" role="img" aria-label="架构对比：普通消费版为手机 App 经闭源黑盒到固定宏动作；EDU 版为开发者终端经 SSH 或 Type-C 进入 Ubuntu Root，经 Aorta 46 话题分发到 ROS 2、RCP、MCP 与硬件">
-  <div class="pane bad">
-    <div class="pane-h">普通消费版 · Level 0 封闭遥控</div>
-    <div class="fnode">手机 App 遥控</div>
-    <div class="fdown">↓</div>
-    <div class="fnode">闭源加密黑盒</div>
-    <div class="fdown">↓ 只能调用</div>
-    <div class="fnode">固定走跑宏动作</div>
+<div class="split" role="img" aria-label="架构对比：消费版路径为语音或 App 进入官方整机体验（大头、表情屏、语音大模型），闭环由官方维护、无开发者入口；EDU 路径为开发者终端经 SSH 或 Type-C 进入 Ubuntu 22.04 的 vbot 普通用户环境，经 Aorta 46 话题分发到 ROS 2、RCP、MCP 与硬件">
+  <div class="pane neutral">
+    <div class="pane-h">消费版路径 · 面向使用者</div>
+    <div class="fnode">用户语音 / 手机 App</div>
+    <div class="fdown">↓ 官方整体交付</div>
+    <div class="fnode">大头 + 表情屏 + 语音大模型<br>能力齐备，开箱即用</div>
+    <div class="fdown">↓ 闭环由官方维护</div>
+    <div class="fnode">无开发者终端与裸数据入口</div>
   </div>
   <div class="pane good">
-    <div class="pane-h">VBOT 大头 EDU · 开发者全权限</div>
+    <div class="pane-h">VBOT 大头 EDU · 面向开发者</div>
     <div class="fnode">AI Agent / 开发者终端</div>
     <div class="fdown">↓ SSH / Type-C <code>eth2</code></div>
-    <div class="fnode">Ubuntu 22.04 LTS（Root）</div>
+    <div class="fnode">Ubuntu 22.04 LTS<br><code>vbot</code> 普通用户，未开放 root / sudo</div>
     <div class="fdown">↓</div>
     <div class="fnode">Aorta (Zenoh) · 46 Topics</div>
     <div class="fdown">↓ 三路分流</div>
@@ -594,7 +611,7 @@ taskset -c 2-7 python3 your_infer.py</code></pre>
   <tbody>
     <tr><td><b>交互形态</b></td><td>双自由度头部（Pitch / Yaw）+ LCD 表情屏，“看向你”是可编程能力，不是装饰</td></tr>
     <tr><td><b>硬件底座</b></td><td>128 TOPS + 14 关节 + 594 Wh，既能跑端侧大模型，也能背负 5 kg 额定负载</td></tr>
-    <tr><td><b>开放程度</b></td><td>Ubuntu 22.04 root + ROS 2 Humble + Aorta (Zenoh) 46 话题全开放，这才是 EDU 的本质</td></tr>
+    <tr><td><b>开放程度</b></td><td>可登录的 Ubuntu 22.04 控制台（<code>vbot</code> 普通用户，未开放 root/sudo）+ ROS 2 Humble + Aorta (Zenoh) 46 话题，这才是 EDU 的本质</td></tr>
   </tbody>
 </table>
 

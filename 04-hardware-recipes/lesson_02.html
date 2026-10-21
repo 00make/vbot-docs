@@ -421,22 +421,31 @@ footer.nav a.home-link{flex:0 0 auto;text-align:center}
   </tbody>
 </table>
 
-<p>在计算主板上使能板载 <code>can0</code>：</p>
+<div class="callout warn"><span class="t">⛔ 权限提醒</span>使能 <code>can0</code> 是内核级网络接口配置，需要系统权限。<b>当前 1.6 固件的 <code>vbot</code> 账号未开放 <code>sudo</code>，开发者无法自行在计算主板上执行下面这两条命令</b>；它们只作为官方/售后代配置或后续开放权限后的参考写法。</div>
+
+<p>参考命令（需系统权限，非开发者默认能力）：</p>
 
 <div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
-<pre><code># 激活板载 can0 接口，设置波特率为 1Mbps
+<pre><code># 需系统权限：激活板载 can0 接口，设置波特率为 1Mbps
 sudo ip link set can0 type can bitrate 1000000
 sudo ip link set can0 up</code></pre>
 </div>
 
-<p>总线通了之后，通过松灵官方 ROS 2 功能包 <code>piper_description</code> 与 <code>piper_control</code>，可直接在计算主板上发布关节轨迹规划包，让机械臂按轨迹动起来。</p>
+<p><b>当前权限模型下的两条落地路径</b></p>
+
+<ul class="goals">
+  <li><b>上位机接管总线（推荐）</b>：把 USB-CAN 适配器（CANable / PEAK / PCAN 等）接到外接算力板（RDK / Orin）或开发者笔记本上，由上位机完成 <code>can0</code> 使能与 PiPER 轨迹下发，机器狗只负责底盘运动与 24V 供电。整条链路不碰主板系统权限，是现在就能跑通的方案。</li>
+  <li><b>申请官方支持</b>：确需板载 CAN-FD 直连时，向官方提交工单，由官方在固件侧完成接口使能或开通对应权限；不要在脚本里假设 <code>sudo</code> 可用。</li>
+</ul>
+
+<p>总线打通后，通过松灵官方 ROS 2 功能包 <code>piper_description</code> 与 <code>piper_control</code>，在持有 CAN 接口的那一侧（上位机或主板）发布关节轨迹规划包，让机械臂按轨迹动起来。</p>
 
 <h3>3. 装配与联调顺序</h3>
 
 <ol class="steps">
   <li><b>机械安装</b>把 PiPER 转接板固定在背板中心基座的 M3 / M4 孔位上，确认螺钉长度不穿透背板、不压线束。</li>
   <li><b>电气连接</b>按 24V DC 规范接背板专用 24V 航空插头；若走独立电池组方案，确保机械臂回路与主板回路分开。插拔前先断电。</li>
-  <li><b>总线使能</b>执行上面的 <code>ip link</code> 两条命令，把 <code>can0</code> 拉到 1Mbps 并 up。</li>
+  <li><b>总线使能</b>在持有 CAN 接口的一侧执行 <code>ip link</code> 两条命令（上位机可直接执行；板载 <code>can0</code> 需官方使能或开通权限），把总线拉到 1Mbps 并 up。</li>
   <li><b>控制联调</b>启动 <code>piper_description</code> 与 <code>piper_control</code>，先发小幅度关节轨迹确认方向与限位，再逐步放大行程。</li>
 </ol>
 

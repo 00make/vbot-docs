@@ -516,8 +516,8 @@ exec python3 -u main.py --execute >> "$LOG_DIR/app.log" 2>&1</code></pre>
 <h3>在系统开机主入口 <code>/userdata/vbot/init.sh</code> 中调用</h3>
 
 <div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
-<pre><code># 以 vbot 用户权限安全后台拉起，避免使用 root
-nohup su - vbot -c "bash /userdata/vbot/start_app.sh" >/dev/null 2>&1 &</code></pre>
+<pre><code># init.sh 由系统在开机阶段以特权身份执行；业务进程必须显式降权到 vbot（普通用户，无 root/sudo）
+nohup su - vbot -c "bash /userdata/vbot/start_app.sh" &gt;/dev/null 2&gt;&amp;1 &amp;</code></pre>
 </div>
 
 <div class="callout danger"><span class="t">🚨 模板里最容易“改坏”的一行</span>可以保留 <code>--execute</code>，但<b>严禁默认加 <code>--confirm-motion</code></b>——运动必须等待网络唤醒后由人安全确认。把这一行改成默认运动，就等于把“上电即自动站起走动”写进了生产环境。</div>
@@ -551,8 +551,8 @@ nohup su - vbot -c "bash /userdata/vbot/start_app.sh" >/dev/null 2>&1 &</code></
     </tr>
     <tr>
       <td><code>nohup su - vbot -c ...</code></td>
-      <td>以 <code>vbot</code> 用户权限安全后台拉起，避免使用 root</td>
-      <td>脚本里一个低级 bug 就拿到整机最高权限，风险被无限放大</td>
+      <td>业务进程降权到 <code>vbot</code>（普通用户）后台拉起，不把开机脚本的特权继承给应用</td>
+      <td>开机脚本本身跑在特权上下文里，一个低级 bug 就等于把整机最高权限交给业务代码</td>
     </tr>
   </tbody>
 </table>
@@ -588,7 +588,7 @@ nohup su - vbot -c "bash /userdata/vbot/start_app.sh" >/dev/null 2>&1 &</code></
     <label class="risk-item"><input type="checkbox" id="r3"><span><b>上电即自动运动</b><small>未经人工确认就站起走动</small></span><span class="w">+25</span></label>
     <label class="risk-item"><input type="checkbox" id="r2"><span><b>无超时 / 无边界</b><small><code>timeout=None</code>、无限 <code>while True</code></small></span><span class="w">+20</span></label>
     <label class="risk-item"><input type="checkbox" id="r4"><span><b>无日志</b><small>stdout / stderr 直接丢弃</small></span><span class="w">+10</span></label>
-    <label class="risk-item"><input type="checkbox" id="r5"><span><b>以 root 无限权限运行</b><small>未降权到 vbot 用户</small></span><span class="w">+10</span></label>
+    <label class="risk-item"><input type="checkbox" id="r5"><span><b>应用继承开机特权</b><small>未降权到 vbot 普通用户</small></span><span class="w">+10</span></label>
     <label class="risk-item"><input type="checkbox" id="r6"><span><b>无优雅停机</b><small>异常退出后不清理、不记录</small></span><span class="w">+10</span></label>
   </div>
   <div class="labrow">
@@ -644,7 +644,7 @@ nohup su - vbot -c "bash /userdata/vbot/start_app.sh" >/dev/null 2>&1 &</code></
     <tr>
       <td>拉起业务进程</td>
       <td><code>nohup su - vbot -c "bash /userdata/vbot/start_app.sh"</code></td>
-      <td>以 <code>vbot</code> 用户权限后台拉起，避免使用 root</td>
+      <td>以 <code>vbot</code> 普通用户身份后台拉起（无 root/sudo），不把开机特权继承给应用</td>
     </tr>
   </tbody>
 </table>
@@ -695,10 +695,10 @@ var RISKS=[
    ref:'依据：模板第 4 段 stdout/stderr 轮转日志',
    good:'stdout / stderr 已重定向到 /userdata/vbot/logs/app.log。',
    fix:'把 stdout/stderr 重定向到 /userdata/vbot/logs/app.log'},
-  {id:'r5',w:10,name:'以 root 无限权限运行',
-   why:'脚本里一个低级 bug 就能拿到整机最高权限，单点失误被放大成整机风险。',
-   ref:'依据：init.sh 注释「以 vbot 用户权限安全后台拉起，避免使用 root」',
-   good:'以 vbot 用户权限启动，未使用 root。',
+  {id:'r5',w:10,name:'应用继承开机脚本特权',
+   why:'init.sh 跑在系统特权上下文里，业务进程若不降权，一个低级 bug 就等于把整机最高权限交给应用代码。',
+   ref:'依据：init.sh 注释「业务进程必须显式降权到 vbot（普通用户，无 root/sudo）」',
+   good:'以 vbot 普通用户身份启动，未继承开机脚本特权。',
    fix:'改用 nohup su - vbot -c 降权启动'},
   {id:'r6',w:10,name:'无优雅停机',
    why:'异常退出后不清理、不记录、不重启，锁虽随进程退出释放，但故障无人知晓。',

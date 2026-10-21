@@ -356,7 +356,7 @@ details.talk li{margin:2px 0}
     <span class="bm-tag">大脑皮层 · 开发者主战场</span>
     <b>计算主板 Compute Board</b>
     <span class="bm-ip">eth2 · 192.168.126.2</span>
-    <span class="bm-sys">Ubuntu 22.04 LTS · ROS 2 · 用户 vbot（开放 sudo）</span>
+    <span class="bm-sys">Ubuntu 22.04 LTS · ROS 2 · 用户 vbot（普通用户，未开放 root/sudo）</span>
     <ul class="bm-duties">
       <li>8 核 ARM64</li>
       <li>128 TOPS NPU</li>
@@ -382,7 +382,7 @@ details.talk li{margin:2px 0}
 <h3>计算主板（<code>192.168.126.2</code>）—— 开发者的主战场</h3>
 <ul class="goals">
   <li><b>算力配置</b>：8 核 ARM64 处理器 + <b>128 TOPS NPU</b>，为轻量化视觉大模型（如 Qwen2-VL）、YOLO 实时目标追踪与 Cartographer 激光 SLAM 提供充沛算力。</li>
-  <li><b>开放权限</b>：官方提供完全开放的 <code>vbot</code> 用户（具备 <code>sudo</code> 提权能力），可自由安装 Conda / Python 虚拟环境、拉取 Docker 容器、配置 Git 仓库。</li>
+  <li><b>开放程度</b>：官方开放 <code>vbot</code> 账号的 SSH 登录，但它是<b>普通用户</b>——当前 1.6 固件未开放 root / sudo。可在家目录与 <code>/userdata/vbot</code> 用户空间里创建 Conda / Python 虚拟环境、配置 Git 仓库、用 <code>colcon</code> 把自己写的 ROS 2 包装到用户目录；<code>apt</code> 装系统包、改系统网络、加载内核模块、启停系统服务不在授权范围内，需放到外接上位机或提前向官方申请。</li>
   <li><b>数据接口</b>：对外暴露机身唯一的千兆有线网络节点（系统内网卡 <code>eth2</code>，默认固定 IP <code>192.168.126.2</code>）。</li>
 </ul>
 
@@ -420,7 +420,7 @@ details.talk li{margin:2px 0}
     </tr>
     <tr>
       <td><b>可访问性</b></td>
-      <td>开放 <code>vbot</code> 用户与 <code>sudo</code>，SSH 可登录</td>
+      <td>开放 <code>ssh vbot@192.168.126.2</code> 登录，但 <code>vbot</code> 是<b>普通用户</b>，当前 1.6 固件未开放 root / sudo</td>
       <td><span class="no">不开放 SSH 或 Root 登录</span>，开发者不可直连</td>
     </tr>
     <tr>
@@ -598,7 +598,7 @@ details.talk li{margin:2px 0}
       <li>ROS 2 节点、Aorta 应用与 Python 脚本</li>
       <li>视觉 VLM（如 Qwen2-VL）、YOLO 目标追踪</li>
       <li>Cartographer 激光 SLAM 与激光点云处理</li>
-      <li>Conda / Docker / Git 等开发者环境</li>
+      <li>Conda / venv / Git 等用户态开发环境</li>
       <li>语音 ASR 与高层 Agent 规划</li>
     </ul>
   </div>
@@ -672,7 +672,12 @@ details.talk li{margin:2px 0}
     <tr>
       <td>写 ROS 2、跑视觉 / 语音、读点云</td>
       <td>计算主板 <code>192.168.126.2</code></td>
-      <td><code>ssh vbot@192.168.126.2</code>，<code>vbot</code> 用户可 <code>sudo</code></td>
+      <td><code>ssh vbot@192.168.126.2</code>，在 <code>/userdata/vbot</code> 用户空间内自由开发</td>
+    </tr>
+    <tr>
+      <td>装 <code>apt</code> 系统包、改系统网络、加载内核模块、启停系统服务</td>
+      <td>计算主板（系统层）</td>
+      <td><span class="no">当前 1.6 固件未向 <code>vbot</code> 开放 sudo</span>，改由外接上位机承载或提前向官方申请支持</td>
     </tr>
     <tr>
       <td>配 Wi-Fi / 蓝牙、使用 UWB 能力</td>
@@ -723,8 +728,8 @@ var routeData={
     cls:'ok',
     tag:'✅ 开发者可操作 · 计算主板',
     board:'计算主板 <code>192.168.126.2</code>',
-    entry:'<code>ssh vbot@192.168.126.2</code>（vbot 用户可 sudo）',
-    why:'ROS 2 节点、编译工具链与 Python 环境都装在 Ubuntu 22.04 这一侧，这是大脑皮层的主战场，放心编译、运行、调试。'
+    entry:'<code>ssh vbot@192.168.126.2</code>（vbot 为普通用户，未开放 root / sudo）',
+    why:'ROS 2 节点、编译工具链与 Python 环境都装在 Ubuntu 22.04 这一侧，这是大脑皮层的主战场，在用户空间里放心编译、运行、调试；需要 root 的系统级改动请放到外接上位机或找官方支持。'
   },
   wifi:{
     cls:'warn',
