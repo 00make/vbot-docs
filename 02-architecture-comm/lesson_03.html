@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.3 规范化开发环境搭建与生产级 Python 骨架 | VBOT EDU 架构与通信</title>
+<style>
+/* ===== 风格契约 v1 · 预设 A 清爽技术文档风（全教程统一，勿改） ===== */
+:root{
+  --bg:#ffffff; --fg:#1f2937; --muted:#6b7280;
+  --accent:#0e7490; --accent-dark:#155e75; --accent-light:#ecfeff;
+  --code-bg:#f3f4f6; --code-fg:#111827; --code-border:#e5e7eb;
+  --border:#e5e7eb; --card:#f9fafb;
+  --warn-bg:#fffbeb; --warn-bd:#f59e0b;
+  --danger-bg:#fef2f2; --danger-bd:#ef4444;
+  --tip-bg:#ecfeff; --tip-bd:#0e7490;
+  --ok-bg:#f0fdf4; --ok-bd:#22c55e;
+  --radius:10px; --max-width:880px; --toc-w:250px;
+  --font-body:"Microsoft YaHei","Source Han Sans CN",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"Cascadia Code",Consolas,"JetBrains Mono","Courier New",monospace;
+}
+/* ===== 风格契约结束 ===== */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.8;font-size:16px}
+a{color:var(--accent)}
+a:hover{color:var(--accent-dark)}
+code{font-family:var(--font-mono);font-size:.875em;background:var(--code-bg);border:1px solid var(--code-border);border-radius:4px;padding:1px 6px;color:var(--code-fg)}
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:16px 18px;overflow:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;color:var(--code-fg);margin:0}
+pre code{background:none;border:none;padding:0;font-size:inherit}
+
+/* 布局：左 TOC + 右正文 */
+.toc{position:fixed;top:0;left:0;bottom:0;width:var(--toc-w);background:var(--card);border-right:1px solid var(--border);padding:28px 16px;overflow:auto}
+.toc .brand{font-weight:700;color:var(--accent-dark);font-size:17px;margin-bottom:2px}
+.toc .sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.toc ol{list-style:none;margin:0;padding:0;counter-reset:toc}
+.toc li{counter-increment:toc;margin-bottom:2px}
+.toc a{display:block;padding:7px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font-size:13.5px}
+.toc a::before{content:counter(toc) ". ";color:var(--accent);font-weight:600}
+.toc a:hover{background:var(--accent-light);color:var(--accent-dark)}
+.toc .home{display:inline-block;margin-top:18px;font-size:13px;color:var(--accent);text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--bg)}
+main{margin-left:var(--toc-w)}
+.wrap{max-width:var(--max-width);margin:0 auto;padding:40px 32px 24px}
+
+/* 页头 */
+header.lesson{border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:32px}
+header.lesson .hero-img{width:100%;max-height:280px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);margin-top:18px}
+.badges{margin-bottom:12px}
+.badge{display:inline-block;font-size:12px;font-weight:600;border-radius:99px;padding:2px 12px;margin-right:8px;vertical-align:middle}
+.badge.no{background:var(--accent);color:#fff}
+.badge.safe{background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.badge.ver{background:var(--card);color:var(--muted);border:1px solid var(--border)}
+h1{font-size:30px;line-height:1.4;margin:0 0 10px;color:var(--accent-dark)}
+.meta{font-size:13.5px;color:var(--muted)}
+.meta a{color:var(--accent)}
+
+/* 标题层级 */
+h2{font-size:22px;color:var(--accent-dark);margin:48px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--accent-light)}
+h3{font-size:17.5px;color:var(--fg);margin:28px 0 10px}
+
+/* 提示框 */
+.callout{border-left:4px solid var(--tip-bd);background:var(--tip-bg);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;margin:20px 0;font-size:15px}
+.callout.warn{border-color:var(--warn-bd);background:var(--warn-bg)}
+.callout.danger{border-color:var(--danger-bd);background:var(--danger-bg)}
+.callout.ok{border-color:var(--ok-bd);background:var(--ok-bg)}
+.callout .t{font-weight:700;display:block;margin-bottom:4px}
+
+/* 直播口播折叠 */
+details.talk{border:1px dashed var(--accent);border-radius:var(--radius);background:var(--bg);margin:20px 0}
+details.talk summary{cursor:pointer;padding:12px 18px;color:var(--accent);font-weight:600;font-size:14.5px}
+details.talk .body{padding:0 18px 14px;color:var(--muted);font-size:14.5px}
+
+/* 图片 */
+figure{margin:24px 0;text-align:center}
+figure img{max-width:100%;border:1px solid var(--border);border-radius:var(--radius);background:#fff}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+
+/* 表格 */
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px}
+th,td{border:1px solid var(--border);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--accent-light);color:var(--accent-dark);font-weight:700}
+tr:nth-child(even) td{background:var(--card)}
+td .no{color:var(--danger-bd);font-weight:700}
+
+/* 编号步骤 */
+ol.steps{list-style:none;counter-reset:st;padding:0;margin:18px 0}
+ol.steps>li{counter-increment:st;position:relative;padding:0 0 18px 48px}
+ol.steps>li::before{content:counter(st);position:absolute;left:0;top:2px;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;text-align:center;line-height:32px;font-size:15px}
+ol.steps>li>b:first-child{display:block;margin-bottom:4px}
+
+/* CSS 拓扑图 */
+.topo{display:flex;align-items:stretch;justify-content:center;gap:0;margin:24px 0;flex-wrap:wrap}
+.topo .node{background:var(--card);border:2px solid var(--accent);border-radius:var(--radius);padding:12px 16px;min-width:170px;text-align:center;font-size:13.5px}
+.topo .node b{display:block;color:var(--accent-dark);font-size:14.5px;margin-bottom:2px}
+.topo .node code{font-size:12px}
+.topo .node.dev{border-color:var(--muted)}
+.topo .node.gw{border-style:dashed}
+.topo .link{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 10px;color:var(--muted);font-size:12px;min-width:96px}
+.topo .link .arrow{font-size:20px;color:var(--accent);line-height:1.2}
+
+/* 代码块 + 复制按钮 + Tabs */
+.codewrap{position:relative;margin:14px 0}
+.codewrap .lang{position:absolute;top:0;right:88px;font-size:11px;color:var(--muted);background:var(--bg);border:1px solid var(--code-border);border-bottom:none;border-radius:6px 6px 0 0;padding:1px 8px}
+.copy{position:absolute;top:8px;right:8px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;font-family:var(--font-body)}
+.copy:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.tabs{display:flex;gap:6px;margin:18px 0 0}
+.tabs button{border:1px solid var(--border);border-bottom:none;background:var(--card);padding:8px 18px;border-radius:10px 10px 0 0;cursor:pointer;font-size:14px;color:var(--muted);font-family:var(--font-body)}
+.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+.panel{display:none;border:1px solid var(--border);border-radius:0 var(--radius) var(--radius) var(--radius);padding:16px 18px;background:var(--bg)}
+.panel.on{display:block}
+
+/* 目标清单 */
+ul.goals{margin:12px 0;padding-left:0;list-style:none}
+ul.goals li{padding:4px 0 4px 28px;position:relative}
+ul.goals li::before{content:"✓";position:absolute;left:4px;color:var(--accent);font-weight:700}
+
+/* 页脚导航 */
+footer.nav{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--border);margin-top:56px;padding:24px 0 40px;flex-wrap:wrap}
+footer.nav a{flex:1;min-width:200px;border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;text-decoration:none;background:var(--card)}
+footer.nav a:hover{border-color:var(--accent);background:var(--accent-light)}
+footer.nav .dir{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
+footer.nav .ttl{display:block;font-size:15px;color:var(--accent-dark);font-weight:600}
+footer.nav a.home-link{flex:0 0 auto;text-align:center}
+
+/* 甘特时间线 */
+.gantt{margin:20px 0}
+.gantt .row{display:flex;align-items:center;margin:8px 0}
+.gantt .lbl{width:190px;font-size:13.5px;color:var(--fg);flex-shrink:0}
+.gantt .track{flex:1;position:relative;height:28px;background:var(--card);border:1px solid var(--border);border-radius:6px}
+.gantt .bar{position:absolute;top:3px;bottom:3px;background:linear-gradient(90deg,var(--accent),#22d3ee);border-radius:5px;color:#fff;font-size:11.5px;display:flex;align-items:center;padding:0 8px;white-space:nowrap;overflow:hidden}
+.gantt .axis{display:flex;margin-left:190px;font-size:11.5px;color:var(--muted)}
+.gantt .axis span{flex:1;text-align:left}
+
+/* 决策流程图 */
+.flow{display:flex;flex-direction:column;align-items:center;margin:24px 0}
+.fnode{border:2px solid var(--accent);background:var(--accent-light);border-radius:var(--radius);padding:10px 18px;font-size:14px;text-align:center;max-width:460px}
+.fnode b{color:var(--accent-dark)}
+.fnode.start{border-radius:99px;background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.fnode.decision{background:var(--warn-bg);border-color:var(--warn-bd)}
+.fnode.end{border-radius:99px;background:var(--ok-bg);border-color:var(--ok-bd);color:#15803d;font-weight:600}
+.fdown{color:var(--accent);font-size:18px;line-height:1.5;text-align:center}
+.fdown small{display:block;font-size:12px;color:var(--muted)}
+.fbranch{display:flex;gap:28px;justify-content:center;align-items:flex-start;flex-wrap:wrap;margin:4px 0}
+.fcol{display:flex;flex-direction:column;align-items:center}
+.fcol .tag-y{font-size:12px;font-weight:700;color:#15803d;background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+.fcol .tag-n{font-size:12px;font-weight:700;color:#92400e;background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+
+/* 交互小实验 */
+.lab{background:var(--card);border:1px solid var(--accent);border-radius:var(--radius);padding:18px 20px;margin:26px 0}
+.lab h4{margin:0 0 6px;color:var(--accent-dark);font-size:16px}
+.lab p{margin:4px 0;font-size:14px;color:var(--muted)}
+.labrow{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;align-items:center}
+.lab input{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font-mono);font-size:14px;width:220px;background:var(--bg);color:var(--fg)}
+.lab button{padding:8px 18px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:14px;font-family:var(--font-body)}
+.lab button:hover{background:var(--accent-dark)}
+.result{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:14px;display:none}
+.result.ok{display:block;background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.result.bad{display:block;background:var(--danger-bg);color:#b91c1c;border:1px solid var(--danger-bd)}
+.result.warn{display:block;background:var(--warn-bg);color:#92400e;border:1px solid var(--warn-bd)}
+.lab pre{margin-top:10px}
+
+/* 移动端 */
+@media (max-width:768px){
+  .toc{position:static;width:auto;border-right:none;border-bottom:1px solid var(--border);padding:18px 16px}
+  .toc ol{columns:2}
+  main{margin-left:0}
+  .wrap{padding:24px 18px 12px}
+  h1{font-size:24px}
+  .topo{flex-direction:column;align-items:center}
+  .topo .link{min-width:auto;padding:6px 0}
+  .topo .link .arrow{transform:rotate(90deg)}
+  .gantt .lbl{width:110px;font-size:12px}
+  .gantt .axis{margin-left:110px}
+  .fbranch{flex-direction:column;align-items:center;gap:8px}
+}
+/* 打印 */
+@media print{
+  .toc,.copy,.tabs{display:none}
+  main{margin-left:0}
+  .panel{display:block!important;border:none;padding:8px 0}
+  body{font-size:12px}
+  a{color:var(--fg);text-decoration:none}
+}
+
+/* ===== Lesson 03 专属组件（仅追加，不改配色 / 字体 / 间距体系） ===== */
+.figcap{font-size:13px;color:var(--muted);text-align:center;margin:-6px 0 22px}
+
+/* DevContainer 架构图 */
+.arch{display:flex;align-items:stretch;justify-content:center;gap:0;margin:24px 0 10px;flex-wrap:wrap}
+.arch .box{width:200px;background:var(--card);border:2px solid var(--accent);border-radius:var(--radius);padding:14px 16px;font-size:13px;line-height:1.7}
+.arch .box.host{border-color:var(--muted)}
+.arch .box.robot{border-color:var(--ok-bd);background:var(--ok-bg)}
+.arch .role{display:inline-block;font-size:11px;font-weight:700;color:var(--accent-dark);background:var(--accent-light);border:1px solid var(--border);border-radius:99px;padding:1px 9px;margin-bottom:8px}
+.arch .box.host .role{color:var(--muted);background:var(--bg)}
+.arch .box.robot .role{color:#15803d;background:var(--bg);border-color:var(--ok-bd)}
+.arch .box>b{display:block;color:var(--accent-dark);font-size:14px;line-height:1.5;margin-bottom:6px}
+.arch .box ul{margin:0;padding-left:16px;font-size:12.5px;line-height:1.75}
+.arch .box li{margin:2px 0}
+.arch .box code{font-size:11px}
+.arch .pipe{display:flex;flex-direction:column;justify-content:center;align-items:center;width:86px;padding:0 6px;text-align:center;color:var(--muted);font-size:12px}
+.arch .pipe b{color:var(--accent-dark);font-size:12.5px}
+.arch .pipe .arrow{font-size:20px;color:var(--accent);line-height:1.3}
+.arch .pipe small{font-family:var(--font-mono);font-size:10.5px}
+
+/* 五步部署流程图 */
+.flow5{display:flex;flex-direction:column;margin:22px 0 10px}
+.f5{display:flex;gap:14px;position:relative;padding-bottom:14px}
+.f5:last-child{padding-bottom:0}
+.f5:not(:last-child)::after{content:"";position:absolute;left:16px;top:34px;bottom:0;width:2px;background:var(--accent-light)}
+.f5 .n{position:relative;z-index:1;flex:0 0 34px;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.f5 .c{flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:9px 14px}
+.f5 .c b{display:block;color:var(--accent-dark);font-size:14.5px;line-height:1.5}
+.f5 .c span{display:block;color:var(--muted);font-size:13px;line-height:1.65}
+.f5 .c code{font-size:12px}
+.f5.end .n{background:var(--ok-bd)}
+.f5.end .c{border-color:var(--ok-bd);background:var(--ok-bg)}
+
+/* 四大防御原则卡片 */
+.principles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:18px 0}
+.pcard{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:var(--radius);padding:14px 16px}
+.pcard h3{margin:0 0 8px;font-size:15.5px;color:var(--accent-dark);display:flex;align-items:baseline;gap:8px}
+.pcard h3 .idx{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-light);border-radius:6px;padding:0 7px;flex-shrink:0}
+.pcard ul{margin:0;padding-left:18px;font-size:13.5px;line-height:1.75}
+.pcard li{margin:4px 0}
+
+/* 目录树 */
+.tree .cm{color:var(--muted)}
+.tree .key{color:var(--accent-dark);font-weight:600}
+
+/* 安全边界检查器 */
+.lab .ctl{margin:14px 0 16px}
+.lab .ctl-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:14px;font-weight:600;color:var(--fg)}
+.lab .ctl-head output{font-family:var(--font-mono);font-size:13px;font-weight:400;color:var(--accent-dark);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:1px 9px;white-space:nowrap}
+.lab input[type="range"]{width:100%;height:26px;margin:6px 0 2px;padding:0;border:none;background:transparent;accent-color:var(--accent);cursor:pointer}
+.lab .ctl-hint{font-size:12px;color:var(--muted);line-height:1.6}
+.lab .btnrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:16px 0 4px}
+.lab .btnrow .hint{font-size:12px;color:var(--muted)}
+.lab .result ul{margin:8px 0 0;padding-left:20px}
+.lab .result li{margin:5px 0;line-height:1.65}
+.lab .copy{background:var(--bg);color:var(--muted);border:1px solid var(--border);padding:3px 10px;font-size:12px}
+.lab .copy:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+
+@media (max-width:768px){
+  .arch{flex-direction:column;align-items:center}
+  .arch .box{width:100%;max-width:420px}
+  .arch .pipe{width:auto;padding:8px 0}
+  .arch .pipe .arrow{transform:rotate(90deg)}
+  .principles{grid-template-columns:1fr}
+  th,td{overflow-wrap:anywhere}
+}
+</style>
+</head>
+<body>
+
+<nav class="toc" id="nav">
+  <div class="brand">VBOT EDU 架构与通信</div>
+  <div class="sub">模块 02 · Lesson 03</div>
+  <ol>
+    <li><a href="#s1">DevContainer 与 Bazel</a></li>
+    <li><a href="#s2">端到端五步部署</a></li>
+    <li><a href="#s3">生产级骨架四大原则</a></li>
+    <li><a href="#s4">极简标准工程模板</a></li>
+    <li><a href="#s5">小实验：安全边界检查器</a></li>
+    <li><a href="#s6">本课小结</a></li>
+  </ol>
+  <a class="home" href="index.html">← 返回目录</a>
+</nav>
+
+<main>
+<div class="wrap">
+
+<header class="lesson">
+  <div class="badges">
+    <span class="badge no">Lesson 03</span>
+    <span class="badge safe">安全级别：只读（read_only）</span>
+    <span class="badge ver">固件基准 V1.6.0</span>
+  </div>
+  <h1>规范化开发环境搭建与生产级 Python 骨架</h1>
+  <p class="meta">预计阅读 14 分钟 · 前置课程：<a href="lesson_02.html">2.2 Aorta 主干道与 ROS 2 兼容子集</a> · 工具准备：Docker、VS Code Dev Containers、SSH 客户端</p>
+</header>
+
+<details class="talk">
+  <summary>🎙️ 展开直播口播导语（讲师版）</summary>
+  <div class="body">
+    <p>“很多初学者的代码往往‘在自己电脑上跑得好好的，一到机器人实机上就发疯死锁、内存暴涨或引发看门狗摔机’。还有人一拿到机器狗，脑袋一热就直接在实机上改生产配置，结果系统直接崩溃变砖！本章将带你了解官方推荐的 <b>DevContainer 容器化开发工具链</b>，掌握贯穿实战的<b>‘端到端五步部署法’</b>，并深入解析 <code>vbot-lab</code> 中被誉为工程典范的 <code>recipes/common.py</code> 生产级防御性代码骨架！”</p>
+  </div>
+</details>
+
+<h2 id="goals" style="margin-top:24px;border-bottom:none;padding-bottom:0;font-size:17.5px">本课学习目标</h2>
+<ul class="goals">
+  <li>用 DevContainer 与 Bazel 在本地完成离线构建与类型校验，避开主机 GCC 差异和 aarch64 交叉编译地狱</li>
+  <li>按官方五步部署法从 <code>check_environment</code> 走到实机物理响应，每一步都有验收标准</li>
+  <li>说清 <code>recipes/common.py</code> 的四大防御原则：默认离线安全、有界一切、版本硬性钉死、优雅停机归零</li>
+  <li>用极简工程模板搭出自己的二开项目，让关键文件各司其职</li>
+  <li>在安全边界检查器里找出超限参数，理解 vx、持续时间与发布频率的约束</li>
+</ul>
+
+<div class="callout"><span class="t">📌 本课安全边界</span>本课以只读方式学习：容器构建、Bazel 编译与参数检查都不会向机器狗下发运动报文。五步部署中的实机执行只做讲解，不要求在本课完成。</div>
+
+<p>上一课我们把 Aorta 的 46 个话题与 ROS 2 桥接理清了：知道消息往哪里发。但“能发消息”不等于“能安全上线”。同一段 Python 代码，在笔记本上跑得好好的，换一台主机就可能因为 GCC 版本、aarch64 交叉编译或依赖错位而崩掉；更危险的是，一次没有边界的实机调试就可能触发看门狗甚至摔机。</p>
+<p>这一课解决三个问题：<b>环境怎么统一、代码怎么部署、骨架怎么防御。</b></p>
+
+<h2 id="s1">一、DevContainer + Bazel：把开发环境装进容器</h2>
+
+<p>为了杜绝因主机系统差异导致的 GCC 版本不匹配与 aarch64 交叉编译地狱，官方提供了标准开发容器。它把 Ubuntu 22.04、Bazel 7.6.1 与整套构建依赖固化在镜像里，开发者电脑只负责编辑代码。代码从哪里进入容器、产物从哪里出去，先看下面这张链路图：</p>
+
+<h3>1. 开发链路：宿主机 → 容器 → 机器狗</h3>
+
+<div class="arch" role="img" aria-label="DevContainer 开发链路图：开发者电脑通过代码挂载进入运行 Ubuntu 22.04 与 Bazel 7.6.1 的容器，容器经 SCP 部署出口把产物推送到机器狗计算主板 /userdata/vbot/apps/">
+  <div class="box host">
+    <span class="role">宿主机</span>
+    <b>开发者电脑</b>
+    <ul>
+      <li>x86_64 / macOS</li>
+      <li>VS Code + Dev Containers</li>
+      <li>源码工作区</li>
+    </ul>
+  </div>
+  <div class="pipe"><b>代码挂载</b><span class="arrow">⇄</span><small>bind mount</small></div>
+  <div class="box">
+    <span class="role">开发容器</span>
+    <b>Ubuntu 22.04 容器</b>
+    <ul>
+      <li><b>Bazel 7.6.1</b>：离线构建与校验</li>
+      <li>产物：编译产物 / Python Wheelhouse</li>
+      <li>不依赖宿主机 GCC</li>
+    </ul>
+  </div>
+  <div class="pipe"><b>部署出口</b><span class="arrow">⇢</span><small>SCP</small></div>
+  <div class="box robot">
+    <span class="role">目标实机</span>
+    <b>机器狗计算主板</b>
+    <ul>
+      <li>aarch64 运行环境</li>
+      <li><code>/userdata/vbot/apps/</code></li>
+      <li>实机安全执行</li>
+    </ul>
+  </div>
+</div>
+<div class="figcap">图 1：代码只在一处编辑，构建在容器内完成，产物经 SCP 从部署出口推送到实机</div>
+
+<h3>2. 容器一键启动</h3>
+
+<p>在 VS Code 中安装 <code>Dev Containers</code> 插件，打开工作区后选择 <b>“Reopen in Container”</b>；也可以直接在命令行执行：</p>
+
+<div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code>docker compose -f docker/compose.yaml run --rm dev</code></pre>
+</div>
+
+<div class="callout"><span class="t">💡 为什么不再手工配环境</span>容器已经把 <b>Ubuntu 22.04 + Bazel 7.6.1</b> 固定下来。不要在宿主机上手工拼一套 GCC 再祈祷它能和实机一致——环境差异正是“本地能跑、实机发疯”的第一大来源。</div>
+
+<h3>3. Bazel 离线语法检查与构建</h3>
+
+<p>官方项目全面采用 Google Bazel 构建系统。下面两条命令覆盖了本课最常见的离线验证场景：</p>
+
+<div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code># 本地快速类型检查与离线逻辑预览（无需物理连接机器狗）
+bazel run //recipes/subscribe-state:main
+
+# 编译 C++ 生产级节点
+bazel build //recipes/locomotion:main_cpp</code></pre>
+</div>
+
+<p>第一条命令运行状态订阅配方，做本地快速类型检查与离线逻辑预览，不需要物理连接机器狗；第二条命令编译 C++ 生产级节点，验证整条构建链路。这两步都发生在容器内，失败也不会碰到实机。</p>
+
+<h3>4. 环境基线速查</h3>
+
+<table>
+  <thead>
+    <tr><th>层级</th><th>基线</th><th>说明</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>宿主机</td><td>x86_64 / macOS</td><td>只负责编辑代码，通过 VS Code + Dev Containers 接入</td></tr>
+    <tr><td>开发容器</td><td>Ubuntu 22.04 + Bazel 7.6.1</td><td>提供一致的构建与类型校验环境</td></tr>
+    <tr><td>目标主板</td><td>aarch64 计算主板</td><td>部署目录 <code>/userdata/vbot/apps/</code></td></tr>
+    <tr><td>构建产物</td><td>编译产物 / Python Wheelhouse</td><td>经 SCP 推送至实机</td></tr>
+  </tbody>
+</table>
+
+<h2 id="s2">二、官方端到端五步部署工作流</h2>
+
+<p>千万别一上来就盲目把代码塞进机器狗。官方把从本地到实机的路径拆成五步：前一步没验收，不要跳下一步。五步走完，你拿到的不是“看起来能跑”，而是“每一步都可解释、可回退”。</p>
+
+<h3>1. 五步流程图</h3>
+
+<div class="flow5" role="img" aria-label="官方端到端五步部署流程图：第一步 check_environment 本地离线依赖与只读自检，第二步 Docker 容器与 SSH 建立 BatchMode 免密通道，第三步 Python SDK 沙箱创建独立 venv 并离线安装校验，第四步 Bazel 编译首个状态订阅配方，第五步 SCP 推送至 /userdata/vbot/apps/ 并完成物理响应验证">
+  <div class="f5">
+    <div class="n">1</div>
+    <div class="c"><b>第一步：check_environment</b><span>本地离线依赖与只读自检</span></div>
+  </div>
+  <div class="f5">
+    <div class="n">2</div>
+    <div class="c"><b>第二步：Docker 容器与 SSH</b><span>拉取官方镜像，建立 BatchMode 免密通道</span></div>
+  </div>
+  <div class="f5">
+    <div class="n">3</div>
+    <div class="c"><b>第三步：Python SDK 沙箱</b><span>在板载环境创建独立 <code>venv</code>，离线安装校验</span></div>
+  </div>
+  <div class="f5">
+    <div class="n">4</div>
+    <div class="c"><b>第四步：Bazel 编译配方</b><span>构建首个状态订阅配方，体验默认离线预览</span></div>
+  </div>
+  <div class="f5 end">
+    <div class="n">5</div>
+    <div class="c"><b>第五步：SCP 推送与物理响应</b><span>部署至 <code>/userdata/vbot/apps/</code>，实机安全执行</span></div>
+  </div>
+</div>
+<div class="figcap">图 2：从本地自检到物理响应，五步顺序固定；越靠后，越接近不可回退的物理世界</div>
+
+<h3>2. 逐步验收要点</h3>
+
+<ol class="steps">
+  <li><b>Step 1：check_environment 离线自检</b>在本地运行 <code>python3 tools/check_environment.py --profile host</code>，确认本地 Python ≥ 3.10、Docker 与 SSH 客户端完备。</li>
+  <li><b>Step 2：建立安全通道</b>通过 <code>ssh-copy-id</code> 注入 <code>ed25519</code> 公钥，再通过 <code>ssh -o BatchMode=yes vbot true</code> 验证免密畅通。</li>
+  <li><b>Step 3：端侧环境隔离</b>登录主板后在 <code>/userdata/vbot/</code> 下创建独立 <code>venv</code>，验证 SHA256 校验和并安装 <code>edu-sdk-2026.9.24</code> 三件套。</li>
+  <li><b>Step 4：离线预览守卫</b>使用 Bazel 编译测试配方。在未带 <code>--execute</code> 标志前，程序仅向终端打印 JSON 预览，杜绝误操作。</li>
+  <li><b>Step 5：物理响应验证</b>使用 SCP 推送程序包，登录实机加上 <code>--execute</code> 与 <code>--confirm-motion</code>，见证物理四足的真实响应！</li>
+</ol>
+
+<div class="callout danger"><span class="t">🚨 唯一的物理边界</span><code>--execute</code> 是“离线预览”与“实机写入”的分水岭；运动控制还必须显式传 <code>--confirm-motion</code>；麦克风录音与摄像头采流必须显式传 <code>--consent</code>。少一个标志，要么被程序拒绝，要么根本不该动。</div>
+
+<div class="callout warn"><span class="t">🔑 BatchMode 失败不要硬闯</span><code>BatchMode=yes</code> 的含义是禁止交互式密码提示。它验证失败，说明公钥没有真正注入或权限不对；不要靠反复输密码掩盖问题，先回头检查 <code>~/.ssh</code> 与 <code>authorized_keys</code>。</div>
+
+<h2 id="s3">三、深度解构 recipes/common.py：四大防御原则</h2>
+
+<p>在 <code>vbot-lab</code> 中，所有任务脚本都严格继承自 <code>recipes/common.py</code>。这 140 多行代码凝结了工业级机器人开发的防御性设计。对二次开发者来说，最重要的不是背代码，而是理解四个原则为什么存在——它们分别对应实机上最昂贵的一类事故。</p>
+
+<div class="principles">
+  <div class="pcard">
+    <h3><span class="idx">01</span>默认离线安全</h3>
+    <ul>
+      <li>凡是不带 <code>--execute</code> 的运行命令，程序<b>绝不向底层下发任何物理位移报文</b>，仅向终端打印 JSON 格式的目标动作预览。</li>
+      <li>运动控制必须显式传递 <code>--confirm-motion</code>。</li>
+      <li>麦克风录音与摄像头采流必须显式传递 <code>--consent</code>。</li>
+    </ul>
+  </div>
+  <div class="pcard">
+    <h3><span class="idx">02</span>有界一切</h3>
+    <ul>
+      <li><b>超时有界</b>：所有网络接收超时强制约束在 <code>(0, 120]</code> 秒内，杜绝无超时等待导致的永久挂死。</li>
+      <li><b>队列深度截断</b>：Aorta 消息接收队列深度严格限定为 <b>16</b>，消费不及时就主动丢弃最旧样本并向 stderr 抛出警告。</li>
+      <li><b>单样本体积上限</b>：单个点云或图像数据包上限截断为 <b>8 MiB</b>。</li>
+    </ul>
+  </div>
+  <div class="pcard">
+    <h3><span class="idx">03</span>版本硬性钉死</h3>
+    <ul>
+      <li>脚本启动前，必须通过 <code>importlib.metadata</code> 校验 SDK 三件套：<code>aorta</code>、<code>aorta-msgs</code>、<code>vbot-edu-msgs</code>。</li>
+      <li>版本号不一致立刻阻断，不给“先跑起来再说”的机会。</li>
+      <li>目标只有一个：杜绝因协议版本错位引发不可预测动作。</li>
+    </ul>
+  </div>
+  <div class="pcard">
+    <h3><span class="idx">04</span>优雅停机与安全归零</h3>
+    <ul>
+      <li>捕获系统的 <code>SIGINT</code>（Ctrl+C）与 <code>SIGTERM</code> 信号。</li>
+      <li>在进程退出的微秒级时间窗口内，向底盘注入全零速度急停报文。</li>
+      <li>让“停下来”成为默认结局，而不是依赖操作者的反应速度。</li>
+    </ul>
+  </div>
+</div>
+
+<h3>硬约束速查表</h3>
+
+<table>
+  <thead>
+    <tr><th>防线</th><th>硬约束</th><th>拦截的风险</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>网络接收超时</td><td>强制落在 <code>(0, 120]</code> 秒</td><td>无超时等待导致线程永久挂死</td></tr>
+    <tr><td>Aorta 接收队列</td><td>深度固定 <b>16</b>，消费不及时丢弃最旧样本并警告</td><td>队列无限堆积，内存 OOM 撑爆主板</td></tr>
+    <tr><td>单样本体积</td><td>点云 / 图像单包上限 <b>8 MiB</b></td><td>超大包拖垮实时线程与内存</td></tr>
+    <tr><td>SDK 版本</td><td><code>aorta</code>、<code>aorta-msgs</code>、<code>vbot-edu-msgs</code> 与 <code>edu-sdk-2026.9.24</code> 对齐</td><td>协议版本错位引发不可预测动作</td></tr>
+    <tr><td>退出信号</td><td>捕获 <code>SIGINT</code> / <code>SIGTERM</code>，退出窗口注入全零速度</td><td>退出瞬间缺少急停兜底</td></tr>
+  </tbody>
+</table>
+
+<div class="callout warn"><span class="t">⚠️ 这些数字不是风格偏好</span>机器狗的板载内存与实时线程极其宝贵。任何“先收着、以后处理”的无限扩张数据结构，最终都会以 OOM 或看门狗超时的形式出现在实机上——而那时机器狗已经在动了。</div>
+
+<h2 id="s4">四、极简标准工程模板</h2>
+
+<p>开发自己的 Python 二开项目时，推荐遵循以下结构。目录只保留必要层级：容器编排、离线自检、配方骨架与你的任务入口；业务代码永远只写业务，安全守卫交给骨架。</p>
+
+<div class="codewrap"><span class="lang">tree</span><button class="copy">复制</button>
+<pre class="tree"><code><span class="key">vbot-lab/</span>
+├── docker/
+│   └── compose.yaml            <span class="cm"># 一键启动开发容器</span>
+├── tools/
+│   └── check_environment.py    <span class="cm"># Step 1 本地离线自检</span>
+├── recipes/
+│   ├── common.py               <span class="cm"># 生产级防御骨架（所有任务继承）</span>
+│   ├── subscribe-state/        <span class="cm"># //recipes/subscribe-state:main</span>
+│   └── locomotion/             <span class="cm"># //recipes/locomotion:main_cpp</span>
+└── my_task.py                  <span class="cm"># 你的二开任务入口（套用下方模板）</span></code></pre>
+</div>
+
+<h3>关键文件职责表</h3>
+
+<table>
+  <thead>
+    <tr><th>路径</th><th>职责</th><th>对应本课</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>docker/compose.yaml</code></td><td>开发容器编排，一条命令拉起 dev 服务</td><td>容器一键启动</td></tr>
+    <tr><td><code>tools/check_environment.py</code></td><td>本地 Python、Docker、SSH 依赖自检</td><td>五步 Step 1</td></tr>
+    <tr><td><code>recipes/common.py</code></td><td>离线守卫、有界约束、版本校验、信号急停</td><td>四大防御原则</td></tr>
+    <tr><td><code>recipes/subscribe-state/</code></td><td>首个状态订阅配方</td><td><code>bazel run</code> 离线预览</td></tr>
+    <tr><td><code>recipes/locomotion/</code></td><td>C++ 生产级节点</td><td><code>bazel build</code> 编译</td></tr>
+    <tr><td><code>my_task.py</code></td><td>只写业务逻辑的任务入口</td><td>下方最小模板</td></tr>
+  </tbody>
+</table>
+
+<h3>1. 最小任务节点模板</h3>
+
+<p>下面这份模板把三道闸门写进了最小可运行结构：超时范围校验、离线预览守卫、异常与资源兜底。代码照录自源文档，可直接作为二开起点：</p>
+
+<div class="codewrap"><span class="lang">python</span><button class="copy">复制</button>
+<pre><code>import argparse
+import sys
+import time
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="VBOT 生产级任务节点")
+    parser.add_argument("--execute", action="store_true", help="允许向机器人实机写入指令")
+    parser.add_argument("--timeout", type=float, default=10.0, help="任务有界超时时间(1-120秒)")
+    parser.add_argument("--confirm-motion", action="store_true", help="运动授权确认")
+    return parser.parse_args()
+
+def main():
+    args = parse_args()
+    
+    # 1. 强制超时范围校验
+    if not (0 &lt; args.timeout &lt;= 120):
+        print(f"❌ 错误: 超时时间 {args.timeout}s 超出有效安全区间 (0, 120]！", file=sys.stderr)
+        sys.exit(1)
+
+    # 2. 离线预览守卫
+    if not args.execute:
+        print("ℹ️ [离线预览模式] 当前未传入 --execute，仅输出仿真参数：")
+        print(f"{{ 'target_timeout': {args.timeout}, 'motion_confirmed': {args.confirm_motion} }}")
+        sys.exit(0)
+
+    # 3. 核心业务逻辑（带异常兜底）
+    print("🚀 [实机执行] 正在启动机器人控制任务...")
+    try:
+        # TODO: 执行具身智能逻辑
+        time.sleep(1)
+    except KeyboardInterrupt:
+        print("\n⚠️ 任务被外部中断，正在恢复待命状态...", file=sys.stderr)
+    finally:
+        print("✅ 资源安全释放，退出。")
+
+if __name__ == '__main__':
+    main()</code></pre>
+</div>
+
+<h3>2. 模板里的三道闸门</h3>
+
+<ol class="steps">
+  <li><b>超时闸门</b><code>if not (0 &lt; args.timeout &lt;= 120)</code> 把超时锁进 <code>(0, 120]</code> 秒；越界直接写 stderr 并以非零码退出，连预览都不给。</li>
+  <li><b>离线闸门</b><code>if not args.execute</code> 时只打印目标动作的 JSON 预览并 <code>sys.exit(0)</code>，绝不触碰物理底盘。</li>
+  <li><b>退出闸门</b>用 <code>except KeyboardInterrupt</code> 接住 Ctrl+C，用 <code>finally</code> 兜住资源释放，保证中断路径也能干净收场。</li>
+</ol>
+
+<div class="callout warn"><span class="t">🧱 这是“最小骨架”，不是完整生产骨架</span>模板用于讲清三道闸门的结构。真正上机请继承 <code>recipes/common.py</code>，让 SDK 版本校验、队列截断、信号急停与 <code>--confirm-motion</code> / <code>--consent</code> 全部生效。</div>
+
+<h2 id="s5">五、🧪 小实验：安全边界检查器</h2>
+
+<p>把一段运动指令压缩成三个数字：走多快（vx）、走多久（duration）、以多高的频率持续发包（rate）。下面的检查器会按生产骨架的三道边界即时判定，拖动滑块就能看到哪一条先越界。</p>
+
+<h3>1. 拖动参数，观察即时判定</h3>
+
+<div class="lab">
+  <h4>🧪 小实验：安全边界检查器</h4>
+  <p>判定口径：vx ≤ 0.5 m/s（官方行走配方建议 0.1–0.5）、duration ≤ 10 s、发布频率 ≥ 10 Hz（看门狗 0.5 s 收不到新指令即自动悬停）。阈值仅用于教学自查，真机以官方最新文档与现场物理急停为准。</p>
+
+  <div class="ctl">
+    <div class="ctl-head"><label for="vx">线速度 vx</label><output id="vxval" for="vx">0.20 m/s</output></div>
+    <input type="range" id="vx" min="0" max="1" step="0.05" value="0.2" aria-label="线速度 vx，单位米每秒">
+    <div class="ctl-hint">范围 0 – 1.0 m/s · 安全上限 0.5 m/s</div>
+  </div>
+
+  <div class="ctl">
+    <div class="ctl-head"><label for="dur">持续时间 duration</label><output id="durval" for="dur">2.0 s</output></div>
+    <input type="range" id="dur" min="0.5" max="30" step="0.5" value="2" aria-label="持续时间，单位秒">
+    <div class="ctl-hint">范围 0.5 – 30 s · 单次动作上限 10 s</div>
+  </div>
+
+  <div class="ctl">
+    <div class="ctl-head"><label for="rate">发布频率 rate</label><output id="rateval" for="rate">20 Hz</output></div>
+    <input type="range" id="rate" min="1" max="30" step="1" value="20" aria-label="发布频率，单位赫兹">
+    <div class="ctl-hint">范围 1 – 30 Hz · 低于 10 Hz 有看门狗风险</div>
+  </div>
+
+  <div class="btnrow"><button id="labbtn" type="button">检查</button><span class="hint">拖动滑块会即时重算，也可以点按钮复算</span></div>
+
+  <div id="labres" class="result" role="status" aria-live="polite"></div>
+
+  <div class="codewrap"><span class="lang">json · 离线预览</span><button class="copy">复制</button>
+<pre><code id="labjson"></code></pre>
+  </div>
+</div>
+
+<h3>2. 三条边界分别在防什么</h3>
+
+<table>
+  <thead>
+    <tr><th>参数</th><th>本实验边界</th><th>越界后的工程含义</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>线速度 <code>vx</code></td><td>≤ 0.5 m/s</td><td>已超出官方行走配方建议范围，实机风险随速度上升，制动与人为接管都更困难</td></tr>
+    <tr><td>持续时间 <code>duration</code></td><td>≤ 10 s</td><td>单次动作过长，异常时留给操作者与看门狗的反应窗口更小；应拆分动作并保留有界超时</td></tr>
+    <tr><td>发布频率 <code>rate</code></td><td>≥ 10 Hz</td><td>底层看门狗 0.5 s 收不到新指令就自动悬停，低频发包会让动作走走停停甚至触发保护</td></tr>
+  </tbody>
+</table>
+
+<div class="callout"><span class="t">💡 这个检查器不替代实机演练</span>它只覆盖三个最容易被忽视的参数。真机测试前，仍要把物理急停放在手边、在开阔场地进行，并逐项确认 <code>--execute</code> 与 <code>--confirm-motion</code> 的授权边界。</div>
+
+<h2 id="s6">六、本课小结</h2>
+
+<table>
+  <thead>
+    <tr><th>主题</th><th>一句话记住</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>DevContainer + Bazel</td><td>宿主机只编辑，容器内用 Ubuntu 22.04 + Bazel 7.6.1 完成离线构建与类型校验</td></tr>
+    <tr><td>五步部署</td><td><code>check_environment</code> → Docker/SSH → SDK 沙箱 → Bazel 配方 → SCP 推送与物理响应</td></tr>
+    <tr><td><code>recipes/common.py</code></td><td>默认离线安全、有界一切、版本硬性钉死、优雅停机归零</td></tr>
+    <tr><td>工程模板</td><td>目录分层 + 三道闸门，业务代码只写业务</td></tr>
+  </tbody>
+</table>
+
+<ul class="goals">
+  <li>环境差异交给容器，构建验证交给 Bazel，不再手工拼宿主机工具链</li>
+  <li>没带 <code>--execute</code> 只配看 JSON 预览；运动控制还要 <code>--confirm-motion</code></li>
+  <li>超时 <code>(0, 120]</code>、队列深度 16、单包 8 MiB、SDK 三件套版本必须对齐</li>
+  <li>上机前用安全边界检查器过一遍 vx、duration 与发布频率</li>
+</ul>
+
+<div class="callout"><span class="t">⏭️ 下一模块预告</span>环境与部署链路打通后，我们进入 <b>03 运控、感知与多模态 Agent</b>。第一课从状态订阅走向运动控制进阶与 RCP DAG 动作流编排：<a href="../03-embodied-agent/lesson_01.html">运动控制进阶与 RCP DAG 动作流编排</a>。</div>
+
+</div>
+
+<div class="wrap" style="padding-top:0">
+<footer class="nav">
+  <a href="lesson_02.html"><span class="dir">← 上一课</span><span class="ttl">2.2 Aorta（Zenoh 46 话题）主干道与 ROS 2 兼容子集</span></a>
+  <a class="home-link" href="index.html"><span class="dir">目录</span><span class="ttl">返回目录</span></a>
+  <a href="../03-embodied-agent/lesson_01.html" style="text-align:right"><span class="dir">下一课 →</span><span class="ttl">03 运动控制进阶与 RCP DAG 动作流编排</span></a>
+</footer>
+</div>
+
+</main>
+
+<script>
+document.querySelectorAll('.copy').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var pre=btn.parentElement.querySelector('pre');
+    if(!pre)return;
+    navigator.clipboard.writeText(pre.textContent).then(function(){
+      btn.textContent='已复制'; setTimeout(function(){btn.textContent='复制'},1500);
+    });
+  });
+});
+(function(){
+  var vx=document.getElementById('vx');
+  if(!vx)return;
+  var dur=document.getElementById('dur');
+  var rate=document.getElementById('rate');
+  var vxval=document.getElementById('vxval');
+  var durval=document.getElementById('durval');
+  var rateval=document.getElementById('rateval');
+  var res=document.getElementById('labres');
+  var json=document.getElementById('labjson');
+
+  function check(){
+    var v=parseFloat(vx.value);
+    var d=parseFloat(dur.value);
+    var h=parseInt(rate.value,10);
+    vxval.textContent=v.toFixed(2)+' m/s';
+    durval.textContent=d.toFixed(1)+' s';
+    rateval.textContent=h+' Hz';
+
+    var problems=[];
+    if(v>0.5){
+      problems.push({t:'线速度 vx 超过安全上限',d:'当前 '+v.toFixed(2)+' m/s，官方行走配方建议 0.1–0.5 m/s。建议：降到 0.5 m/s 及以下，首次实机从 0.2 m/s 起步。'});
+    }
+    if(d>10){
+      problems.push({t:'持续时间 duration 过长',d:'当前 '+d.toFixed(1)+' s。单次动作建议不超过 10 s，并保留有界超时（骨架上限 (0, 120] s）。建议：拆分动作或缩短到 10 s 内。'});
+    }
+    if(h<10){
+      problems.push({t:'发布频率低于 10 Hz',d:'当前 '+h+' Hz。底层看门狗 0.5 s 收不到新指令就会悬停，低频发包等于主动触发急停。建议：提高到 10 Hz 以上，生产骨架常用 20 Hz。'});
+    }
+
+    if(problems.length){
+      var html='<b>发现 '+problems.length+' 项不符合生产级骨架约束：</b><ul>';
+      for(var i=0;i<problems.length;i++){
+        html+='<li><b>'+problems[i].t+'</b>：'+problems[i].d+'</li>';
+      }
+      html+='</ul>';
+      res.className='result bad';
+      res.innerHTML=html;
+    }else{
+      res.className='result ok';
+      res.innerHTML='<b>✅ 符合生产级骨架约束</b><br>vx '+v.toFixed(2)+' m/s · 持续 '+d.toFixed(1)+' s · '+h+' Hz，三道边界全部通过。';
+    }
+
+    json.textContent='{\n  "vx_mps": '+v.toFixed(2)+',\n  "duration_s": '+d.toFixed(1)+',\n  "publish_hz": '+h+',\n  "execute": false\n}';
+  }
+
+  [vx,dur,rate].forEach(function(el){el.addEventListener('input',check);});
+  document.getElementById('labbtn').addEventListener('click',check);
+  check();
+})();
+</script>
+</body>
+</html>

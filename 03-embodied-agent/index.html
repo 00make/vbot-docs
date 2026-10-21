@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>具身智能体开发 · VBOT EDU 网页版教程</title>
+<style>
+/* ===== 风格契约 v2 · 预设 A 清爽技术文档风（与 lesson_01~03 一致） ===== */
+:root{
+  --bg:#ffffff; --fg:#1f2937; --muted:#6b7280;
+  --accent:#0e7490; --accent-dark:#155e75; --accent-light:#ecfeff;
+  --code-bg:#f3f4f6; --code-fg:#111827; --code-border:#e5e7eb;
+  --border:#e5e7eb; --card:#f9fafb;
+  --warn-bg:#fffbeb; --warn-bd:#f59e0b;
+  --danger-bg:#fef2f2; --danger-bd:#ef4444;
+  --tip-bg:#ecfeff; --tip-bd:#0e7490;
+  --ok-bg:#f0fdf4; --ok-bd:#22c55e;
+  --radius:10px; --max-width:880px; --toc-w:250px;
+  --font-body:"Microsoft YaHei","Source Han Sans CN",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"Cascadia Code",Consolas,"JetBrains Mono","Courier New",monospace;
+}
+/* ===== 风格契约结束 ===== */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.8;font-size:16px}
+a{color:var(--accent);text-decoration:none}
+a:hover{color:var(--accent-dark)}
+code{font-family:var(--font-mono);font-size:.875em;background:var(--code-bg);border:1px solid var(--code-border);border-radius:4px;padding:1px 6px}
+.wrap{max-width:960px;margin:0 auto;padding:48px 24px 32px}
+.hero{border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);background:linear-gradient(135deg,var(--accent-dark),var(--accent));color:#fff;padding:44px 40px}
+.hero .kicker{font-size:13px;letter-spacing:.18em;opacity:.85;text-transform:uppercase;margin-bottom:10px}
+.hero h1{font-size:34px;line-height:1.35;margin:0 0 12px}
+.hero p{margin:0;max-width:640px;font-size:15.5px;opacity:.92}
+.hero .badges{margin-top:20px}
+.badge{display:inline-block;font-size:12.5px;border-radius:99px;padding:3px 13px;margin:0 8px 6px 0;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.35)}
+h2{font-size:21px;color:var(--accent-dark);margin:44px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--accent-light)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:20px 0}
+.card{display:block;border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;background:var(--bg);color:var(--fg);transition:border-color .15s,background .15s}
+.card:hover{border-color:var(--accent);background:var(--accent-light);color:var(--fg)}
+.card .no{display:inline-block;font-size:12px;font-weight:700;color:#fff;background:var(--accent);border-radius:99px;padding:1px 11px;margin-bottom:10px}
+.card h3{margin:0 0 8px;font-size:18px;color:var(--accent-dark)}
+.card p{margin:0 0 14px;font-size:14px;color:var(--muted);line-height:1.7}
+.card .meta{font-size:12.5px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.card .go{font-size:14px;font-weight:600;color:var(--accent)}
+ul.check{list-style:none;padding:0;margin:12px 0}
+ul.check li{padding:4px 0 4px 28px;position:relative}
+ul.check li::before{content:"✓";position:absolute;left:4px;color:var(--accent);font-weight:700}
+.callout{border-left:4px solid var(--warn-bd);background:var(--warn-bg);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;margin:20px 0;font-size:14.5px}
+.callout .t{font-weight:700;display:block;margin-bottom:4px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left}
+th{background:var(--accent-light);color:var(--accent-dark)}
+tr:nth-child(even) td{background:var(--card)}
+footer.page{border-top:1px solid var(--border);margin-top:52px;padding:22px 0 8px;font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media (max-width:768px){
+  .wrap{padding:24px 16px 20px}
+  .hero{padding:28px 22px}
+  .hero h1{font-size:25px}
+}
+@media print{
+  body{font-size:12px}
+  .hero{background:#fff;color:var(--fg);border:1px solid var(--border)}
+  .badge{background:#fff;color:var(--fg);border:1px solid var(--border)}
+  a{color:var(--fg)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker">VBOT EDU · 网页版教程 · 03</div>
+  <h1>具身智能体开发</h1>
+  <p>从底盘速度控制进阶到 RCP 动作编排，从多传感器数据流到多模态大模型与设备端 MCP：让机器狗从「能动」走向「会理解、会执行任务」。</p>
+  <div class="badges"><span class="badge">3 课 · 约 44 分钟</span><span class="badge">固件基准 V1.6.0</span><span class="badge">RCP · 感知 · MCP</span></div>
+</header>
+
+<h2>课程目录</h2>
+
+<div class="cards">
+  <a class="card" href="lesson_01.html">
+    <span class="no">Lesson 01</span>
+    <h3>运动控制进阶与 RCP DAG 动作流编排</h3>
+    <p>直接服务与 RCP 双路径、物理资源锁与生命周期、预设动作与站立/趴下状态机。</p>
+    <div class="meta"><span>代码实战</span><span>运动安全</span><span>约 14 分钟</span></div>
+    <span class="go">开始学习 →</span>
+  </a>
+  <a class="card" href="lesson_02.html">
+    <span class="no">Lesson 02</span>
+    <h3>激光雷达、双目视觉与骨骼姿态感知</h3>
+    <p>16 线激光雷达、H.265 双目解码、17 点骨骼与 IMU 遥测，以及 Logit 置信度陷阱。</p>
+    <div class="meta"><span>代码实战</span><span>约 14 分钟</span></div>
+    <span class="go">开始学习 →</span>
+  </a>
+  <a class="card" href="lesson_03.html">
+    <span class="no">Lesson 03</span>
+    <h3>多模态大模型集成与设备端 MCP 工具</h3>
+    <p>唤醒词热替换、VLM 决策流水线、18080 MCP 服务与工具调用。</p>
+    <div class="meta"><span>代码实战</span><span>智能体扩展</span><span>约 16 分钟</span></div>
+    <span class="go">开始学习 →</span>
+  </a>
+</div>
+
+<h2>本模块要点</h2>
+
+<ul class="check">
+  <li>直接服务与 RCP 两条控制路径必须有序切换，禁止无序并发争抢物理资源</li>
+  <li>17 点骨骼输出的置信度是 Logit 不是概率，先 sigmoid 再判决</li>
+  <li>MCP 服务把设备能力暴露给外部 Agent，但执行仍受 RCP 与安全看门狗约束</li>
+</ul>
+
+<div class="callout">
+  <span class="t">🚨 运动安全</span>
+  含 motion_control 章节：实机测试必须开阔场地、有人监护、物理急停在手边；软件急停不能替代物理急停。
+</div>
+
+<footer class="page">
+  <a href="../02-architecture-comm/index.html">← 上一模块：02 架构拓扑与通信机制</a>
+  <span>源文档：<code>vbot-docs/03-embodied-agent/</code> · 风格契约 v2</span>
+  <a href="../04-hardware-recipes/index.html">下一模块：04 硬件改装与黑客松蓝本 →</a>
+</footer>
+
+</div>
+</body>
+</html>

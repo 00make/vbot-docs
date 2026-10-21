@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5.2 开发者安全守法规约与自启动防死锁 | VBOT EDU 诊断与安全</title>
+<style>
+/* ===== 风格契约 v1 · 预设 A 清爽技术文档风（全教程统一，勿改） ===== */
+:root{
+  --bg:#ffffff; --fg:#1f2937; --muted:#6b7280;
+  --accent:#0e7490; --accent-dark:#155e75; --accent-light:#ecfeff;
+  --code-bg:#f3f4f6; --code-fg:#111827; --code-border:#e5e7eb;
+  --border:#e5e7eb; --card:#f9fafb;
+  --warn-bg:#fffbeb; --warn-bd:#f59e0b;
+  --danger-bg:#fef2f2; --danger-bd:#ef4444;
+  --tip-bg:#ecfeff; --tip-bd:#0e7490;
+  --ok-bg:#f0fdf4; --ok-bd:#22c55e;
+  --radius:10px; --max-width:880px; --toc-w:250px;
+  --font-body:"Microsoft YaHei","Source Han Sans CN",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"Cascadia Code",Consolas,"JetBrains Mono","Courier New",monospace;
+}
+/* ===== 风格契约结束 ===== */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.8;font-size:16px}
+a{color:var(--accent)}
+a:hover{color:var(--accent-dark)}
+code{font-family:var(--font-mono);font-size:.875em;background:var(--code-bg);border:1px solid var(--code-border);border-radius:4px;padding:1px 6px;color:var(--code-fg)}
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:16px 18px;overflow:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;color:var(--code-fg);margin:0}
+pre code{background:none;border:none;padding:0;font-size:inherit}
+
+/* 布局：左 TOC + 右正文 */
+.toc{position:fixed;top:0;left:0;bottom:0;width:var(--toc-w);background:var(--card);border-right:1px solid var(--border);padding:28px 16px;overflow:auto}
+.toc .brand{font-weight:700;color:var(--accent-dark);font-size:17px;margin-bottom:2px}
+.toc .sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.toc ol{list-style:none;margin:0;padding:0;counter-reset:toc}
+.toc li{counter-increment:toc;margin-bottom:2px}
+.toc a{display:block;padding:7px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font-size:13.5px}
+.toc a::before{content:counter(toc) ". ";color:var(--accent);font-weight:600}
+.toc a:hover{background:var(--accent-light);color:var(--accent-dark)}
+.toc .home{display:inline-block;margin-top:18px;font-size:13px;color:var(--accent);text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--bg)}
+main{margin-left:var(--toc-w)}
+.wrap{max-width:var(--max-width);margin:0 auto;padding:40px 32px 24px}
+
+/* 页头 */
+header.lesson{border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:32px}
+header.lesson .hero-img{width:100%;max-height:280px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);margin-top:18px}
+.badges{margin-bottom:12px}
+.badge{display:inline-block;font-size:12px;font-weight:600;border-radius:99px;padding:2px 12px;margin-right:8px;vertical-align:middle}
+.badge.no{background:var(--accent);color:#fff}
+.badge.safe{background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.badge.ver{background:var(--card);color:var(--muted);border:1px solid var(--border)}
+h1{font-size:30px;line-height:1.4;margin:0 0 10px;color:var(--accent-dark)}
+.meta{font-size:13.5px;color:var(--muted)}
+.meta a{color:var(--accent)}
+
+/* 标题层级 */
+h2{font-size:22px;color:var(--accent-dark);margin:48px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--accent-light)}
+h3{font-size:17.5px;color:var(--fg);margin:28px 0 10px}
+
+/* 提示框 */
+.callout{border-left:4px solid var(--tip-bd);background:var(--tip-bg);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;margin:20px 0;font-size:15px}
+.callout.warn{border-color:var(--warn-bd);background:var(--warn-bg)}
+.callout.danger{border-color:var(--danger-bd);background:var(--danger-bg)}
+.callout.ok{border-color:var(--ok-bd);background:var(--ok-bg)}
+.callout .t{font-weight:700;display:block;margin-bottom:4px}
+
+/* 直播口播折叠 */
+details.talk{border:1px dashed var(--accent);border-radius:var(--radius);background:var(--bg);margin:20px 0}
+details.talk summary{cursor:pointer;padding:12px 18px;color:var(--accent);font-weight:600;font-size:14.5px}
+details.talk .body{padding:0 18px 14px;color:var(--muted);font-size:14.5px}
+
+/* 图片 */
+figure{margin:24px 0;text-align:center}
+figure img{max-width:100%;border:1px solid var(--border);border-radius:var(--radius);background:#fff}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+
+/* 表格 */
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px}
+th,td{border:1px solid var(--border);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--accent-light);color:var(--accent-dark);font-weight:700}
+tr:nth-child(even) td{background:var(--card)}
+td .no{color:var(--danger-bd);font-weight:700}
+
+/* 编号步骤 */
+ol.steps{list-style:none;counter-reset:st;padding:0;margin:18px 0}
+ol.steps>li{counter-increment:st;position:relative;padding:0 0 18px 48px}
+ol.steps>li::before{content:counter(st);position:absolute;left:0;top:2px;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;text-align:center;line-height:32px;font-size:15px}
+ol.steps>li>b:first-child{display:block;margin-bottom:4px}
+
+/* CSS 拓扑图 */
+.topo{display:flex;align-items:stretch;justify-content:center;gap:0;margin:24px 0;flex-wrap:wrap}
+.topo .node{background:var(--card);border:2px solid var(--accent);border-radius:var(--radius);padding:12px 16px;min-width:170px;text-align:center;font-size:13.5px}
+.topo .node b{display:block;color:var(--accent-dark);font-size:14.5px;margin-bottom:2px}
+.topo .node code{font-size:12px}
+.topo .node.dev{border-color:var(--muted)}
+.topo .node.gw{border-style:dashed}
+.topo .link{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 10px;color:var(--muted);font-size:12px;min-width:96px}
+.topo .link .arrow{font-size:20px;color:var(--accent);line-height:1.2}
+
+/* 代码块 + 复制按钮 + Tabs */
+.codewrap{position:relative;margin:14px 0}
+.codewrap .lang{position:absolute;top:0;right:88px;font-size:11px;color:var(--muted);background:var(--bg);border:1px solid var(--code-border);border-bottom:none;border-radius:6px 6px 0 0;padding:1px 8px}
+.copy{position:absolute;top:8px;right:8px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;font-family:var(--font-body)}
+.copy:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.tabs{display:flex;gap:6px;margin:18px 0 0}
+.tabs button{border:1px solid var(--border);border-bottom:none;background:var(--card);padding:8px 18px;border-radius:10px 10px 0 0;cursor:pointer;font-size:14px;color:var(--muted);font-family:var(--font-body)}
+.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+.panel{display:none;border:1px solid var(--border);border-radius:0 var(--radius) var(--radius) var(--radius);padding:16px 18px;background:var(--bg)}
+.panel.on{display:block}
+
+/* 目标清单 */
+ul.goals{margin:12px 0;padding-left:0;list-style:none}
+ul.goals li{padding:4px 0 4px 28px;position:relative}
+ul.goals li::before{content:"✓";position:absolute;left:4px;color:var(--accent);font-weight:700}
+
+/* 页脚导航 */
+footer.nav{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--border);margin-top:56px;padding:24px 0 40px;flex-wrap:wrap}
+footer.nav a{flex:1;min-width:200px;border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;text-decoration:none;background:var(--card)}
+footer.nav a:hover{border-color:var(--accent);background:var(--accent-light)}
+footer.nav .dir{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
+footer.nav .ttl{display:block;font-size:15px;color:var(--accent-dark);font-weight:600}
+footer.nav a.home-link{flex:0 0 auto;text-align:center}
+
+/* 甘特时间线 */
+.gantt{margin:20px 0}
+.gantt .row{display:flex;align-items:center;margin:8px 0}
+.gantt .lbl{width:190px;font-size:13.5px;color:var(--fg);flex-shrink:0}
+.gantt .track{flex:1;position:relative;height:28px;background:var(--card);border:1px solid var(--border);border-radius:6px}
+.gantt .bar{position:absolute;top:3px;bottom:3px;background:linear-gradient(90deg,var(--accent),#22d3ee);border-radius:5px;color:#fff;font-size:11.5px;display:flex;align-items:center;padding:0 8px;white-space:nowrap;overflow:hidden}
+.gantt .axis{display:flex;margin-left:190px;font-size:11.5px;color:var(--muted)}
+.gantt .axis span{flex:1;text-align:left}
+
+/* 决策流程图 */
+.flow{display:flex;flex-direction:column;align-items:center;margin:24px 0}
+.fnode{border:2px solid var(--accent);background:var(--accent-light);border-radius:var(--radius);padding:10px 18px;font-size:14px;text-align:center;max-width:460px}
+.fnode b{color:var(--accent-dark)}
+.fnode.start{border-radius:99px;background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.fnode.decision{background:var(--warn-bg);border-color:var(--warn-bd)}
+.fnode.end{border-radius:99px;background:var(--ok-bg);border-color:var(--ok-bd);color:#15803d;font-weight:600}
+.fdown{color:var(--accent);font-size:18px;line-height:1.5;text-align:center}
+.fdown small{display:block;font-size:12px;color:var(--muted)}
+.fbranch{display:flex;gap:28px;justify-content:center;align-items:flex-start;flex-wrap:wrap;margin:4px 0}
+.fcol{display:flex;flex-direction:column;align-items:center}
+.fcol .tag-y{font-size:12px;font-weight:700;color:#15803d;background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+.fcol .tag-n{font-size:12px;font-weight:700;color:#92400e;background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+
+/* 交互小实验 */
+.lab{background:var(--card);border:1px solid var(--accent);border-radius:var(--radius);padding:18px 20px;margin:26px 0}
+.lab h4{margin:0 0 6px;color:var(--accent-dark);font-size:16px}
+.lab p{margin:4px 0;font-size:14px;color:var(--muted)}
+.labrow{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;align-items:center}
+.lab input{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font-mono);font-size:14px;width:220px;background:var(--bg);color:var(--fg)}
+.lab button{padding:8px 18px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:14px;font-family:var(--font-body)}
+.lab button:hover{background:var(--accent-dark)}
+.result{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:14px;display:none}
+.result.ok{display:block;background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.result.bad{display:block;background:var(--danger-bg);color:#b91c1c;border:1px solid var(--danger-bd)}
+.result.warn{display:block;background:var(--warn-bg);color:#92400e;border:1px solid var(--warn-bd)}
+.lab pre{margin-top:10px}
+
+/* ===== 本课专属组件（安全关键 · 仅追加，不改配色/字体/间距体系） ===== */
+.badge.danger{background:var(--danger-bg);color:#b91c1c;border:1px solid var(--danger-bd)}
+.safety-strip{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--danger-bd);background:var(--danger-bg);border-radius:var(--radius);padding:12px 16px;font-size:14px;color:#b91c1c;margin:18px 0 4px}
+.safety-strip .ic{font-size:18px;line-height:1.4}
+.safety-strip b{color:#991b1b}
+
+/* 急停链路对比图 */
+.estop{border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);padding:18px 16px;margin:24px 0}
+.estop-top{max-width:560px;margin:0 auto;text-align:center;background:var(--danger-bg);border:2px solid var(--danger-bd);border-radius:var(--radius);padding:10px 14px;font-size:14px;font-weight:600;color:#b91c1c}
+.estop-split{text-align:center;font-size:12px;color:var(--muted);margin:10px 0}
+.estop-split span{background:var(--bg);border:1px solid var(--border);border-radius:99px;padding:2px 12px}
+.estop-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+.lane{border:1px solid var(--border);border-radius:var(--radius);padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--card)}
+.lane.soft{border-color:var(--warn-bd);background:var(--warn-bg)}
+.lane.hard{border-color:var(--ok-bd);background:var(--ok-bg)}
+.lane-h{font-size:13.5px;font-weight:700;text-align:center;padding-bottom:6px;border-bottom:1px dashed var(--border)}
+.lane.soft .lane-h{color:#92400e}
+.lane.hard .lane-h{color:#15803d}
+.enode{border:1px solid var(--border);background:var(--bg);border-radius:8px;padding:8px 10px;font-size:13px;text-align:center;line-height:1.6}
+.enode.bad{border-color:var(--danger-bd);background:var(--danger-bg);color:#b91c1c}
+.enode.good{border-color:var(--ok-bd);background:var(--ok-bg);color:#15803d;font-weight:600}
+.elink{text-align:center;font-size:12px;color:var(--muted);line-height:1.5}
+.elink::before{content:"↓ ";color:var(--muted)}
+.lane-foot{margin-top:auto;text-align:center;font-size:12.5px;font-weight:700;border-radius:99px;padding:4px 10px;border:1px solid var(--border);background:var(--bg)}
+.lane.soft .lane-foot{color:#b91c1c;border-color:var(--danger-bd);background:var(--danger-bg)}
+.lane.hard .lane-foot{color:#15803d;border-color:var(--ok-bd);background:var(--ok-bg)}
+
+/* 三大交通规则卡片 */
+.rules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}
+.rule{border:1px solid var(--border);border-top:4px solid var(--accent);border-radius:var(--radius);background:var(--card);padding:14px 16px}
+.rule h3{margin:0 0 6px;font-size:15.5px;color:var(--accent-dark)}
+.rule .rn{display:inline-block;font-size:11.5px;font-weight:700;color:var(--accent);background:var(--accent-light);border:1px solid var(--accent-light);border-radius:99px;padding:0 9px;margin-bottom:6px}
+.rule ul{margin:8px 0 0;padding-left:18px;font-size:13.5px;line-height:1.7}
+.rule li{margin-bottom:4px}
+ol.steps.danger>li::before{background:var(--danger-bd)}
+
+/* flock 状态机 */
+.fsm{border:1px solid var(--border);border-radius:var(--radius);background:var(--card);padding:18px 16px;margin:20px 0}
+.fsm-flow{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px}
+.fsm-node{background:var(--bg);border:2px solid var(--accent);border-radius:var(--radius);padding:8px 12px;min-width:104px;text-align:center;font-size:13px;line-height:1.5}
+.fsm-node b{display:block;font-size:13.5px;color:var(--accent-dark)}
+.fsm-node small{display:block;font-size:11px;color:var(--muted)}
+.fsm-node.start{background:var(--accent);border-color:var(--accent)}
+.fsm-node.start b{color:#fff}
+.fsm-node.lock{border-color:var(--warn-bd);background:var(--warn-bg)}
+.fsm-node.run{border-color:var(--ok-bd);background:var(--ok-bg)}
+.fsm-node.exit{border-color:var(--danger-bd);background:var(--danger-bg)}
+.fsm-arrow{color:var(--accent);font-size:16px;font-weight:700}
+.fsm-side{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap}
+.fsm-branch{flex:1;min-width:240px;border-left:4px solid var(--danger-bd);background:var(--danger-bg);border-radius:0 8px 8px 0;padding:9px 14px;font-size:12.5px;color:#b91c1c}
+.fsm-return{flex:1;min-width:240px;border-left:4px solid var(--ok-bd);background:var(--ok-bg);border-radius:0 8px 8px 0;padding:9px 14px;font-size:12.5px;color:#15803d}
+
+/* 十条铁律卡片 */
+.laws{list-style:none;counter-reset:law;padding:0;margin:20px 0;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.laws li{counter-increment:law;position:relative;padding:12px 14px 12px 52px;border:1px solid var(--border);border-radius:var(--radius);background:var(--card);font-size:13.5px;line-height:1.65}
+.laws li::before{content:counter(law);position:absolute;left:12px;top:12px;width:28px;height:28px;line-height:26px;text-align:center;border-radius:50%;background:var(--danger-bg);color:#b91c1c;border:1px solid var(--danger-bd);font-weight:700;font-size:13px}
+.laws li b{display:block;color:var(--accent-dark);font-size:14.5px;margin-bottom:2px}
+
+/* 风险评分器 */
+.lab.safety{border:2px solid var(--danger-bd)}
+.risk-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.risk-item{display:flex;align-items:flex-start;gap:9px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);font-size:13.5px;line-height:1.55;cursor:pointer;user-select:none}
+.risk-item:hover{border-color:var(--danger-bd)}
+.risk-item.on{border-color:var(--danger-bd);background:var(--danger-bg)}
+.risk-item input{width:16px;height:16px;padding:0;border:none;background:none;margin:3px 0 0;accent-color:#ef4444;cursor:pointer;flex-shrink:0}
+.risk-item>span{flex:1;min-width:0}
+.risk-item .w{flex:0 0 auto;margin-left:auto;font-size:11.5px;font-weight:700;color:var(--danger-bd);background:var(--bg);border:1px solid var(--border);border-radius:99px;padding:0 7px;white-space:nowrap}
+.risk-item small{display:block;color:var(--muted);font-size:11.5px}
+.scoreline{display:flex;align-items:baseline;gap:8px;margin:10px 0 0}
+.scoreline .num{font-size:32px;font-weight:700;line-height:1}
+.scoreline .unit{font-size:12.5px;color:var(--muted)}
+.scoreline .verdict{margin-left:auto;font-size:13.5px;font-weight:700}
+.meter{height:12px;border-radius:99px;background:var(--code-bg);border:1px solid var(--border);overflow:hidden;margin:8px 0 0}
+.meter i{display:block;height:100%;width:0;background:var(--ok-bd);transition:width .35s ease,background .35s ease}
+.risklist{list-style:none;padding:0;margin:12px 0 0;font-size:13px;line-height:1.6}
+.risklist li{padding:6px 0 6px 24px;position:relative;border-top:1px dashed var(--border)}
+.risklist li:first-child{border-top:none}
+.risklist li::before{position:absolute;left:2px;top:6px;font-weight:700}
+.risklist li.hit::before{content:"✗";color:var(--danger-bd)}
+.risklist li.clean::before{content:"✓";color:var(--ok-bd)}
+.risklist li.hit b{color:#b91c1c}
+.fixorder{margin-top:12px;border:1px solid var(--danger-bd);background:var(--danger-bg);border-radius:8px;padding:10px 14px;font-size:13px;color:#b91c1c}
+.fixorder b{display:block;margin-bottom:4px;color:#991b1b}
+
+/* 收官速查 */
+.recap{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
+.recap .card{border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:0 8px 8px 0;background:var(--card);padding:10px 14px;font-size:13.5px}
+.recap .card>b:first-child{display:block;color:var(--accent-dark);margin-bottom:2px}
+
+/* 移动端 */
+@media (max-width:768px){
+  .toc{position:static;width:auto;border-right:none;border-bottom:1px solid var(--border);padding:18px 16px}
+  .toc ol{columns:2}
+  main{margin-left:0}
+  .wrap{padding:24px 18px 12px}
+  h1{font-size:24px}
+  .topo{flex-direction:column;align-items:center}
+  .topo .link{min-width:auto;padding:6px 0}
+  .topo .link .arrow{transform:rotate(90deg)}
+  .gantt .lbl{width:110px;font-size:12px}
+  .gantt .axis{margin-left:110px}
+  .fbranch{flex-direction:column;align-items:center;gap:8px}
+}
+@media (max-width:768px){
+  .estop-grid{grid-template-columns:1fr}
+  .rules{grid-template-columns:1fr}
+  .laws{grid-template-columns:1fr}
+  .risk-grid{grid-template-columns:1fr}
+  .recap{grid-template-columns:1fr}
+  .fsm-node{min-width:auto}
+}
+/* 打印 */
+@media print{
+  .toc,.copy,.tabs{display:none}
+  main{margin-left:0}
+  .panel{display:block!important;border:none;padding:8px 0}
+  body{font-size:12px}
+  a{color:var(--fg);text-decoration:none}
+}
+</style>
+</head>
+<body>
+
+<nav class="toc" id="nav">
+  <div class="brand">VBOT EDU 诊断与安全</div>
+  <div class="sub">模块 05 · Lesson 02</div>
+  <ol>
+    <li><a href="#s1">生命防线：急停 vs 取消</a></li>
+    <li><a href="#s2">三大安全交通规则</a></li>
+    <li><a href="#s3">自启动规范与 flock</a></li>
+    <li><a href="#s4">生产级启动脚本模板</a></li>
+    <li><a href="#s5">工程师十条铁律</a></li>
+    <li><a href="#s6">自启动风险评分器</a></li>
+    <li><a href="#s7">本课小结（全课收官）</a></li>
+  </ol>
+  <a class="home" href="index.html">← 返回目录</a>
+</nav>
+
+<main>
+<div class="wrap">
+
+<header class="lesson">
+  <div class="badges">
+    <span class="badge no">Lesson 02</span>
+    <span class="badge danger">安全级别：安全关键（safety_critical）</span>
+    <span class="badge ver">固件基准 V1.6.0</span>
+  </div>
+  <h1>开发者安全守法规约与自启动防死锁</h1>
+  <p class="meta">预计阅读 14 分钟 · 前置课程：<a href="lesson_01.html">5.1 四层隔离排障法</a> · 全课程收官课 · 涉及真实物理运动，动手前请先清空场地</p>
+</header>
+
+<div class="safety-strip">
+  <span class="ic">🛑</span>
+  <div><b>本课为安全关键内容。</b>所有脚本先在断电 / 架空状态验证，任何时候都不允许削弱物理急停、边界限制与访问控制。调试脚本不得直接当作无人值守生产程序。</div>
+</div>
+
+<details class="talk">
+  <summary>🎙️ 展开直播口播导语（讲师版）</summary>
+  <div class="body">
+    <p>“在四足机器人领域，<b>‘安全是 1，其余所有算法、大模型和酷炫功能都是后面的 0’</b>！本章将梳理机器人工程师必须严格践行的安全红线，彻底搞清物理急停与软件取消的本质界限，传授‘三大安全交通规则’，并带你编写带防重入文件锁 (<code>flock</code>) 的生产级开机自启动守护脚本！”</p>
+  </div>
+</details>
+
+<h2 id="goals" style="margin-top:24px;border-bottom:none;padding-bottom:0;font-size:17.5px">本课学习目标</h2>
+<ul class="goals">
+  <li>分清物理硬件急停与软件取消的生效层级、触发方式与适用边界，说清“不能替代”的物理原因</li>
+  <li>用“读先于写 / 强制边界限制 / 严禁越级旁路”三大交通规则逐条自检自己的代码</li>
+  <li>说出开机自启动的三大绝对禁止操作，理解 <code>flock</code> 防重入锁的作用</li>
+  <li>照录并落地生产级 <code>/userdata/vbot/start_app.sh</code> 模板与 <code>nohup su - vbot</code> 调用方式</li>
+  <li>用十条铁律审查真实项目，并在风险评分器中把脚本风险压到 0 分</li>
+</ul>
+
+<h2 id="s1">一、生命防线：硬件急停 vs 软件取消</h2>
+
+<div class="callout danger"><span class="t">⚠️ 绝对准则</span>在任何面对真实人流与昂贵传感器的测试场景下，<b>软件取消永远无法替代物理硬件急停！</b></div>
+
+<p>两者不是“新旧版本”的关系，而是两条生效层级完全不同的链路。看下面这张链路对比图：</p>
+
+<div class="estop" role="img" aria-label="急停链路对比图：软件取消依赖CPU与网络，失效则撞击；物理硬件急停由网关板RTOS纳秒级切断电机驱动H桥供电，14关节瞬间卸力">
+  <div class="estop-top">🚨 突发险情：机器狗前方突然冲出儿童或轮椅</div>
+  <div class="estop-split"><span>同一瞬间，两条路径的真实能力</span></div>
+  <div class="estop-grid">
+    <div class="lane soft">
+      <div class="lane-h">软件取消 · Software Cancel</div>
+      <div class="enode">终端按 <code>Ctrl+C</code> / 调用 Action 的 Cancel 接口</div>
+      <div class="elink">依赖 CPU、网卡与进程全部健康</div>
+      <div class="enode">归零指令进入用户态排队</div>
+      <div class="elink">若 CPU 突发 100% 卡死或网线被绊掉，指令根本无法传达</div>
+      <div class="enode bad">撞击事故</div>
+      <div class="lane-foot">❌ 不能替代物理急停</div>
+    </div>
+    <div class="lane hard">
+      <div class="lane-h">物理硬件急停 · Physical E-Stop</div>
+      <div class="enode">遥控器急停键 / 短路急停插销 / 物理长按机身电源</div>
+      <div class="elink">无需操作系统参与，直达硬件层</div>
+      <div class="enode">网关板 RTOS 纳秒级切断电机驱动 H 桥供电</div>
+      <div class="elink">哪怕主机已经死机、断网，这条链路依然成立</div>
+      <div class="enode good">14 关节瞬间完全卸力瘫软，确保零伤害</div>
+      <div class="lane-foot">✅ 唯一可靠的生命防线</div>
+    </div>
+  </div>
+</div>
+
+<p>把差异落到工程参数上，就是下面这张对照表——请把“响应条件”和“适用边界”两行读三遍：</p>
+
+<table>
+  <thead>
+    <tr><th>维度</th><th>软件取消 (Software Cancel)</th><th>物理硬件急停 (Physical E-Stop)</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>生效层级</b></td>
+      <td>运行在计算主板的用户态应用层</td>
+      <td>运行在主控网关板与电机驱动板物理硬件层</td>
+    </tr>
+    <tr>
+      <td><b>触发方式</b></td>
+      <td><code>Ctrl+C</code> 信号、调用 Action 的 Cancel 接口</td>
+      <td>遥控器急停键、短路急停插销、物理长按机身电源</td>
+    </tr>
+    <tr>
+      <td><b>响应条件</b></td>
+      <td>要求操作系统的 CPU、网卡与进程均处于健康状态</td>
+      <td>无需操作系统参与，硬件逻辑纳秒级卸力</td>
+    </tr>
+    <tr>
+      <td><b>适用边界</b></td>
+      <td>日常调试、任务正常终结</td>
+      <td>突发异常、人身接近危险、算法失控</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout warn"><span class="t">🧠 为什么“多了个 Ctrl+C”反而更危险</span>软件取消越顺手，人就越容易在险情面前先找终端。可一旦 CPU 满载、网卡掉线或进程假死，你的归零指令连电机都到不了。所以测试时手指要停在<b>物理急停按键</b>附近，而不是停在键盘上。</div>
+
+<h2 id="s2">二、机器人工程安全“三大交通规则”</h2>
+
+<p>无论你写的是运控脚本、调试接口还是无人值守服务，提交前都先过这三条规则。它们不是建议，是交通规则——闯红灯的代价由机器和旁边的人承担。</p>
+
+<div class="rules">
+  <div class="rule">
+    <span class="rn">规则 01</span>
+    <h3>读先于写 <small style="font-weight:400;color:var(--muted)">Read before Write</small></h3>
+    <ul>
+      <li>修改任何物理运动状态前，<b>必须先通过只读接口查询当前硬件与关节状态</b>；</li>
+      <li>检查电池电量（<code>&gt; 15%</code>）、电机温度（<code>&lt; 70°C</code>）与运行模式，杜绝在倾覆保护状态下强行发步态导致电机堵转烧毁。</li>
+    </ul>
+  </div>
+  <div class="rule">
+    <span class="rn">规则 02</span>
+    <h3>强制边界限制 <small style="font-weight:400;color:var(--muted)">Bound Everything</small></h3>
+    <ul>
+      <li><b>超时有界</b>：所有网络与服务调用强制在 <code>(0, 120]</code> 秒内，严禁 <code>timeout=None</code>；</li>
+      <li><b>队列截断</b>：数据接收队列严格限定为 <b>16</b>，杜绝内存膨胀 OOM；</li>
+      <li><b>禁止对写操作盲目自动重试</b>：运动受阻往往是因为撞到物理障碍，重试会导致齿轮打碎！</li>
+    </ul>
+  </div>
+  <div class="rule">
+    <span class="rn">规则 03</span>
+    <h3>严禁越级旁路 <small style="font-weight:400;color:var(--muted)">Zero Bypass</small></h3>
+    <ul>
+      <li>严禁跳过主机指纹，不可关闭 SSH 主机密钥校验；</li>
+      <li>严禁绕过 Aorta ACL 访问控制表；</li>
+      <li>保持敬畏，绝不将调试脚本直接当作无人值守生产程序。</li>
+    </ul>
+  </div>
+</div>
+
+<div class="callout danger"><span class="t">🚫 三条规则的反面就是事故清单</span>不读状态就发步态 → 电机堵转烧毁；不设边界 → 无限阻塞与 OOM；关闭指纹校验、绕过 ACL → 把整台机器暴露给任何能连上网络的人。任何一条被“临时跳过”，都必须在验收前补回来。</div>
+
+<h2 id="s3">三、开机自启动规范与 <code>flock</code> 防重入锁死</h2>
+
+<p>在实际部署中（如医院陪诊导医、巡检），我们需要机器狗开机后自动拉起 Python 业务进程。然而，错误的自启动脚本极其容易引发系统死锁甚至变砖。</p>
+
+<h3>1. 绝对禁止的三大自启动危险操作</h3>
+
+<ol class="steps danger">
+  <li><b>严禁开机无条件触发运动</b>自启动脚本必须处于“待命监听状态”，严禁系统刚启动未经人工确认就自动站起走动。</li>
+  <li><b>严禁在 <code>/etc/rc.local</code> 中直接写无超时的前台死循环</b>会导致系统启动卡死在登录界面。</li>
+  <li><b>必须显式加载环境变量</b>后台守护进程不会自动加载用户 <code>.bashrc</code>，必须在脚本开头显式 <code>source</code> 环境。</li>
+</ol>
+
+<h3>2. <code>flock</code> 防重入状态机：一次只允许一个实例</h3>
+
+<p>自启动脚本可能被开机流程、手动执行、看门狗重启同时触发。<code>flock</code> 文件锁把“能不能启动”变成一个原子判断：</p>
+
+<div class="fsm" role="img" aria-label="自启动状态机：上电后获取flock锁，成功则启动业务，异常退出后清理并重启；获取失败则记录日志并退出">
+  <div class="fsm-flow">
+    <div class="fsm-node start"><b>上电</b><small>init.sh 调用</small></div>
+    <span class="fsm-arrow">→</span>
+    <div class="fsm-node lock"><b>flock 获取锁</b><small>exec 200&gt;LOCK_FILE</small></div>
+    <span class="fsm-arrow">→</span>
+    <div class="fsm-node run"><b>启动业务</b><small>待命监听，不自动运动</small></div>
+    <span class="fsm-arrow">→</span>
+    <div class="fsm-node exit"><b>异常退出</b><small>崩溃 / 被终止</small></div>
+    <span class="fsm-arrow">→</span>
+    <div class="fsm-node"><b>清理 / 重启</b><small>进程退出即释放锁</small></div>
+  </div>
+  <div class="fsm-side">
+    <div class="fsm-branch"><b>分支：锁已被占用</b><br>说明已有实例在跑。脚本记录一条“程序已在运行中，杜绝重复拉起”日志后 <code>exit 1</code>，绝不并发启动第二个进程。</div>
+    <div class="fsm-return"><b>回到起点</b><br>进程退出时文件描述符关闭、锁自动释放，下一轮启动才有资格重新获取；这是“重启”不会永久锁死自己的原因。</div>
+  </div>
+</div>
+
+<p>核心只有三行，含义必须理解到位：</p>
+
+<div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code>exec 200>"$LOCK_FILE"          # 打开锁文件，绑定到文件描述符 200
+flock -n 200 || { ... exit 1; }  # -n 非阻塞：拿不到锁立刻失败，不傻等
+# 之后启动的业务进程继承 fd 200，锁随进程生命周期存在</code></pre>
+</div>
+
+<div class="callout"><span class="t">💡 为什么必须是 <code>-n</code></span>不加 <code>-n</code> 的 <code>flock</code> 会一直阻塞等待锁，开机流程就卡在这里——这本身就是另一种“死锁”。<code>-n</code> 让第二实例快速失败并留下日志，运维一眼就能看出“是谁在重复拉起”。</div>
+
+<h2 id="s4">四、标准生产级开机脚本模板（<code>/userdata/vbot/start_app.sh</code>）</h2>
+
+<p>官方推荐在 <code>/userdata/vbot/</code> 下维护独立部署的应用包，使用 <code>flock</code> 文件锁防止因多次触发导致并发双重运行：</p>
+
+<div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code>#!/bin/bash
+# ==============================================================================
+# VBOT 生产级自启动守护脚本
+# 具备：防重复启动、环境完整注入、stdout/stderr 轮转日志
+# ==============================================================================
+
+# 1. 显式加载系统与 ROS 2 环境变量
+source /opt/vita/ros/humble/setup.bash
+source /opt/vita/aorta/ros/local_setup.bash
+export ROS_DOMAIN_ID=178
+export ROS_LOCALHOST_ONLY=1
+export ZENOH_SESSION_CONFIG_URI=/opt/vita/aorta/edu/edu_session.json5
+
+# 2. 定义工作目录与日志路径
+APP_DIR="/userdata/vbot/apps/my_agent"
+LOG_DIR="/userdata/vbot/logs"
+LOCK_FILE="/tmp/vbot_my_agent.lock"
+
+mkdir -p "$LOG_DIR"
+cd "$APP_DIR" || exit 1
+
+# 3. 使用 flock 确保单实例运行 (防死锁与并发冲突)
+exec 200>"$LOCK_FILE"
+flock -n 200 || {
+    echo "[$(date)] ⚠️ 程序已在运行中，杜绝重复拉起！" >> "$LOG_DIR/app.log"
+    exit 1
+}
+
+echo "[$(date)] 🚀 正在启动 VBOT 具身智能主程序..." >> "$LOG_DIR/app.log"
+
+# 4. 以后台方式拉起，并将输出重定向至日志文件
+# 传入 --execute，但严禁默认加 --confirm-motion（运动需等待网络唤醒后安全确认）
+exec python3 -u main.py --execute >> "$LOG_DIR/app.log" 2>&1</code></pre>
+</div>
+
+<h3>在系统开机主入口 <code>/userdata/vbot/init.sh</code> 中调用</h3>
+
+<div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code># 以 vbot 用户权限安全后台拉起，避免使用 root
+nohup su - vbot -c "bash /userdata/vbot/start_app.sh" >/dev/null 2>&1 &</code></pre>
+</div>
+
+<div class="callout danger"><span class="t">🚨 模板里最容易“改坏”的一行</span>可以保留 <code>--execute</code>，但<b>严禁默认加 <code>--confirm-motion</code></b>——运动必须等待网络唤醒后由人安全确认。把这一行改成默认运动，就等于把“上电即自动站起走动”写进了生产环境。</div>
+
+<h3>逐段拆解：每一段都在挡一类事故</h3>
+
+<table>
+  <thead>
+    <tr><th>脚本段落</th><th>作用</th><th>一旦缺失或写错的后果</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1. <code>source</code> + <code>export</code> 环境注入</td>
+      <td>后台守护进程不会自动加载用户 <code>.bashrc</code>，必须在脚本开头显式 <code>source</code> 环境</td>
+      <td>ROS 2 环境不完整，节点互相发现不了，表现为“开机后服务像没启动”</td>
+    </tr>
+    <tr>
+      <td>2. <code>APP_DIR</code> / <code>LOG_DIR</code> / <code>cd</code></td>
+      <td>固定工作目录与日志目录，缺失目录先 <code>mkdir -p</code></td>
+      <td>相对路径失效，程序在错误目录找配置，启动即失败</td>
+    </tr>
+    <tr>
+      <td>3. <code>flock -n 200</code></td>
+      <td>确保单实例运行，防死锁与并发冲突</td>
+      <td>多次触发并发双重运行，两个进程抢同一套硬件资源</td>
+    </tr>
+    <tr>
+      <td>4. <code>exec python3 -u ... &gt;&gt; app.log 2&gt;&amp;1</code></td>
+      <td>stdout / stderr 全部轮转进日志；<code>-u</code> 不缓冲，日志实时可见</td>
+      <td>故障无迹可查，只能靠猜；崩溃现场直接丢失</td>
+    </tr>
+    <tr>
+      <td><code>nohup su - vbot -c ...</code></td>
+      <td>以 <code>vbot</code> 用户权限安全后台拉起，避免使用 root</td>
+      <td>脚本里一个低级 bug 就拿到整机最高权限，风险被无限放大</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="s5">五、开发者工程师十条铁律</h2>
+
+<p>这十条不是墙上的口号，而是每次提交前的验收清单。建议把它们直接贴进项目的 <code>README</code> 与 Code Review 模板：</p>
+
+<ol class="laws">
+  <li><b>先读后控</b>在下发任何控制指令前，先订阅一条传感器数据确认总线真正通畅；</li>
+  <li><b>离线优先</b>所有控制代码默认提供预览模式，经过 <code>--confirm-motion</code> 显式确认才操作硬件；</li>
+  <li><b>有界等待</b>杜绝无限阻塞的 <code>while True</code>，所有网络请求必须设置超时；</li>
+  <li><b>频率恒定</b>运控发布严格维持在 10Hz ~ 20Hz，杜绝发包抖动引发看门狗刹车；</li>
+  <li><b>算力隔离</b>为运控核心保留至少 2 个 CPU 核心，高负载模型绝不占满 CPU；</li>
+  <li><b>严禁混用</b>同一时间绝不同步混用底层服务与 RCP 动作流；</li>
+  <li><b>急停就手</b>测试时操作人员的手指必须始终停留在物理急停按键附近；</li>
+  <li><b>场地清空</b>动车前确认半径 3 米内无无关人员、宠物及易碎贵重物品；</li>
+  <li><b>环境防呆</b>自启动脚本必须配合 <code>flock</code> 文件锁，绝不开机盲动；</li>
+  <li><b>敬畏真实</b>尊重每一行代码在物理世界激起的动力学回响。</li>
+</ol>
+
+<h2 id="s6">六、🧪 小实验：自启动脚本风险评分器</h2>
+
+<p>现在把前面的规则用起来。设想你要把一份 <code>start_app.sh</code> 交给一台无人值守的机器狗——先勾选脚本中<b>确实存在</b>的风险项，再让评分器告诉你它离事故有多近。</p>
+
+<h3>风险评估：六项检查</h3>
+
+<div class="lab safety">
+  <h4>🧪 自启动脚本风险评分器</h4>
+  <p>满分 100，分数越高越危险。勾选后点击“评估风险”，每改一项结果都会实时刷新。</p>
+  <div class="risk-grid" id="riskGrid">
+    <label class="risk-item"><input type="checkbox" id="r1"><span><b>无 flock 防重入</b><small>开机流程、手动执行、看门狗可能同时触发</small></span><span class="w">+25</span></label>
+    <label class="risk-item"><input type="checkbox" id="r3"><span><b>上电即自动运动</b><small>未经人工确认就站起走动</small></span><span class="w">+25</span></label>
+    <label class="risk-item"><input type="checkbox" id="r2"><span><b>无超时 / 无边界</b><small><code>timeout=None</code>、无限 <code>while True</code></small></span><span class="w">+20</span></label>
+    <label class="risk-item"><input type="checkbox" id="r4"><span><b>无日志</b><small>stdout / stderr 直接丢弃</small></span><span class="w">+10</span></label>
+    <label class="risk-item"><input type="checkbox" id="r5"><span><b>以 root 无限权限运行</b><small>未降权到 vbot 用户</small></span><span class="w">+10</span></label>
+    <label class="risk-item"><input type="checkbox" id="r6"><span><b>无优雅停机</b><small>异常退出后不清理、不记录</small></span><span class="w">+10</span></label>
+  </div>
+  <div class="labrow">
+    <button id="riskBtn" type="button">评估风险</button>
+    <button id="riskReset" type="button" style="background:var(--muted)">清空重来</button>
+  </div>
+  <div id="riskRes" class="result" role="status" aria-live="polite"></div>
+</div>
+
+<div class="callout"><span class="t">🎯 拿到 0 分的含义</span>0 分只代表脚本满足了本课的静态检查项，可以进入架空验证；它不替代场地清空、不替代物理急停、更不替代 <code>--confirm-motion</code> 前的人工确认。</div>
+
+<h2 id="s7">七、本课小结：把安全写进肌肉记忆</h2>
+
+<div class="recap">
+  <div class="card"><b>生命防线</b>物理硬件急停是唯一不依赖操作系统的卸力链路；软件取消只适用于日常调试与任务正常终结，<b>永远不能替代</b>物理急停。</div>
+  <div class="card"><b>三大交通规则</b>读先于写；强制边界限制（超时 <code>(0, 120]</code> 秒、队列 16）；严禁越级旁路（主机指纹、Aorta ACL）。</div>
+  <div class="card"><b>自启动红线</b>不自动运动、不在 <code>/etc/rc.local</code> 写无超时前台死循环、必须显式 <code>source</code> 环境。</div>
+  <div class="card"><b>防重入四件套</b><code>flock -n</code> 单实例 + 完整环境注入 + stdout/stderr 落盘 + 以 <code>vbot</code> 而非 root 运行。</div>
+</div>
+
+<h3>一页速查：遇到这些场景，动作只有一个</h3>
+
+<table>
+  <thead>
+    <tr><th>场景</th><th>正确动作</th><th>依据</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>现场有人靠近、算法失控</td>
+      <td>立刻按下<b>物理急停</b>：遥控器急停键 / 短路急停插销 / 物理长按机身电源</td>
+      <td>硬件急停无需操作系统参与，纳秒级切断电机驱动 H 桥供电</td>
+    </tr>
+    <tr>
+      <td>下发任何运动指令前</td>
+      <td>只读查询关节状态、电池 <code>&gt; 15%</code>、电机温度 <code>&lt; 70°C</code> 与运行模式</td>
+      <td>读先于写（Read before Write）</td>
+    </tr>
+    <tr>
+      <td>写网络 / 服务调用</td>
+      <td>超时设在 <code>(0, 120]</code> 秒，接收队列限 <b>16</b>，写操作不盲目重试</td>
+      <td>强制边界限制（Bound Everything）</td>
+    </tr>
+    <tr>
+      <td>需要 SSH / 调试接口</td>
+      <td>保留主机指纹与 SSH 主机密钥校验，不绕过 Aorta ACL</td>
+      <td>严禁越级旁路（Zero Bypass）</td>
+    </tr>
+    <tr>
+      <td>配置开机自启动</td>
+      <td>待命监听 + <code>flock -n</code> 单实例 + 显式 <code>source</code> 环境，不默认加 <code>--confirm-motion</code></td>
+      <td>开机自启动规范与三大绝对禁止操作</td>
+    </tr>
+    <tr>
+      <td>拉起业务进程</td>
+      <td><code>nohup su - vbot -c "bash /userdata/vbot/start_app.sh"</code></td>
+      <td>以 <code>vbot</code> 用户权限后台拉起，避免使用 root</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout ok"><span class="t">🎓 全课程收官</span>至此，恭喜你完整掌握了 <b>VBOT 全景开发者体系</b>！愿你的具身智能程序在物理世界中稳健前行、大放异彩！</div>
+
+<div class="callout danger"><span class="t">🛑 最后一遍</span>任何时候，只要现场有人、有宠物、有易碎贵重物品，手指就先回到物理急停按键上——<b>安全是 1，其余所有算法、大模型和酷炫功能都是后面的 0。</b></div>
+
+</div>
+
+<div class="wrap" style="padding-top:0">
+<footer class="nav">
+  <a href="lesson_01.html"><span class="dir">← 上一课</span><span class="ttl">5.1 物理-网络-中间件-应用 四层隔离排障法</span></a>
+  <a class="home-link" href="index.html"><span class="dir">全课程已完结</span><span class="ttl">返回目录</span></a>
+</footer>
+</div>
+
+</main>
+
+<script>
+document.querySelectorAll('.copy').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var pre=btn.parentElement.querySelector('pre');
+    navigator.clipboard.writeText(pre.textContent).then(function(){
+      btn.textContent='已复制'; setTimeout(function(){btn.textContent='复制'},1500);
+    });
+  });
+});
+
+var RISKS=[
+  {id:'r1',w:25,name:'无 flock 防重入',
+   why:'开机流程、手动执行与看门狗可能同时触发，两个实例并发抢占同一套硬件资源，系统直接死锁。',
+   ref:'依据：三大危险操作（并发双重运行）+ 铁律 9「环境防呆」',
+   good:'已用 flock -n 200 做单实例判断，重复拉起会记录日志并 exit 1。',
+   fix:'加 exec 200>锁文件 + flock -n 200，拿不到锁记日志并 exit 1'},
+  {id:'r3',w:25,name:'上电即自动运动',
+   why:'系统刚启动、现场无人持急停时就站起走动，正是本课列出的第一条绝对禁止操作。',
+   ref:'依据：三大危险操作第 1 条 + 铁律 2「离线优先」、铁律 7「急停就手」',
+   good:'脚本处于待命监听状态，运动等待网络唤醒后 --confirm-motion 人工确认。',
+   fix:'去掉开机自动运动，改为待命监听，运动前必须 --confirm-motion'},
+  {id:'r2',w:20,name:'无超时 / 无边界',
+   why:'timeout=None 与无限 while True 会让进程永久阻塞；接收队列不截断还会内存膨胀 OOM。',
+   ref:'依据：交通规则 2「强制边界限制」+ 铁律 3「有界等待」',
+   good:'调用超时落在 (0, 120] 秒内，接收队列限定 16，写操作不盲目重试。',
+   fix:'所有调用设超时（(0,120] 秒）、队列限 16、写操作不盲目重试'},
+  {id:'r4',w:10,name:'无日志',
+   why:'stdout / stderr 直接被丢弃，崩溃现场无迹可查，只能靠猜。',
+   ref:'依据：模板第 4 段 stdout/stderr 轮转日志',
+   good:'stdout / stderr 已重定向到 /userdata/vbot/logs/app.log。',
+   fix:'把 stdout/stderr 重定向到 /userdata/vbot/logs/app.log'},
+  {id:'r5',w:10,name:'以 root 无限权限运行',
+   why:'脚本里一个低级 bug 就能拿到整机最高权限，单点失误被放大成整机风险。',
+   ref:'依据：init.sh 注释「以 vbot 用户权限安全后台拉起，避免使用 root」',
+   good:'以 vbot 用户权限启动，未使用 root。',
+   fix:'改用 nohup su - vbot -c 降权启动'},
+  {id:'r6',w:10,name:'无优雅停机',
+   why:'异常退出后不清理、不记录、不重启，锁虽随进程退出释放，但故障无人知晓。',
+   ref:'依据：flock 状态机「异常退出 → 清理 / 重启」',
+   good:'异常退出有清理与重启路径。',
+   fix:'补异常退出后的清理与重启路径'}
+];
+var FIX_ORDER=['r3','r1','r2','r5','r4','r6'];
+var evaluated=false;
+
+function riskById(id){
+  for(var i=0;i<RISKS.length;i++){if(RISKS[i].id===id)return RISKS[i];}
+  return null;
+}
+
+function evaluateRisk(){
+  var score=0, html='', color='#22c55e', cls='ok', level='安全基线达标';
+  RISKS.forEach(function(r){
+    var el=document.getElementById(r.id);
+    if(el.checked){score+=r.w;}
+  });
+  if(score>=80){cls='bad';color='#ef4444';level='极高风险 · 禁止上线';}
+  else if(score>=60){cls='bad';color='#ef4444';level='高风险 · 立即整改';}
+  else if(score>=40){cls='warn';color='#f59e0b';level='中风险 · 建议整改';}
+  else if(score>0){cls='warn';color='#f59e0b';level='低风险 · 建议清零';}
+
+  html+='<div class="scoreline"><span class="num">'+score+'</span><span class="unit">/ 100 风险分</span><span class="verdict">'+level+'</span></div>';
+  html+='<div class="meter"><i style="width:'+score+'%;background:'+color+'"></i></div>';
+  html+='<ul class="risklist">';
+  RISKS.forEach(function(r){
+    var on=document.getElementById(r.id).checked;
+    if(on){
+      html+='<li class="hit"><b>扣 '+r.w+' 分 · '+r.name+'</b>：'+r.why+'<br>'+r.ref+'</li>';
+    }else{
+      html+='<li class="clean"><b>已具备 · '+r.name+'</b>：'+r.good+'</li>';
+    }
+  });
+  html+='</ul>';
+
+  if(score>=60){
+    var steps=[];
+    FIX_ORDER.forEach(function(id){
+      if(document.getElementById(id).checked){steps.push(riskById(id).name+' → '+riskById(id).fix);}
+    });
+    html+='<div class="fixorder"><b>修复顺序：先人身安全，再系统稳定，最后可观测</b>';
+    steps.forEach(function(s,i){html+=(i+1)+'. '+s+'<br>';});
+    html+='</div>';
+  }
+
+  var res=document.getElementById('riskRes');
+  res.className='result '+cls;
+  res.innerHTML=html;
+  evaluated=true;
+}
+
+var riskBtn=document.getElementById('riskBtn');
+if(riskBtn){
+  riskBtn.addEventListener('click',evaluateRisk);
+  document.querySelectorAll('#riskGrid input').forEach(function(cb){
+    cb.addEventListener('change',function(){
+      if(cb.checked){cb.parentElement.classList.add('on');}
+      else{cb.parentElement.classList.remove('on');}
+      if(evaluated){evaluateRisk();}
+    });
+  });
+  document.getElementById('riskReset').addEventListener('click',function(){
+    document.querySelectorAll('#riskGrid input').forEach(function(cb){
+      cb.checked=false;
+      cb.parentElement.classList.remove('on');
+    });
+    var res=document.getElementById('riskRes');
+    res.className='result';
+    res.innerHTML='';
+    evaluated=false;
+  });
+}
+</script>
+</body>
+</html>

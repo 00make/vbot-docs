@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.1 运动控制进阶与 RCP DAG 动作流编排 | VBOT EDU 具身智能体开发</title>
+<style>
+/* ===== 风格契约 v1 · 预设 A 清爽技术文档风（全教程统一，勿改） ===== */
+:root{
+  --bg:#ffffff; --fg:#1f2937; --muted:#6b7280;
+  --accent:#0e7490; --accent-dark:#155e75; --accent-light:#ecfeff;
+  --code-bg:#f3f4f6; --code-fg:#111827; --code-border:#e5e7eb;
+  --border:#e5e7eb; --card:#f9fafb;
+  --warn-bg:#fffbeb; --warn-bd:#f59e0b;
+  --danger-bg:#fef2f2; --danger-bd:#ef4444;
+  --tip-bg:#ecfeff; --tip-bd:#0e7490;
+  --ok-bg:#f0fdf4; --ok-bd:#22c55e;
+  --radius:10px; --max-width:880px; --toc-w:250px;
+  --font-body:"Microsoft YaHei","Source Han Sans CN",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"Cascadia Code",Consolas,"JetBrains Mono","Courier New",monospace;
+}
+/* ===== 风格契约结束 ===== */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.8;font-size:16px}
+a{color:var(--accent)}
+a:hover{color:var(--accent-dark)}
+code{font-family:var(--font-mono);font-size:.875em;background:var(--code-bg);border:1px solid var(--code-border);border-radius:4px;padding:1px 6px;color:var(--code-fg)}
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:16px 18px;overflow:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;color:var(--code-fg);margin:0}
+pre code{background:none;border:none;padding:0;font-size:inherit}
+
+/* 布局：左 TOC + 右正文 */
+.toc{position:fixed;top:0;left:0;bottom:0;width:var(--toc-w);background:var(--card);border-right:1px solid var(--border);padding:28px 16px;overflow:auto}
+.toc .brand{font-weight:700;color:var(--accent-dark);font-size:17px;margin-bottom:2px}
+.toc .sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.toc ol{list-style:none;margin:0;padding:0;counter-reset:toc}
+.toc li{counter-increment:toc;margin-bottom:2px}
+.toc a{display:block;padding:7px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font-size:13.5px}
+.toc a::before{content:counter(toc) ". ";color:var(--accent);font-weight:600}
+.toc a:hover{background:var(--accent-light);color:var(--accent-dark)}
+.toc .home{display:inline-block;margin-top:18px;font-size:13px;color:var(--accent);text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--bg)}
+main{margin-left:var(--toc-w)}
+.wrap{max-width:var(--max-width);margin:0 auto;padding:40px 32px 24px}
+
+/* 页头 */
+header.lesson{border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:32px}
+header.lesson .hero-img{width:100%;max-height:280px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);margin-top:18px}
+.badges{margin-bottom:12px}
+.badge{display:inline-block;font-size:12px;font-weight:600;border-radius:99px;padding:2px 12px;margin-right:8px;vertical-align:middle}
+.badge.no{background:var(--accent);color:#fff}
+.badge.safe{background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.badge.ver{background:var(--card);color:var(--muted);border:1px solid var(--border)}
+h1{font-size:30px;line-height:1.4;margin:0 0 10px;color:var(--accent-dark)}
+.meta{font-size:13.5px;color:var(--muted)}
+.meta a{color:var(--accent)}
+
+/* 标题层级 */
+h2{font-size:22px;color:var(--accent-dark);margin:48px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--accent-light)}
+h3{font-size:17.5px;color:var(--fg);margin:28px 0 10px}
+
+/* 提示框 */
+.callout{border-left:4px solid var(--tip-bd);background:var(--tip-bg);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;margin:20px 0;font-size:15px}
+.callout.warn{border-color:var(--warn-bd);background:var(--warn-bg)}
+.callout.danger{border-color:var(--danger-bd);background:var(--danger-bg)}
+.callout.ok{border-color:var(--ok-bd);background:var(--ok-bg)}
+.callout .t{font-weight:700;display:block;margin-bottom:4px}
+
+/* 直播口播折叠 */
+details.talk{border:1px dashed var(--accent);border-radius:var(--radius);background:var(--bg);margin:20px 0}
+details.talk summary{cursor:pointer;padding:12px 18px;color:var(--accent);font-weight:600;font-size:14.5px}
+details.talk .body{padding:0 18px 14px;color:var(--muted);font-size:14.5px}
+
+/* 图片 */
+figure{margin:24px 0;text-align:center}
+figure img{max-width:100%;border:1px solid var(--border);border-radius:var(--radius);background:#fff}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+
+/* 表格 */
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px}
+th,td{border:1px solid var(--border);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--accent-light);color:var(--accent-dark);font-weight:700}
+tr:nth-child(even) td{background:var(--card)}
+td .no{color:var(--danger-bd);font-weight:700}
+
+/* 编号步骤 */
+ol.steps{list-style:none;counter-reset:st;padding:0;margin:18px 0}
+ol.steps>li{counter-increment:st;position:relative;padding:0 0 18px 48px}
+ol.steps>li::before{content:counter(st);position:absolute;left:0;top:2px;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;text-align:center;line-height:32px;font-size:15px}
+ol.steps>li>b:first-child{display:block;margin-bottom:4px}
+
+/* CSS 拓扑图 */
+.topo{display:flex;align-items:stretch;justify-content:center;gap:0;margin:24px 0;flex-wrap:wrap}
+.topo .node{background:var(--card);border:2px solid var(--accent);border-radius:var(--radius);padding:12px 16px;min-width:170px;text-align:center;font-size:13.5px}
+.topo .node b{display:block;color:var(--accent-dark);font-size:14.5px;margin-bottom:2px}
+.topo .node code{font-size:12px}
+.topo .node.dev{border-color:var(--muted)}
+.topo .node.gw{border-style:dashed}
+.topo .link{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 10px;color:var(--muted);font-size:12px;min-width:96px}
+.topo .link .arrow{font-size:20px;color:var(--accent);line-height:1.2}
+
+/* 代码块 + 复制按钮 + Tabs */
+.codewrap{position:relative;margin:14px 0}
+.codewrap .lang{position:absolute;top:0;right:88px;font-size:11px;color:var(--muted);background:var(--bg);border:1px solid var(--code-border);border-bottom:none;border-radius:6px 6px 0 0;padding:1px 8px}
+.copy{position:absolute;top:8px;right:8px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;font-family:var(--font-body)}
+.copy:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.tabs{display:flex;gap:6px;margin:18px 0 0}
+.tabs button{border:1px solid var(--border);border-bottom:none;background:var(--card);padding:8px 18px;border-radius:10px 10px 0 0;cursor:pointer;font-size:14px;color:var(--muted);font-family:var(--font-body)}
+.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+.panel{display:none;border:1px solid var(--border);border-radius:0 var(--radius) var(--radius) var(--radius);padding:16px 18px;background:var(--bg)}
+.panel.on{display:block}
+
+/* 目标清单 */
+ul.goals{margin:12px 0;padding-left:0;list-style:none}
+ul.goals li{padding:4px 0 4px 28px;position:relative}
+ul.goals li::before{content:"✓";position:absolute;left:4px;color:var(--accent);font-weight:700}
+
+/* 页脚导航 */
+footer.nav{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--border);margin-top:56px;padding:24px 0 40px;flex-wrap:wrap}
+footer.nav a{flex:1;min-width:200px;border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;text-decoration:none;background:var(--card)}
+footer.nav a:hover{border-color:var(--accent);background:var(--accent-light)}
+footer.nav .dir{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
+footer.nav .ttl{display:block;font-size:15px;color:var(--accent-dark);font-weight:600}
+footer.nav a.home-link{flex:0 0 auto;text-align:center}
+
+/* 甘特时间线 */
+.gantt{margin:20px 0}
+.gantt .row{display:flex;align-items:center;margin:8px 0}
+.gantt .lbl{width:190px;font-size:13.5px;color:var(--fg);flex-shrink:0}
+.gantt .track{flex:1;position:relative;height:28px;background:var(--card);border:1px solid var(--border);border-radius:6px}
+.gantt .bar{position:absolute;top:3px;bottom:3px;background:linear-gradient(90deg,var(--accent),#22d3ee);border-radius:5px;color:#fff;font-size:11.5px;display:flex;align-items:center;padding:0 8px;white-space:nowrap;overflow:hidden}
+.gantt .axis{display:flex;margin-left:190px;font-size:11.5px;color:var(--muted)}
+.gantt .axis span{flex:1;text-align:left}
+
+/* 决策流程图 */
+.flow{display:flex;flex-direction:column;align-items:center;margin:24px 0}
+.fnode{border:2px solid var(--accent);background:var(--accent-light);border-radius:var(--radius);padding:10px 18px;font-size:14px;text-align:center;max-width:460px}
+.fnode b{color:var(--accent-dark)}
+.fnode.start{border-radius:99px;background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.fnode.decision{background:var(--warn-bg);border-color:var(--warn-bd)}
+.fnode.end{border-radius:99px;background:var(--ok-bg);border-color:var(--ok-bd);color:#15803d;font-weight:600}
+.fdown{color:var(--accent);font-size:18px;line-height:1.5;text-align:center}
+.fdown small{display:block;font-size:12px;color:var(--muted)}
+.fbranch{display:flex;gap:28px;justify-content:center;align-items:flex-start;flex-wrap:wrap;margin:4px 0}
+.fcol{display:flex;flex-direction:column;align-items:center}
+.fcol .tag-y{font-size:12px;font-weight:700;color:#15803d;background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+.fcol .tag-n{font-size:12px;font-weight:700;color:#92400e;background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+
+/* 交互小实验 */
+.lab{background:var(--card);border:1px solid var(--accent);border-radius:var(--radius);padding:18px 20px;margin:26px 0}
+.lab h4{margin:0 0 6px;color:var(--accent-dark);font-size:16px}
+.lab p{margin:4px 0;font-size:14px;color:var(--muted)}
+.labrow{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;align-items:center}
+.lab input{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font-mono);font-size:14px;width:220px;background:var(--bg);color:var(--fg)}
+.lab button{padding:8px 18px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:14px;font-family:var(--font-body)}
+.lab button:hover{background:var(--accent-dark)}
+.result{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:14px;display:none}
+.result.ok{display:block;background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.result.bad{display:block;background:var(--danger-bg);color:#b91c1c;border:1px solid var(--danger-bd)}
+.result.warn{display:block;background:var(--warn-bg);color:#92400e;border:1px solid var(--warn-bd)}
+.lab pre{margin-top:10px}
+
+/* 移动端 */
+@media (max-width:768px){
+  .toc{position:static;width:auto;border-right:none;border-bottom:1px solid var(--border);padding:18px 16px}
+  .toc ol{columns:2}
+  main{margin-left:0}
+  .wrap{padding:24px 18px 12px}
+  h1{font-size:24px}
+  .topo{flex-direction:column;align-items:center}
+  .topo .link{min-width:auto;padding:6px 0}
+  .topo .link .arrow{transform:rotate(90deg)}
+  .gantt .lbl{width:110px;font-size:12px}
+  .gantt .axis{margin-left:110px}
+  .fbranch{flex-direction:column;align-items:center;gap:8px}
+}
+/* 打印 */
+@media print{
+  .toc,.copy,.tabs{display:none}
+  main{margin-left:0}
+  .panel{display:block!important;border:none;padding:8px 0}
+  body{font-size:12px}
+  a{color:var(--fg);text-decoration:none}
+}
+
+/* ===== 本课追加样式（03 · Lesson 01 专属，不改配色/字体/间距体系） ===== */
+.badge.danger{background:var(--danger-bg);color:#b91c1c;border:1px solid var(--danger-bd)}
+.safety-strip{border:1px solid var(--danger-bd);border-left:4px solid var(--danger-bd);border-radius:0 var(--radius) var(--radius) 0;background:var(--danger-bg);padding:14px 18px;margin:24px 0}
+.safety-strip .t{display:block;font-weight:700;color:#b91c1c;margin-bottom:4px}
+.safety-strip ul{margin:6px 0 0;padding-left:20px;font-size:14.5px}
+.safety-strip li{margin:4px 0}
+.tblwrap{overflow-x:auto;margin:18px 0}
+.tblwrap table{margin:0;min-width:660px}
+.diagram-cap{font-size:13px;color:var(--muted);text-align:center;margin:-6px 0 22px}
+
+/* DAG 动作图 */
+.dag{display:flex;align-items:center;justify-content:center;gap:6px;margin:26px 0 10px;flex-wrap:wrap}
+.dag .dcol{display:flex;flex-direction:column;gap:12px;flex:1 1 190px;max-width:250px}
+.dag .dnode{border:2px solid var(--accent);border-radius:var(--radius);background:var(--bg);padding:10px 12px;font-size:13px;line-height:1.6}
+.dag .dnode b{display:block;font-size:12px;color:var(--muted);font-family:var(--font-mono);margin-bottom:2px}
+.dag .dnode .tag{display:inline-block;font-size:11px;font-weight:700;border-radius:99px;padding:0 8px;margin-bottom:4px;font-family:var(--font-mono);background:var(--accent);color:#fff}
+.dag .dnode.daemon{background:var(--accent-light);border-color:var(--accent)}
+.dag .dnode.normal{background:var(--card);border-color:var(--accent-dark)}
+.dag .dnode.normal .tag{background:var(--accent-dark)}
+.dag .dnode.barrier{background:var(--danger-bg);border-color:var(--danger-bd)}
+.dag .dnode.barrier .tag{background:var(--danger-bd)}
+.dag .dlink{display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);font-size:11.5px;min-width:84px;text-align:center;line-height:1.4}
+.dag .dlink .arrow{font-size:20px;color:var(--accent);line-height:1.2}
+
+/* 物理资源卡片 */
+.res-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:18px 0}
+.res{border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:var(--radius);background:var(--card);padding:10px 14px}
+.res b{display:block;font-family:var(--font-mono);font-size:14px;color:var(--accent-dark)}
+.res span{font-size:13.5px;color:var(--muted)}
+.res.legs{border-left-color:var(--danger-bd)}
+.res.legs b{color:#b91c1c}
+
+/* 策略分支标签与生命线配色 */
+.fbranch.three{align-items:stretch;gap:18px}
+.fbranch.three .fcol{flex:1 1 0;max-width:270px}
+.fbranch.three .fnode{max-width:100%;width:100%;flex:1}
+.fcol .tag-a{font-size:12px;font-weight:700;color:var(--accent-dark);background:var(--accent-light);border:1px solid var(--accent);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+.fcol .tag-r{font-size:12px;font-weight:700;color:#b91c1c;background:var(--danger-bg);border:1px solid var(--danger-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+.gantt .bar.daemon{background:var(--accent)}
+.gantt .bar.normal{background:var(--accent-dark)}
+.gantt .bar.barrier{background:var(--danger-bd)}
+
+/* 站立 / 趴下状态机 */
+.pose-machine{display:grid;grid-template-columns:1fr 118px 1fr;align-items:stretch;gap:12px;margin:24px 0 10px}
+.pose{border:2px solid var(--accent);border-radius:var(--radius);background:var(--accent-light);padding:14px;text-align:center}
+.pose b{display:block;color:var(--accent-dark);font-size:15px;margin-bottom:4px}
+.pose span{display:block;font-size:13px;color:var(--muted)}
+.pose code{display:inline-block;margin-top:6px;font-size:11.5px;white-space:normal;overflow-wrap:anywhere;max-width:100%}
+.pose-links{display:flex;flex-direction:column;justify-content:center;gap:10px}
+.pose-links .pl{border:1px dashed var(--border);border-radius:8px;background:var(--card);padding:7px 10px;font-size:12.5px;text-align:center}
+.pose-links .pl span{display:block;font-size:12px;color:var(--muted)}
+.pose-links .pl small{display:block;font-size:11.5px;color:var(--muted);line-height:1.5}
+.pose-links .pl.danger{border-color:var(--danger-bd);background:var(--danger-bg)}
+.pose-links .pl.danger span{color:#b91c1c;font-weight:700}
+.pose span code,.pose-links .pl code{white-space:normal;overflow-wrap:anywhere;word-break:break-word;font-size:11.5px}
+
+/* 资源锁冲突检测器 */
+.lab .opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}
+.lab .opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);border-radius:8px;background:var(--bg);padding:10px 12px;cursor:pointer;font-size:13.5px}
+.lab .opt:hover{border-color:var(--accent)}
+.lab .opt input[type="checkbox"]{width:auto;padding:0;margin:4px 0 0;flex:0 0 auto;accent-color:var(--accent)}
+.lab .opt b{display:block;font-size:13.5px;color:var(--fg)}
+.lab .opt small{display:block;font-size:12px;color:var(--muted);line-height:1.5}
+.locks{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0 2px;min-height:26px}
+.locks .lbl2{font-size:12px;color:var(--muted)}
+.lockchip{font-family:var(--font-mono);font-size:12px;border:1px solid var(--accent);border-radius:99px;padding:1px 10px;background:var(--accent-light);color:var(--accent-dark)}
+.lockchip.hot{border-color:var(--danger-bd);background:var(--danger-bg);color:#b91c1c;font-weight:700}
+.result .r-title{display:block;font-weight:700;margin-bottom:4px}
+.result ol,.result ul{margin:6px 0 0;padding-left:20px}
+.result li{margin:2px 0}
+.result .r-note{display:block;margin-top:6px;font-size:13px}
+
+@media (max-width:768px){
+  .dag{flex-direction:column;align-items:stretch}
+  .dag .dcol{max-width:none}
+  .dag .dlink{min-width:auto;padding:2px 0}
+  .dag .dlink .arrow{transform:rotate(90deg)}
+  .pose-machine{grid-template-columns:1fr}
+  .pose-links{flex-direction:row}
+  .fbranch.three .fcol{max-width:none;width:100%}
+  .lab .opts{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav class="toc" id="nav">
+  <div class="brand">VBOT EDU 具身智能体开发</div>
+  <div class="sub">模块 03 · Lesson 01</div>
+  <ol>
+    <li><a href="#s1">双控制路径辨析</a></li>
+    <li><a href="#s2">RCP 架构：DAG 动作流</a></li>
+    <li><a href="#s3">物理资源锁</a></li>
+    <li><a href="#s4">三大生命周期策略</a></li>
+    <li><a href="#s5">实战：官方预设动作</a></li>
+    <li><a href="#s6">站起与安全趴下</a></li>
+    <li><a href="#s7">小实验：资源锁冲突检测器</a></li>
+    <li><a href="#s8">本课小结</a></li>
+  </ol>
+  <a class="home" href="index.html">← 返回目录</a>
+</nav>
+
+<main>
+<div class="wrap">
+
+<header class="lesson">
+  <div class="badges">
+    <span class="badge no">Lesson 01</span>
+    <span class="badge danger">安全级别：运动控制（motion_control）</span>
+    <span class="badge ver">固件基准 V1.6.0</span>
+  </div>
+  <h1>运动控制进阶与 RCP DAG 动作流编排</h1>
+  <p class="meta">预计阅读 14 分钟 · 前置课程：<a href="../02-architecture-comm/lesson_03.html">2.3 规范化开发环境搭建与生产级 Python 骨架</a> · 硬件准备：机器狗已上电、Aorta Python SDK 环境就绪</p>
+</header>
+
+<details class="talk">
+  <summary>🎙️ 展开直播口播导语（讲师版）</summary>
+  <div class="body">
+    <p>“底盘平稳走动只是基础，让机器狗‘既能走路、又能摇尾巴、大头屏幕眨眼、耳灯变色、同时播报语音’，才是具身智能交互的核心魅力！很多从传统 ROS 2 走过来的开发者，脑子里只认一种最土、最暴力的控制办法：写一个 <code>while True</code> 死循环，以每秒钟 20 次的极高频率向 <code>/vel_cmd</code> 疯狂丢速度数据！同学们，频繁加减速造成的动力学冲击，会让减速箱齿轮剧烈磨损、电机温升直线上升；而且你根本没法做到‘边走路、边转头看人、边眨眼睛、边放背景音乐’！今天这节课，我们要郑重向大家介绍 VBOT 真正的工程王牌——<b>RCP (Robot Command Pipeline) 任务编排系统</b>！彻底告别 20Hz 离散折磨，学会用 DAG 有向无环图编排丝滑如丝绸的动作流！”</p>
+  </div>
+</details>
+
+<h2 id="goals" style="margin-top:24px;border-bottom:none;padding-bottom:0;font-size:17.5px">本课学习目标</h2>
+<ul class="goals">
+  <li>分清“直接服务 / 话题”与“RCP 任务图”两条控制路径的边界与接口</li>
+  <li>说清 RCP 的 DAG 结构、5 类物理资源锁与 3 种生命周期策略</li>
+  <li>用 Aorta Python SDK 调用官方预设动作（<code>DagPresetRef</code>），并等到任务终态</li>
+  <li>用 <code>set_run_mode(MANUAL=0)</code> 站起、用 <code>SAFE_LAYDOWN_SEQUENCE=4</code> 安全趴下</li>
+  <li>用资源锁思维自查并发操作，避免底层电机轨迹冲突与保护性停机</li>
+</ul>
+
+<div class="safety-strip">
+  <span class="t">⚠️ 运动安全提示（motion_control 红线）</span>
+  <ul>
+    <li><b>黄金法则：</b>同一时刻、同一物理资源，绝对不要混用两条控制路径！当 RCP 任务正在占用 <code>LEGS</code> 腿部资源执行动作时，严禁并发调用 <code>/vel_cmd</code> 发布速度，否则会导致底层电机轨迹冲突并引发保护性停机。</li>
+    <li><b>趴下红线：</b>安全趴下必须调用 <code>lowlevel_action(SAFE_LAYDOWN_SEQUENCE=4)</code>，按四肢缓降时序收缩；切忌凭字面意义暴力下发全零关节指令，否则机器狗会因瞬间失重重摔着地。</li>
+  </ul>
+</div>
+
+<h2 id="s1">一、双控制路径辨析：直接服务 vs RCP 任务图</h2>
+
+<p>Vbot 身上同时存在两套“让机器狗动起来”的方式：一套是传统 ROS 2 思维的<b>直接服务 / 话题</b>，另一套是 RCP 的<b>任务图（DAG）</b>。它们不是新旧替代关系，而是分工不同——用错场景，轻则动作别扭，重则触发保护性停机。</p>
+
+<div class="flow" role="img" aria-label="双路径决策图：需要连续高频调整速度或航向走 /vel_cmd 直接服务；离散多模态动作走 RCP 任务图">
+  <div class="fnode start">🤔 你想让机器狗做什么？</div>
+  <div class="fdown">↓</div>
+  <div class="fnode decision">❓ 需要<b>连续、高频</b>地调整行进速度或航向吗？</div>
+  <div class="fbranch">
+    <div class="fcol">
+      <span class="tag-y">是 · 连续量</span>
+      <div class="fnode"><b>路径一：直接服务 / 话题</b><br>底盘速度：<code>/vel_cmd</code><br>模式切换：<code>set_run_mode</code></div>
+      <div class="fdown">↓</div>
+      <div class="fnode">遥控操纵 · SLAM 避障巡航<br><small>延迟 &lt; 5ms</small></div>
+    </div>
+    <div class="fcol">
+      <span class="tag-n">否 · 离散动作</span>
+      <div class="fnode"><b>路径二：RCP 任务图（DAG）</b><br>Action：<code>/rcp/execute_task</code><br>目标：<code>ExecuteTaskGoal</code></div>
+      <div class="fdown">↓</div>
+      <div class="fnode">迎宾走秀 · 复合连招<br><small>资源自动加锁 · 等待屏障</small></div>
+    </div>
+  </div>
+  <div class="fdown">↓ <small>两条路最终落到同一批物理资源：LEGS / HEAD / SCREEN / LIGHT / AUDIO_OUT</small></div>
+  <div class="fnode end">⚠️ 同一资源、同一时刻，只能有一条路径持锁</div>
+</div>
+<p class="diagram-cap">图 1 · 双路径决策图：连续量交给 <code>/vel_cmd</code>，离散的多模态动作交给 RCP</p>
+
+<div class="tblwrap">
+<table>
+  <thead>
+    <tr><th>控制路径</th><th>适用场景</th><th>核心接口</th><th>优势</th><th>局限</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>路径一：直接服务 / 话题</b></td>
+      <td>遥控器连续操纵、SLAM 避障巡航、实时速度跟随</td>
+      <td>话题 <code>/vel_cmd</code><br>服务 <code>set_run_mode</code></td>
+      <td>实时性最高（延迟 &lt; 5ms）</td>
+      <td>无法实现声光电姿态多模态同步</td>
+    </tr>
+    <tr>
+      <td><b>路径二：RCP 任务图 (DAG)</b></td>
+      <td>拟人情感表达、迎宾走秀、复合连招（如作揖+屏幕比心+闪烁耳灯）</td>
+      <td>Action <code>/rcp/execute_task</code></td>
+      <td>强时序原子性、资源自动加锁、支持并发与等待屏障</td>
+      <td>属于离散任务流，不适合连续高频航向微调</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout danger"><span class="t">🚨 黄金法则（最易踩坑点）</span><b>同一时刻、同一物理资源，绝对不要混用两条控制路径！</b>当 RCP 任务正在占用 <code>LEGS</code> 腿部资源执行一段挥手动作时，严禁并发调用 <code>/vel_cmd</code> 发布速度，否则会导致底层电机轨迹冲突并引发保护性停机。</div>
+
+<h3>为什么两条路径不能无序并发？</h3>
+
+<p>两条路径各自维护着自己的“轨迹账本”：<code>/vel_cmd</code> 是<b>每帧覆盖</b>的连续速度流，RCP 是<b>整段动作</b>的时序编排。RCP 执行挥爪时，腿部目标轨迹由动作图逐帧推进；此时插进来的速度指令会直接改写电机目标，底层无法同时满足两套轨迹，只能触发保护性停机。</p>
+
+<p>更隐蔽的是“任务已受理”并不等于“动作已完成”：执行预设动作拿到的 handle 只代表任务进入执行队列，此时若切回 <code>/vel_cmd</code>，依然是在抢 <code>LEGS</code>。因此两条路径应当当作两种<b>模式</b>来切换，而不是两个可以随意并行的按钮。</p>
+
+<ol class="steps">
+  <li><b>先停连续流</b>停止向 <code>/vel_cmd</code> 发布速度指令，确认底盘已经静止，再进入下一步。</li>
+  <li><b>再交任务图</b>通过 <code>/rcp/execute_task</code> 下发 RCP 任务（或调用官方预设动作），由 RCP 为任务加锁、占用其声明的资源。</li>
+  <li><b>等终态再放手</b>阻塞等待任务的最终终态，确认动作结束后再切回速度控制；绝不在动作中途抢锁，也不要把“受理成功”当成“动作完成”。</li>
+</ol>
+
+<div class="callout warn"><span class="t">💡 一句话记忆</span>连续量走话题，离散动作走 DAG；同一资源同一时刻，只允许一条路径说话。</div>
+
+<h2 id="s2">二、RCP 架构：用 DAG 描述一条动作流</h2>
+
+<p>RCP 全称 <b>Robot Command Pipeline</b>，它采用类似微服务工作流的 <b>DAG（Directed Acyclic Graph，有向无环图）</b>结构定义任务：每个节点是一个原子动作或一个模态输出，每条边代表“谁必须等谁”。因为图里不允许出现环，任务不会陷入互相等待的死锁，天然适合“表情 + 耳灯 + 身体动作”这类多模态并行编排。</p>
+
+<p>下面这张图就是源文档里的“热情迎宾”动作流：两个 <code>DAEMON</code> 节点并行点亮表情与耳灯，汇聚到 <code>NORMAL</code> 的坐姿挥爪，最后由 <code>BARRIER</code> 统一收尾。</p>
+
+<div class="dag" role="img" aria-label="RCP 热情迎宾 DAG：节点1屏显眨眼大笑 say_hi 与节点2耳灯渐变粉色呼吸并行，汇入节点3坐姿挥爪 WAVE，再到节点4结束屏障恢复常态表情与待命灯">
+  <div class="dcol">
+    <div class="dnode daemon"><span class="tag">DAEMON</span><b>节点 1</b>屏显表情：眨眼大笑 (say_hi)</div>
+    <div class="dnode daemon"><span class="tag">DAEMON</span><b>节点 2</b>耳灯：渐变粉色呼吸</div>
+  </div>
+  <div class="dlink"><span class="arrow">→</span>并行汇入</div>
+  <div class="dcol">
+    <div class="dnode normal"><span class="tag">NORMAL</span><b>节点 3</b>身体动作：坐姿挥爪 (WAVE)</div>
+  </div>
+  <div class="dlink"><span class="arrow">→</span>完成放行</div>
+  <div class="dcol">
+    <div class="dnode barrier"><span class="tag">BARRIER</span><b>节点 4</b>结束屏障：恢复常态表情与待命灯</div>
+  </div>
+</div>
+<p class="diagram-cap">图 2 · RCP 动作流「热情迎宾」：节点 1、2 并行，节点 3 阻塞等待完成，节点 4 收尾复位</p>
+
+<h3>怎么读这张 DAG</h3>
+
+<ul class="goals">
+  <li><b>节点 = 一次原子动作或模态输出</b>：屏显表情、耳灯、身体动作各自独立，互不阻塞时才可能并行。</li>
+  <li><b>边 = 时序依赖</b>：节点 1、2 指向节点 3，说明表情与耳灯先亮起来，身体动作随后开始。</li>
+  <li><b>策略挂在节点上</b>：同一张图里，<code>DAEMON</code> 并行、<code>NORMAL</code> 阻塞、<code>BARRIER</code> 收尾，三种节奏共存。</li>
+  <li><b>无环 = 不死锁</b>：依赖关系只能单向推进，不会出现 A 等 B、B 又等 A 的互锁。</li>
+</ul>
+
+<div class="callout"><span class="t">📌 接口速查</span>RCP 任务通过 Action <code>/rcp/execute_task</code> 下发，Action 目标为 <code>ExecuteTaskGoal</code>；官方预设动作以 <code>DagPresetRef</code> 的形式引用。本课涉及的接口标识：<code>/vel_cmd</code>、<code>/rcp/execute_task</code>、<code>rcp_dag</code>、<code>aorta_action</code>。</div>
+
+<h2 id="s3">三、物理资源锁：Required Resources</h2>
+
+<p>每一个 RCP 任务必须预先声明其锁定的硬件资源枚举，防止资源死锁——这就是 <b>Required Resources</b>。它相当于任务的“占座凭证”：声明了哪几类硬件，任务执行期间就由它独占，别的任务或控制路径只能等锁释放。</p>
+
+<div class="res-grid">
+  <div class="res legs"><b>LEGS</b><span>四肢运控</span></div>
+  <div class="res"><b>HEAD</b><span>头部俯仰 / 偏航电机</span></div>
+  <div class="res"><b>SCREEN</b><span>面部 LCD 交互屏</span></div>
+  <div class="res"><b>LIGHT</b><span>左右耳部 RGB 调制氛围灯</span></div>
+  <div class="res"><b>AUDIO_OUT</b><span>板载高保真扬声器</span></div>
+</div>
+
+<h3>锁的语义：谁声明，谁独占</h3>
+
+<p>资源锁不是“建议”，而是 RCP 内部的仲裁依据。一个任务只要声明了 <code>LEGS</code>，在它执行期间，任何同样需要腿部关节的指令都应让路——无论这条指令来自另一张 RCP 任务图，还是来自直接服务的 <code>/vel_cmd</code>。</p>
+
+<div class="callout danger"><span class="t">🚨 最容易被争抢的两类资源</span><b>LEGS</b> 与 <b>HEAD</b>。前者是 <code>/vel_cmd</code> 与挥手、站起等动作的共同目标，两者相遇就是轨迹冲突；后者在转头看人、点头致意、比心等任务之间频繁交接。声明清单写得越清楚，排查“任务为什么被中断或拒绝”就越快。</div>
+
+<p>也正因如此，路径切换才必须“先停流、再交图、等终态”——让旧持有者先释放锁，新任务才能安全接管硬件。</p>
+
+<h2 id="s4">四、三大生命周期策略：NORMAL / DAEMON / BARRIER</h2>
+
+<p>节点何时放行后继、何时收尾，由节点上的生命周期策略（Lifecycle）决定。RCP 只有三种策略，但组合起来就能表达“并行点亮表情 + 阻塞等身体动作 + 统一复位”的完整节奏。</p>
+
+<div class="flow" role="img" aria-label="生命周期策略状态机：任务受理后按 NORMAL、DAEMON、BARRIER 三种策略分支，最终汇合到任务终态">
+  <div class="fnode start">📥 任务受理，节点进入执行队列</div>
+  <div class="fdown">↓ <small>读取节点声明的生命周期策略</small></div>
+  <div class="fnode decision">❓ 该节点用的是哪种 Lifecycle？</div>
+  <div class="fbranch three">
+    <div class="fcol">
+      <span class="tag-a">阻塞</span>
+      <div class="fnode"><b>NORMAL</b><br>阻塞执行，必须等待该节点完全完成（如身体动作做完）才放行后继节点</div>
+    </div>
+    <div class="fcol">
+      <span class="tag-y">并行</span>
+      <div class="fnode"><b>DAEMON</b><br>后台常驻，启动后立刻放行后继节点（例如动作刚启动时，立刻并行点亮表情和大灯）</div>
+    </div>
+    <div class="fcol">
+      <span class="tag-r">收尾</span>
+      <div class="fnode"><b>BARRIER</b><br>同步屏障，一旦执行，自动取消当前图内所有常驻的 DAEMON 节点并安全复位</div>
+    </div>
+  </div>
+  <div class="fdown">↓ <small>NORMAL 完成，或 BARRIER 完成复位</small></div>
+  <div class="fnode end">✅ 任务进入终态，资源锁释放</div>
+</div>
+<p class="diagram-cap">图 3 · 生命周期状态机：三种策略从同一入口分支，最后汇合到任务终态</p>
+
+<h3>同一张图里的并行时间线</h3>
+
+<p>把「热情迎宾」按时间轴摊开，就能直观看到三种策略的差别：两个 <code>DAEMON</code> 节点一启动就放行，<code>NORMAL</code> 挥爪独占中段，<code>BARRIER</code> 在片尾统一取消常驻节点并复位。</p>
+
+<div class="gantt" role="img" aria-label="热情迎宾任务时间线：两个 DAEMON 节点全程常驻，NORMAL 挥爪占据中段，BARRIER 在结尾取消常驻并复位">
+  <div class="row"><span class="lbl">节点 1 · DAEMON 屏显</span><div class="track"><div class="bar daemon" style="left:0;width:100%">眨眼大笑 say_hi（常驻）</div></div></div>
+  <div class="row"><span class="lbl">节点 2 · DAEMON 耳灯</span><div class="track"><div class="bar daemon" style="left:0;width:100%">渐变粉色呼吸（常驻）</div></div></div>
+  <div class="row"><span class="lbl">节点 3 · NORMAL 挥爪</span><div class="track"><div class="bar normal" style="left:0;width:72%">坐姿挥爪 WAVE（阻塞后继）</div></div></div>
+  <div class="row"><span class="lbl">节点 4 · BARRIER</span><div class="track"><div class="bar barrier" style="left:72%;width:28%">取消 DAEMON · 安全复位</div></div></div>
+  <div class="axis"><span>0</span><span>25%</span><span>50%</span><span>75%</span><span>结束</span></div>
+</div>
+<p class="diagram-cap">图 4 · 策略语义时间线：DAEMON 全程常驻、NORMAL 阻塞等待完成、BARRIER 统一收尾</p>
+
+<div class="callout warn"><span class="t">⚠️ 最容易漏写的是 BARRIER</span>没有收尾节点，<code>DAEMON</code> 的表情和耳灯会一直“常驻”下去；而 <code>BARRIER</code> 会把当前图内所有常驻 DAEMON 一起取消并安全复位，所以它必须放在收尾位置，而不是随手插在动作中间。</div>
+
+<h2 id="s5">五、实战：调用官方预设动作（DagPresetRef）</h2>
+
+<p>官方系统内置了数十种高难度特技与姿态预设（如坐下、趴下、挥手、转圈）。不需要自己拆 DAG，用预设引用 <code>DagPresetRef</code> 就能直接调用。下面用 Aorta Python SDK 跑一遍挥手预设，并等待任务终态。</p>
+
+<div class="codewrap"><span class="lang">python</span><button class="copy">复制</button>
+<pre><code>import time
+from aorta import Node
+from aorta.rcp import RcpClient
+
+def play_wave():
+    # 建立 RCP 客户端
+    node = Node("vbot_wave_demo")
+    client = RcpClient(node)
+    
+    print("🐾 正在下发官方挥手预设动作...")
+    # 引用预设动作 WAVE.json
+    handle = client.execute_preset(
+        preset_name="actions/WAVE.json",
+        timeout=10.0
+    )
+    
+    # 等待任务结果（受理 != 执行完成，需等待最终终态）
+    result = handle.wait_completed()
+    if result.is_success:
+        print("🎉 挥手动作圆满完成！")
+    else:
+        print(f"❌ 动作被中断或拒绝: {result.error_message}")
+
+if __name__ == '__main__':
+    play_wave()</code></pre>
+</div>
+
+<h3>代码要点：从受理到终态</h3>
+
+<ul class="goals">
+  <li><code>RcpClient(node)</code> 建立 RCP 客户端，后续的任务下发都挂在它身上。</li>
+  <li><code>execute_preset(preset_name="actions/WAVE.json", timeout=10.0)</code> 引用官方预设 <code>WAVE.json</code>，<code>timeout</code> 控制本次调用的等待上限。</li>
+  <li><code>handle.wait_completed()</code> 阻塞等待最终终态——<b>受理不等于执行完成</b>，这一步不能省。</li>
+  <li><code>result.is_success</code> 为假时读取 <code>result.error_message</code>；动作被中断或拒绝，往往就是资源锁被抢占。</li>
+</ul>
+
+<div class="callout danger"><span class="t">🚨 不要提前抢锁</span>预设动作一旦下发，任务会在执行期间持有 <code>WAVE.json</code> 声明的资源锁。此时任何争抢同一资源的 <code>/vel_cmd</code> 速度流都会造成轨迹冲突，因此必须等 <code>wait_completed()</code> 返回、确认终态后，再恢复直接服务控制。</div>
+
+<h2 id="s6">六、状态机规范：站起与安全趴下</h2>
+
+<p>比“挥手”更常被低估的是<b>姿态切换</b>。站起与趴下都占用 <code>LEGS</code>，而且各有严格的调用规范：一个走服务切模式，一个必须走安全时序。</p>
+
+<div class="pose-machine" role="img" aria-label="趴下与站立状态机：趴下姿态经 set_run_mode(MANUAL=0) 站起；站立姿态必须经 lowlevel_action(SAFE_LAYDOWN_SEQUENCE=4) 安全趴下">
+  <div class="pose down"><b>趴下姿态</b><span>必须按四肢缓降时序安全收缩</span><code>lowlevel_action(SAFE_LAYDOWN_SEQUENCE=4)</code></div>
+  <div class="pose-links">
+    <div class="pl"><span>站起 →</span><small>服务切换手动模式</small></div>
+    <div class="pl danger"><span>← 安全趴下</span><small>四肢缓降时序</small></div>
+  </div>
+  <div class="pose up"><b>站立姿态</b><span>切换手动模式后由开发者接管</span><code>set_run_mode(MANUAL=0)</code></div>
+</div>
+<p class="diagram-cap">图 5 · 站立 / 趴下状态机：站起用 <code>set_run_mode(MANUAL=0)</code>，趴下必须用 <code>SAFE_LAYDOWN_SEQUENCE=4</code></p>
+
+<h3>为什么“全零关节”会摔？</h3>
+
+<p>把四条腿的关节目标全部置零，看起来是“让腿归位”，实际是瞬间撤销支撑力：机器狗在重力下自由落体，关节与减速箱直接承受落地冲击。安全趴下动作 <code>SAFE_LAYDOWN_SEQUENCE=4</code> 的价值，就在于按四肢缓降时序收缩，让重心平滑转移、腿部落点有序。</p>
+
+<div class="callout danger"><span class="t">🚨 趴下红线（原文照录）</span><b>安全趴下：</b>必须调用 <code>lowlevel_action(SAFE_LAYDOWN_SEQUENCE=4)</code>，按四肢缓降时序收缩；<b>切忌凭字面意义暴力下发全零关节指令</b>，否则机器狗会因瞬间失重重摔着地！</div>
+
+<div class="callout warn"><span class="t">⚠️ 站起 / 趴下同样持锁</span>姿态切换期间 <code>LEGS</code> 被占用，不要在这个窗口里发 <code>/vel_cmd</code>，也不要叠加另一个需要腿部的 RCP 任务；等动作结束、锁释放后再继续。</div>
+
+<h2 id="s7">七、🧪 小实验：资源锁冲突检测器</h2>
+
+<h3>把并发组合摆上桌面</h3>
+
+<p>真实事故往往不是“单个操作写错了”，而是“两个都对的操作用错了顺序”。下面勾选你打算同时执行的操作，点击检测，看看它们会不会争抢同一块硬件。</p>
+
+<div class="lab">
+  <h4>🧪 小实验：资源锁冲突检测器</h4>
+  <p>复选 2–3 个并发操作（最多 3 个），系统按 <b>Required Resources</b> 判定是否冲突，并给出可落地的串行方案。</p>
+  <div class="opts">
+    <label class="opt"><input type="checkbox" value="vel"><span><b>/vel_cmd 连续速度控制</b><small>直接服务 / 话题 · 持续改写腿部关节目标 · 申请 LEGS</small></span></label>
+    <label class="opt"><input type="checkbox" value="heart"><span><b>RCP 执行“比心”预设</b><small>RCP 任务图 · 屏幕比心 + 歪头 · 申请 HEAD、SCREEN</small></span></label>
+    <label class="opt"><input type="checkbox" value="stand"><span><b>RCP 执行“站起”</b><small>RCP 任务图 · 四肢时序支撑 · 申请 LEGS</small></span></label>
+    <label class="opt"><input type="checkbox" value="imu"><span><b>读取 IMU</b><small>感知数据 · 只读，不申请运动资源锁</small></span></label>
+  </div>
+  <div class="labrow">
+    <button id="lockbtn" type="button">检测冲突</button>
+  </div>
+  <div class="locks" id="lockbar"><span class="lbl2">资源占用：尚未选择操作</span></div>
+  <div id="lockres" class="result" role="status" aria-live="polite"></div>
+</div>
+
+<div class="callout danger"><span class="t">🚨 结论先行</span>服务控制与 RCP 之间必须<b>有序切换</b>：停发 <code>/vel_cmd</code> → 确认底盘静止 → 下发 RCP 任务 → 等 <code>wait_completed()</code> 终态 → 再恢复速度控制。资源不冲突只是“可以同时”，不代表“可以无序”。</div>
+
+<h2 id="s8">八、本课小结</h2>
+
+<p>把今天的内容压缩成一张“场景 → 路径 → 接口”的速查表，写代码前先对一眼，能避开绝大多数运动控制的坑。</p>
+
+<div class="tblwrap">
+<table>
+  <thead>
+    <tr><th>你要做的事</th><th>该走哪条路径</th><th>核心接口 / 调用</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>遥控、SLAM 避障巡航、实时速度跟随</td><td>路径一：直接服务 / 话题</td><td><code>/vel_cmd</code></td></tr>
+    <tr><td>迎宾、比心、作揖等复合连招</td><td>路径二：RCP 任务图（DAG）</td><td><code>/rcp/execute_task</code> · <code>ExecuteTaskGoal</code></td></tr>
+    <tr><td>调用官方内置姿态预设</td><td>路径二：RCP 任务图（DAG）</td><td><code>DagPresetRef</code> · <code>actions/WAVE.json</code></td></tr>
+    <tr><td>站起</td><td>路径一：服务调用</td><td><code>set_run_mode(MANUAL=0)</code></td></tr>
+    <tr><td>安全趴下</td><td>低级动作时序</td><td><code>lowlevel_action(SAFE_LAYDOWN_SEQUENCE=4)</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<ul class="goals">
+  <li>连续量走 <code>/vel_cmd</code>，离散动作走 RCP；同一资源、同一时刻不并发</li>
+  <li>DAG 三策略：<code>NORMAL</code> 阻塞等完成、<code>DAEMON</code> 启动即放行、<code>BARRIER</code> 取消常驻并安全复位</li>
+  <li>预设动作要等 <code>handle.wait_completed()</code>，受理不等于执行完成</li>
+  <li>站起用 <code>MANUAL=0</code>，趴下用 <code>SAFE_LAYDOWN_SEQUENCE=4</code>，拒绝全零关节</li>
+  <li>并发前先看 Required Resources：<code>LEGS</code> / <code>HEAD</code> / <code>SCREEN</code> / <code>LIGHT</code> / <code>AUDIO_OUT</code></li>
+</ul>
+
+<div class="callout"><span class="t">⏭️ 下一课预告</span>会动之后，下一步是“会看”。下一课我们转向感知链路：激光雷达、双目视觉与 NPU 骨骼姿态识别三路数据流如何汇入 Aorta 话题，以及 Logit 置信度里最容易踩的坑——<a href="lesson_02.html">3.2 激光雷达、双目视觉与骨骼姿态感知</a>。</div>
+
+
+
+</div>
+<div class="wrap" style="padding-top:0">
+<footer class="nav">
+  <a href="../02-architecture-comm/lesson_03.html"><span class="dir">← 上一课</span><span class="ttl">2.3 规范化开发环境搭建与生产级 Python 骨架</span></a>
+  <a class="home-link" href="index.html"><span class="dir">目录</span><span class="ttl">返回目录</span></a>
+  <a href="lesson_02.html" style="text-align:right"><span class="dir">下一课 →</span><span class="ttl">3.2 激光雷达、双目视觉与骨骼姿态感知</span></a>
+</footer>
+</div>
+</main>
+<script>
+document.querySelectorAll('.copy').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var pre=btn.parentElement.querySelector('pre');
+    navigator.clipboard.writeText(pre.textContent).then(function(){
+      btn.textContent='已复制'; setTimeout(function(){btn.textContent='复制'},1500);
+    });
+  });
+});
+
+(function(){
+  var OPS={
+    vel:{name:'/vel_cmd 连续速度控制',res:['LEGS']},
+    heart:{name:'RCP 执行“比心”预设',res:['HEAD','SCREEN']},
+    stand:{name:'RCP 执行“站起”',res:['LEGS']},
+    imu:{name:'读取 IMU',res:[]}
+  };
+  var ORDER=['LEGS','HEAD','SCREEN','LIGHT','AUDIO_OUT'];
+  var boxes=Array.prototype.slice.call(document.querySelectorAll('.lab .opts input[type="checkbox"]'));
+  var lockbar=document.getElementById('lockbar');
+  var resEl=document.getElementById('lockres');
+  var lockbtn=document.getElementById('lockbtn');
+  var detected=false;
+  if(!boxes.length||!lockbar||!resEl||!lockbtn)return;
+
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function getSel(){
+    return boxes.filter(function(b){return b.checked;}).map(function(b){return b.value;});
+  }
+  function buildLocks(sel){
+    var map={};
+    sel.forEach(function(k){
+      OPS[k].res.forEach(function(r){
+        if(!map[r])map[r]=[];
+        map[r].push(OPS[k].name);
+      });
+    });
+    return map;
+  }
+  function renderLocks(sel){
+    var map=buildLocks(sel);
+    var html='<span class="lbl2">资源占用：</span>';
+    if(!sel.length){
+      lockbar.innerHTML=html+'尚未选择操作';
+      return;
+    }
+    ORDER.forEach(function(r){
+      if(map[r]){
+        var hot=map[r].length>=2;
+        html+='<span class="lockchip'+(hot?' hot':'')+'">'+r+(hot?' ×'+map[r].length:'')+'</span>';
+      }
+    });
+    if(sel.indexOf('imu')>-1)html+='<span class="lbl2">IMU 只读，不占用资源锁</span>';
+    lockbar.innerHTML=html;
+  }
+  function show(cls,html){
+    resEl.className='result '+cls;
+    resEl.innerHTML=html;
+  }
+  function detect(){
+    var sel=getSel();
+    renderLocks(sel);
+    if(sel.length<2){
+      show('warn','<span class="r-title">⚠️ 还差一个操作</span><span>并发冲突至少要两个操作同时进行才有意义，请再勾选一项。</span>');
+      return;
+    }
+    var map=buildLocks(sel);
+    var conflicts=ORDER.filter(function(r){return map[r]&&map[r].length>=2;});
+    if(conflicts.length){
+      var lis=conflicts.map(function(r){
+        return '<li><code>'+r+'</code>：'+map[r].map(esc).join('、')+'</li>';
+      }).join('');
+      show('bad',
+        '<span class="r-title">🚨 检测到资源锁冲突：'+conflicts.join(' / ')+'</span>'+
+        '<span>以下操作同时申请了同一批物理资源，无法安全并行：</span>'+
+        '<ul>'+lis+'</ul>'+
+        '<span class="r-note"><b>正确串行方案</b></span>'+
+        '<ol>'+
+        '<li>先停发 <code>/vel_cmd</code>，确认底盘已经静止，让直接服务先释放腿部资源。</li>'+
+        '<li>再下发 RCP 任务或站起动作，由它独占 <code>LEGS</code>，按 DAG 时序完成动作。</li>'+
+        '<li>等 <code>handle.wait_completed()</code> 返回终态、锁释放后，再恢复速度控制。</li>'+
+        '</ol>'+
+        '<span class="r-note">RCP 持锁期间并发发布速度，会导致底层电机轨迹冲突并引发保护性停机。</span>'
+      );
+      return;
+    }
+    if(sel.indexOf('heart')>-1&&sel.indexOf('stand')>-1){
+      show('ok',
+        '<span class="r-title">✅ 未检测到资源锁冲突</span>'+
+        '<span>站起占用 <code>LEGS</code>，比心占用 <code>HEAD</code> / <code>SCREEN</code>，两组资源不重叠，可以并存。</span>'+
+        '<span class="r-note">推荐编排：放进同一张 DAG——站起（NORMAL 阻塞到位）→ 比心（随后执行）→ BARRIER 复位表情与耳灯。</span>'+
+        (sel.indexOf('imu')>-1?'<span class="r-note">读取 IMU 属于只读感知，不申请资源锁。</span>':'')
+      );
+      return;
+    }
+    if(sel.indexOf('vel')>-1&&sel.indexOf('heart')>-1){
+      show('warn',
+        '<span class="r-title">⚠️ 无资源锁冲突，但两条控制路径同时活跃</span>'+
+        '<span>按声明资源看，<code>HEAD</code> / <code>SCREEN</code> 与 <code>LEGS</code> 不重叠，比心与速度控制“理论上”可以并行。但两条路径同时活跃本身就意味着切换风险：一旦“比心”预设内部声明了 <code>LEGS</code>（以 <code>DagPresetRef</code> 的 Required Resources 为准），立刻升级为危险组合。</span>'+
+        '<span class="r-note">保守做法：先停发 <code>/vel_cmd</code> 并确认底盘静止，再下发 RCP 任务；等终态后再恢复速度控制。</span>'
+      );
+      return;
+    }
+    var msg='<span class="r-title">✅ 未检测到资源锁冲突</span><span>当前组合没有同时申请同一物理资源，可以并行执行。</span>';
+    if(sel.indexOf('imu')>-1)msg+='<span class="r-note">读取 IMU 属于只读感知，不申请资源锁。</span>';
+    if(sel.indexOf('stand')>-1)msg+='<span class="r-note">注意：站起仍会独占 <code>LEGS</code>，动作期间不要叠加其他腿部任务。</span>';
+    show('ok',msg);
+  }
+
+  boxes.forEach(function(b){
+    b.addEventListener('change',function(){
+      var sel=getSel();
+      if(sel.length>3){
+        b.checked=false;
+        renderLocks(getSel());
+        show('warn','<span class="r-title">⚠️ 最多同时选 3 个操作</span><span>请先取消一个，再看新的组合是否冲突。</span>');
+        return;
+      }
+      renderLocks(sel);
+      if(detected)detect();
+    });
+  });
+  lockbtn.addEventListener('click',function(){
+    detected=true;
+    detect();
+  });
+  renderLocks([]);
+})();
+</script>
+</body>
+</html>

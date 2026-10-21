@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.2 激光雷达、双目视觉与骨骼姿态感知 | VBOT EDU 具身智能体开发</title>
+<style>
+/* ===== 风格契约 v1 · 预设 A 清爽技术文档风（全教程统一，勿改） ===== */
+:root{
+  --bg:#ffffff; --fg:#1f2937; --muted:#6b7280;
+  --accent:#0e7490; --accent-dark:#155e75; --accent-light:#ecfeff;
+  --code-bg:#f3f4f6; --code-fg:#111827; --code-border:#e5e7eb;
+  --border:#e5e7eb; --card:#f9fafb;
+  --warn-bg:#fffbeb; --warn-bd:#f59e0b;
+  --danger-bg:#fef2f2; --danger-bd:#ef4444;
+  --tip-bg:#ecfeff; --tip-bd:#0e7490;
+  --ok-bg:#f0fdf4; --ok-bd:#22c55e;
+  --radius:10px; --max-width:880px; --toc-w:250px;
+  --font-body:"Microsoft YaHei","Source Han Sans CN",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"Cascadia Code",Consolas,"JetBrains Mono","Courier New",monospace;
+}
+/* ===== 风格契约结束 ===== */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.8;font-size:16px}
+a{color:var(--accent)}
+a:hover{color:var(--accent-dark)}
+code{font-family:var(--font-mono);font-size:.875em;background:var(--code-bg);border:1px solid var(--code-border);border-radius:4px;padding:1px 6px;color:var(--code-fg)}
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:16px 18px;overflow:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;color:var(--code-fg);margin:0}
+pre code{background:none;border:none;padding:0;font-size:inherit}
+
+/* 布局：左 TOC + 右正文 */
+.toc{position:fixed;top:0;left:0;bottom:0;width:var(--toc-w);background:var(--card);border-right:1px solid var(--border);padding:28px 16px;overflow:auto}
+.toc .brand{font-weight:700;color:var(--accent-dark);font-size:17px;margin-bottom:2px}
+.toc .sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.toc ol{list-style:none;margin:0;padding:0;counter-reset:toc}
+.toc li{counter-increment:toc;margin-bottom:2px}
+.toc a{display:block;padding:7px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font-size:13.5px}
+.toc a::before{content:counter(toc) ". ";color:var(--accent);font-weight:600}
+.toc a:hover{background:var(--accent-light);color:var(--accent-dark)}
+.toc .home{display:inline-block;margin-top:18px;font-size:13px;color:var(--accent);text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--bg)}
+main{margin-left:var(--toc-w)}
+.wrap{max-width:var(--max-width);margin:0 auto;padding:40px 32px 24px}
+
+/* 页头 */
+header.lesson{border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:32px}
+header.lesson .hero-img{width:100%;max-height:280px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);margin-top:18px}
+.badges{margin-bottom:12px}
+.badge{display:inline-block;font-size:12px;font-weight:600;border-radius:99px;padding:2px 12px;margin-right:8px;vertical-align:middle}
+.badge.no{background:var(--accent);color:#fff}
+.badge.safe{background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.badge.ver{background:var(--card);color:var(--muted);border:1px solid var(--border)}
+h1{font-size:30px;line-height:1.4;margin:0 0 10px;color:var(--accent-dark)}
+.meta{font-size:13.5px;color:var(--muted)}
+.meta a{color:var(--accent)}
+
+/* 标题层级 */
+h2{font-size:22px;color:var(--accent-dark);margin:48px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--accent-light)}
+h3{font-size:17.5px;color:var(--fg);margin:28px 0 10px}
+
+/* 提示框 */
+.callout{border-left:4px solid var(--tip-bd);background:var(--tip-bg);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;margin:20px 0;font-size:15px}
+.callout.warn{border-color:var(--warn-bd);background:var(--warn-bg)}
+.callout.danger{border-color:var(--danger-bd);background:var(--danger-bg)}
+.callout.ok{border-color:var(--ok-bd);background:var(--ok-bg)}
+.callout .t{font-weight:700;display:block;margin-bottom:4px}
+
+/* 直播口播折叠 */
+details.talk{border:1px dashed var(--accent);border-radius:var(--radius);background:var(--bg);margin:20px 0}
+details.talk summary{cursor:pointer;padding:12px 18px;color:var(--accent);font-weight:600;font-size:14.5px}
+details.talk .body{padding:0 18px 14px;color:var(--muted);font-size:14.5px}
+
+/* 图片 */
+figure{margin:24px 0;text-align:center}
+figure img{max-width:100%;border:1px solid var(--border);border-radius:var(--radius);background:#fff}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+
+/* 表格 */
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px}
+th,td{border:1px solid var(--border);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--accent-light);color:var(--accent-dark);font-weight:700}
+tr:nth-child(even) td{background:var(--card)}
+td .no{color:var(--danger-bd);font-weight:700}
+
+/* 编号步骤 */
+ol.steps{list-style:none;counter-reset:st;padding:0;margin:18px 0}
+ol.steps>li{counter-increment:st;position:relative;padding:0 0 18px 48px}
+ol.steps>li::before{content:counter(st);position:absolute;left:0;top:2px;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;text-align:center;line-height:32px;font-size:15px}
+ol.steps>li>b:first-child{display:block;margin-bottom:4px}
+
+/* CSS 拓扑图 */
+.topo{display:flex;align-items:stretch;justify-content:center;gap:0;margin:24px 0;flex-wrap:wrap}
+.topo .node{background:var(--card);border:2px solid var(--accent);border-radius:var(--radius);padding:12px 16px;min-width:170px;text-align:center;font-size:13.5px}
+.topo .node b{display:block;color:var(--accent-dark);font-size:14.5px;margin-bottom:2px}
+.topo .node code{font-size:12px}
+.topo .node.dev{border-color:var(--muted)}
+.topo .node.gw{border-style:dashed}
+.topo .link{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 10px;color:var(--muted);font-size:12px;min-width:96px}
+.topo .link .arrow{font-size:20px;color:var(--accent);line-height:1.2}
+
+/* 代码块 + 复制按钮 + Tabs */
+.codewrap{position:relative;margin:14px 0}
+.codewrap .lang{position:absolute;top:0;right:88px;font-size:11px;color:var(--muted);background:var(--bg);border:1px solid var(--code-border);border-bottom:none;border-radius:6px 6px 0 0;padding:1px 8px}
+.copy{position:absolute;top:8px;right:8px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;font-family:var(--font-body)}
+.copy:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.tabs{display:flex;gap:6px;margin:18px 0 0}
+.tabs button{border:1px solid var(--border);border-bottom:none;background:var(--card);padding:8px 18px;border-radius:10px 10px 0 0;cursor:pointer;font-size:14px;color:var(--muted);font-family:var(--font-body)}
+.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+.panel{display:none;border:1px solid var(--border);border-radius:0 var(--radius) var(--radius) var(--radius);padding:16px 18px;background:var(--bg)}
+.panel.on{display:block}
+
+/* 目标清单 */
+ul.goals{margin:12px 0;padding-left:0;list-style:none}
+ul.goals li{padding:4px 0 4px 28px;position:relative}
+ul.goals li::before{content:"✓";position:absolute;left:4px;color:var(--accent);font-weight:700}
+
+/* 页脚导航 */
+footer.nav{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--border);margin-top:56px;padding:24px 0 40px;flex-wrap:wrap}
+footer.nav a{flex:1;min-width:200px;border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;text-decoration:none;background:var(--card)}
+footer.nav a:hover{border-color:var(--accent);background:var(--accent-light)}
+footer.nav .dir{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
+footer.nav .ttl{display:block;font-size:15px;color:var(--accent-dark);font-weight:600}
+footer.nav a.home-link{flex:0 0 auto;text-align:center}
+
+/* 甘特时间线 */
+.gantt{margin:20px 0}
+.gantt .row{display:flex;align-items:center;margin:8px 0}
+.gantt .lbl{width:190px;font-size:13.5px;color:var(--fg);flex-shrink:0}
+.gantt .track{flex:1;position:relative;height:28px;background:var(--card);border:1px solid var(--border);border-radius:6px}
+.gantt .bar{position:absolute;top:3px;bottom:3px;background:linear-gradient(90deg,var(--accent),#22d3ee);border-radius:5px;color:#fff;font-size:11.5px;display:flex;align-items:center;padding:0 8px;white-space:nowrap;overflow:hidden}
+.gantt .axis{display:flex;margin-left:190px;font-size:11.5px;color:var(--muted)}
+.gantt .axis span{flex:1;text-align:left}
+
+/* 决策流程图 */
+.flow{display:flex;flex-direction:column;align-items:center;margin:24px 0}
+.fnode{border:2px solid var(--accent);background:var(--accent-light);border-radius:var(--radius);padding:10px 18px;font-size:14px;text-align:center;max-width:460px}
+.fnode b{color:var(--accent-dark)}
+.fnode.start{border-radius:99px;background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.fnode.decision{background:var(--warn-bg);border-color:var(--warn-bd)}
+.fnode.end{border-radius:99px;background:var(--ok-bg);border-color:var(--ok-bd);color:#15803d;font-weight:600}
+.fdown{color:var(--accent);font-size:18px;line-height:1.5;text-align:center}
+.fdown small{display:block;font-size:12px;color:var(--muted)}
+.fbranch{display:flex;gap:28px;justify-content:center;align-items:flex-start;flex-wrap:wrap;margin:4px 0}
+.fcol{display:flex;flex-direction:column;align-items:center}
+.fcol .tag-y{font-size:12px;font-weight:700;color:#15803d;background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+.fcol .tag-n{font-size:12px;font-weight:700;color:#92400e;background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+
+/* 交互小实验 */
+.lab{background:var(--card);border:1px solid var(--accent);border-radius:var(--radius);padding:18px 20px;margin:26px 0}
+.lab h4{margin:0 0 6px;color:var(--accent-dark);font-size:16px}
+.lab p{margin:4px 0;font-size:14px;color:var(--muted)}
+.labrow{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;align-items:center}
+.lab input{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font-mono);font-size:14px;width:220px;background:var(--bg);color:var(--fg)}
+.lab button{padding:8px 18px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:14px;font-family:var(--font-body)}
+.lab button:hover{background:var(--accent-dark)}
+.result{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:14px;display:none}
+.result.ok{display:block;background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.result.bad{display:block;background:var(--danger-bg);color:#b91c1c;border:1px solid var(--danger-bd)}
+.result.warn{display:block;background:var(--warn-bg);color:#92400e;border:1px solid var(--warn-bd)}
+.lab pre{margin-top:10px}
+
+/* ===== Lesson 02 专属组件（只追加，不改基础配色 / 字体 / 间距体系） ===== */
+
+/* 感知数据流水线 */
+.pipe{border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin:24px 0;background:var(--bg)}
+.pipe-grid{display:grid;grid-template-columns:minmax(0,1fr) 30px minmax(0,1.3fr);row-gap:10px;align-items:center}
+.pipe-card{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:8px 12px}
+.pipe-card b{display:block;color:var(--accent-dark);font-size:13.5px;line-height:1.5}
+.pipe-card span{display:block;color:var(--muted);font-size:12px;line-height:1.5}
+.pipe-arrow{text-align:center;color:var(--accent);font-size:18px;line-height:1}
+.pipe-topic{border:1px dashed var(--accent);border-radius:8px;background:var(--accent-light);padding:6px 10px}
+.pipe-topic code{font-size:12px;background:var(--bg)}
+.pipe-topic em{display:block;font-style:normal;font-size:11.5px;color:var(--muted);margin-top:1px}
+.pipe-down{text-align:center;font-size:12.5px;color:var(--muted);margin:14px 0 10px}
+.pipe-consume{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.pipe-consumer{border:2px solid var(--accent);border-radius:8px;background:var(--accent-light);padding:8px 10px;text-align:center}
+.pipe-consumer b{display:block;color:var(--accent-dark);font-size:13px}
+.pipe-consumer span{display:block;font-size:11.5px;color:var(--muted);line-height:1.5}
+
+/* 点云高度切片标尺 */
+.slice{border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin:22px 0;background:var(--bg)}
+.slice-legend{display:flex;flex-wrap:wrap;gap:16px;font-size:12.5px;color:var(--muted);margin-bottom:10px}
+.slice-legend i{display:inline-block;width:16px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle}
+.slice-legend i.keep{background:var(--accent)}
+.slice-legend i.drop{background:var(--code-border)}
+.slice-track{position:relative;height:44px;border:1px solid var(--code-border);border-radius:6px;background:var(--code-bg);overflow:hidden}
+.slice-keep{position:absolute;top:0;bottom:0;left:8.33%;width:41.67%;background:linear-gradient(90deg,var(--accent),#22d3ee);color:#fff;font-size:11.5px;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 6px;line-height:1.35}
+.slice-axis{position:relative;height:22px;margin-top:4px;font-family:var(--font-mono);font-size:11.5px;color:var(--muted)}
+.slice-axis span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.slice-axis span.last{transform:translateX(-100%)}
+.slice-cap{font-size:12px;color:var(--muted);margin:4px 0 0}
+
+/* H.265 视频流链路 */
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:20px 0}
+.chain .c{border:1px solid var(--border);border-radius:8px;background:var(--card);padding:7px 12px;font-size:12.5px;line-height:1.45}
+.chain .c b{display:block;font-size:13px;color:var(--accent-dark)}
+.chain .a{color:var(--accent);font-weight:700}
+
+/* 17 点关键点分组 */
+.kpgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:20px 0}
+.kpgrp{border:1px solid var(--border);border-radius:var(--radius);background:var(--card);padding:12px 14px}
+.kpgrp .h{font-size:13px;font-weight:700;color:var(--accent-dark);margin-bottom:8px}
+.kpgrp .h em{font-style:normal;font-family:var(--font-mono);font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:99px;padding:0 7px;color:var(--accent);margin-left:4px}
+.kpgrp ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.kpgrp li{font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:99px;padding:1px 9px;color:var(--fg)}
+
+/* 公式块 */
+.formula{margin:18px 0;padding:16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--card);text-align:center;font-family:var(--font-mono);font-size:15px;color:var(--fg)}
+.formula .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 4px}
+.formula .frac .num{border-bottom:1px solid var(--fg);padding:0 10px;line-height:1.4}
+.formula .frac .den{padding:0 10px;line-height:1.4}
+.formula .cap{display:block;margin-top:8px;font-family:var(--font-body);font-size:12.5px;color:var(--muted)}
+
+/* Logit / 概率对照条 */
+.logitmap{border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin:20px 0;background:var(--bg)}
+.lm-item + .lm-item{margin-top:16px}
+.lm-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;font-size:12px;color:var(--muted);margin-bottom:6px}
+.lm-head b{font-size:13px;color:var(--fg)}
+.lm-track{position:relative;height:20px;border:1px solid var(--border);border-radius:6px}
+.lm-track.raw{background:linear-gradient(90deg,var(--code-bg),var(--accent-light) 50%,var(--accent))}
+.lm-track.prob{background:linear-gradient(90deg,var(--bg),var(--accent))}
+.lm-thr{position:absolute;top:-3px;bottom:-3px;left:50%;border-left:2px dashed var(--danger-bd)}
+.lm-ticks{display:flex;justify-content:space-between;margin-top:3px;font-family:var(--font-mono);font-size:11px;color:var(--muted)}
+
+/* 小实验：滑块、概率条、判定 */
+.lab .lab-h{margin:0 0 6px;color:var(--accent-dark);font-size:16px;font-weight:700}
+.lab input[type="range"]{width:100%;padding:0;border:0;background:transparent;height:28px;accent-color:var(--accent);display:block}
+.range-scale{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:11.5px;color:var(--muted);margin-top:-2px}
+.labstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0 0}
+.labstat{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center}
+.labstat .k{display:block;font-size:11.5px;color:var(--muted)}
+.labstat .v{display:block;font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--accent-dark);line-height:1.5}
+.pbar-wrap{position:relative;padding-top:22px;margin:16px 0 4px}
+.pthr-lbl{position:absolute;top:0;left:50%;transform:translateX(-50%);font-size:11px;color:var(--danger-bd);background:var(--bg);border:1px solid var(--danger-bd);border-radius:99px;padding:0 9px;white-space:nowrap}
+.pbar{position:relative;height:24px;border:1px solid var(--code-border);border-radius:99px;background:var(--code-bg);overflow:hidden}
+.pfill{position:absolute;left:0;top:0;bottom:0;width:2.9%;min-width:3px;border-radius:99px;background:linear-gradient(90deg,var(--accent),#22d3ee);transition:width .1s linear}
+.pthr{position:absolute;left:50%;top:0;bottom:0;border-left:2px dashed var(--danger-bd);z-index:2}
+.pbar-scale{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-top:4px}
+.verdict{display:inline-block;margin-top:12px;font-size:13px;font-weight:700;border-radius:99px;padding:2px 12px}
+.verdict.ok{background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.verdict.no{background:var(--danger-bg);color:#b91c1c;border:1px solid var(--danger-bd)}
+.lgeq{margin-top:10px;font-family:var(--font-mono);font-size:12px;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;overflow-wrap:anywhere;line-height:1.7}
+.labnote{margin-top:10px;font-size:13px;color:var(--fg);background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:8px;padding:8px 12px;min-height:46px;line-height:1.6}
+.presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.lab button.ghost{background:var(--bg);color:var(--accent);border:1px solid var(--border);font-size:12.5px;padding:4px 12px}
+.lab button.ghost:hover{background:var(--accent-light);color:var(--accent-dark);border-color:var(--accent)}
+.mismatch{color:var(--danger-bd);font-weight:700}
+
+/* 移动端 */
+@media (max-width:768px){
+  .toc{position:static;width:auto;border-right:none;border-bottom:1px solid var(--border);padding:18px 16px}
+  .toc ol{columns:2}
+  main{margin-left:0}
+  .wrap{padding:24px 18px 12px}
+  h1{font-size:24px}
+  .topo{flex-direction:column;align-items:center}
+  .topo .link{min-width:auto;padding:6px 0}
+  .topo .link .arrow{transform:rotate(90deg)}
+  .gantt .lbl{width:110px;font-size:12px}
+  .gantt .axis{margin-left:110px}
+  .fbranch{flex-direction:column;align-items:center;gap:8px}
+  .pipe-grid{grid-template-columns:1fr;row-gap:6px}
+  .pipe-arrow{transform:rotate(90deg);padding:2px 0}
+  .pipe-consume{grid-template-columns:1fr}
+  .kpgrid{grid-template-columns:1fr}
+  .labstat .v{font-size:15px}
+  .slice-keep{font-size:10.5px}
+  .slice-axis{font-size:10.5px}
+  .pthr-lbl{font-size:10px;padding:0 7px}
+}
+/* 打印 */
+@media print{
+  .toc,.copy,.tabs{display:none}
+  main{margin-left:0}
+  .panel{display:block!important;border:none;padding:8px 0}
+  body{font-size:12px}
+  a{color:var(--fg);text-decoration:none}
+}
+</style>
+</head>
+<body>
+<nav class="toc" id="nav">
+  <div class="brand">VBOT EDU 具身智能体</div>
+  <div class="sub">模块 03 · Lesson 02</div>
+  <ol>
+    <li><a href="#s0">一图看懂：四路感知数据流</a></li>
+    <li><a href="#s1">360° 16 线激光雷达</a></li>
+    <li><a href="#s2">深度双目 H.265 视频流</a></li>
+    <li><a href="#s3">NPU 17 点骨骼与 Logit 暗坑</a></li>
+    <li><a href="#s4">IMU 惯导遥测</a></li>
+    <li><a href="#s5">小实验：Logit → 概率转换器</a></li>
+    <li><a href="#s6">本课小结</a></li>
+  </ol>
+  <a class="home" href="index.html">← 返回目录</a>
+</nav>
+
+<main>
+<div class="wrap">
+
+<header class="lesson">
+  <div class="badges">
+    <span class="badge no">Lesson 02</span>
+    <span class="badge safe">安全级别：只读（read_only）</span>
+    <span class="badge ver">固件基准 V1.6.0</span>
+  </div>
+  <h1>激光雷达、双目视觉与骨骼姿态感知</h1>
+  <p class="meta">预计阅读 14 分钟 · 前置课程：<a href="lesson_01.html">3.1 运动控制进阶与 RCP DAG 动作流编排</a> · 本课只订阅话题，不向机器人发送任何控制指令</p>
+</header>
+
+<details class="talk">
+  <summary>🎙️ 展开直播口播导语（讲师版）</summary>
+  <div class="body">
+    <p>“要想具身机器人真正能理解物理空间、懂得避让人群，它的眼睛和触角绝不能‘近视’！</p>
+    <p>VBOT 机身配备了一套极其豪华的端侧感知矩阵：360° 16 线激光雷达、广角双目深度相机、高频 IMU，甚至主板 NPU 已经常驻运行了实时人体检测与 17 点骨骼姿态识别！</p>
+    <p>但是，很多同学拿着网上的公开教程直接硬套，结果发现：点云把 CPU 吃满了、双目画面延迟长达 2 秒、骨骼置信度全被过滤空了！</p>
+    <p>今天这节课，我们就逐一解锁三大核心传感器数据流的最佳实践，并手把手带大家跨过‘原始 Logit 置信度转换’这道最经典的工程暗坑！”</p>
+  </div>
+</details>
+
+<h2 id="goals" style="margin-top:24px;border-bottom:none;padding-bottom:0;font-size:17.5px">本课学习目标</h2>
+<ul class="goals">
+  <li>说清激光雷达、双目相机、NPU 骨骼、IMU 四路感知各自的话题与下游消费者</li>
+  <li>用 <code>pointcloud_to_laserscan</code> 把三维点云切片成二维 <code>LaserScan</code>，把 Nav2 的开销打下来</li>
+  <li>用 PyAV 把 <code>/image_left_raw/h265</code> 字节包解成 OpenCV 可用的 BGR 帧</li>
+  <li>记住 <code>/perception/poses</code> 的 <code>confidence</code> 是 Logit，先 Sigmoid 再和 0.5 比较</li>
+  <li>用 <code>/imu_raw</code> 完成一次通信链路冒烟测试</li>
+</ul>
+
+<h2 id="s0">一图看懂：四路感知数据流</h2>
+
+<p>VBOT 的端侧感知不是一个大杂烩话题，而是四条并行、互不阻塞的数据流：雷达给你空间几何，双目给你画面，NPU 给你“人”的位置与姿态，IMU 给你自己的身体状态。下游的 SLAM、Nav2 与 VLM 各取所需——先看清这张图的流向，再逐个拆解。</p>
+
+<div class="pipe" role="img" aria-label="感知数据流水线：16 线激光雷达、深度双目相机、板载 NPU 骨骼识别与 IMU 分别通过点云、H.265 视频流、骨骼与惯导话题，汇入 SLAM、Nav2 与 VLM">
+  <div class="pipe-grid">
+    <div class="pipe-card"><b>📡 360° 16 线激光雷达</b><span>10 Hz · 全向三维点云</span></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-topic"><code>/vbot/lidar/point_cloud</code><em>sensor_msgs/msg/PointCloud2</em></div>
+
+    <div class="pipe-card"><b>📷 深度双目相机</b><span>1080P@30fps · 硬件编码</span></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-topic"><code>/image_left_raw/h265</code><em>H.265 / HEVC 视频流</em></div>
+
+    <div class="pipe-card"><b>🧍 板载 NPU 人体感知</b><span>人员边界框 + 17 点骨骼</span></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-topic"><code>/perception/poses</code><em>每人的 bbox + 17 个 COCO 关键点</em></div>
+
+    <div class="pipe-card"><b>🧭 IMU 惯导</b><span>100 Hz · 高频姿态反馈</span></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-topic"><code>/imu_raw</code><em>加速度 · 角速度 · 四元数姿态</em></div>
+  </div>
+  <div class="pipe-down">↓　四路数据在 ROS 2 图里并行流动，互不阻塞　↓</div>
+  <div class="pipe-consume">
+    <div class="pipe-consumer"><b>SLAM 建图</b><span>消费全量三维点云</span></div>
+    <div class="pipe-consumer"><b>Nav2 避障</b><span>消费切片后的 LaserScan</span></div>
+    <div class="pipe-consumer"><b>VLM / 动作层</b><span>消费骨骼关键点与画面</span></div>
+  </div>
+</div>
+
+<p>后面要讲的三个性能坑与语义坑，全都发生在这条链路的具体某一环上：点云吃满 CPU、双目码流挤爆总线、骨骼置信度被过滤一空。</p>
+
+<div class="callout"><span class="t">🔒 本课安全级别：只读（read_only）</span>全程只订阅话题、只读解析数据，不向机器人发布任何运动或控制指令，可以放心在真机上边看边练。</div>
+
+<h2 id="s1">一、360° 16 线激光雷达：建图与避障切片</h2>
+
+<p>机器狗腹部与顶部集成的高频激光雷达，持续以 <b>10Hz</b> 输出全向三维空间点云。它是一条标准的 ROS 2 话题，先认清参数再谈用法：</p>
+
+<table>
+  <thead>
+    <tr><th>项目</th><th>取值</th><th>说明</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>线数 / 视场</td><td>16 线 · 360° 全向</td><td>部署在机器狗腹部与顶部的高频激光雷达</td></tr>
+    <tr><td>刷新率</td><td><b>10Hz</b></td><td>持续输出全向三维空间点云</td></tr>
+    <tr><td>ROS 2 话题</td><td><code>/vbot/lidar/point_cloud</code></td><td>点云数据的唯一入口</td></tr>
+    <tr><td>消息类型</td><td><code>sensor_msgs/msg/PointCloud2</code></td><td>标准三维点云消息</td></tr>
+    <tr><td>常用坐标系</td><td><code>lidar_link</code> 或 <code>base_link</code></td><td>点云坐标系通常绑定在这两者之一</td></tr>
+  </tbody>
+</table>
+
+<h3>点云切片：把三维降成二维再喂给避障</h3>
+
+<p>在板载 ARM64 处理器上，如果直接拿 10 万个三维点云去计算 3D 障碍物膨胀代价，CPU 占用率会瞬间突破 <b>70%</b>。推荐启动 <code>pointcloud_to_laserscan</code> 转换节点，将高度处于 <b>[0.1m, 0.6m]</b> 范围内的 3D 点云切片投影为<b>二维雷达射线扫描包</b>（<code>sensor_msgs/msg/LaserScan</code>）。算法开销骤降 <b>80%</b>，避障反应速度提升 <b>5 倍</b>！</p>
+
+<div class="slice" role="img" aria-label="点云高度切片标尺：只保留高度 0.1 米至 0.6 米之间的三维点，投影为二维 LaserScan，其余高度的点丢弃">
+  <div class="slice-legend">
+    <span><i class="keep"></i>保留：投影为二维 LaserScan</span>
+    <span><i class="drop"></i>丢弃：带外高度的点不参与避障切片</span>
+  </div>
+  <div class="slice-track">
+    <div class="slice-keep">0.1 m – 0.6 m</div>
+  </div>
+  <div class="slice-axis">
+    <span style="left:8.33%">0.1 m</span>
+    <span style="left:50%">0.6 m</span>
+    <span class="last" style="left:100%">更高 →</span>
+  </div>
+  <p class="slice-cap">高度标尺为示意：只有落在 0.1–0.6 m 高度带内的点，才会被投影成二维雷达射线。</p>
+</div>
+
+<h3>建图与 Nav2 适配要点</h3>
+
+<ul>
+  <li><b>坐标系先对齐</b>：点云坐标系通常绑定在 <code>lidar_link</code> 或 <code>base_link</code>，配置代价地图与坐标变换前先确认，避免“点云看着对、障碍物位置偏”。</li>
+  <li><b>SLAM 建图吃全量</b>：需要完整三维结构时，直接订阅 <code>/vbot/lidar/point_cloud</code>（<code>PointCloud2</code>）。</li>
+  <li><b>Nav2 避障吃切片</b>：避障只需要平面障碍，订阅 <code>pointcloud_to_laserscan</code> 转换出的 <code>LaserScan</code>，让 3D 膨胀代价不要落到 ARM64 上。</li>
+  <li><b>一条数据两种形态</b>：建图与避障并不冲突，同一个雷达话题可以同时供给“全量点云”和“切片扫描”两个下游。</li>
+</ul>
+
+<div class="callout warn"><span class="t">⚠️ 性能红线</span>别把 10 万个三维点直接塞进 Nav2 的 3D 障碍物膨胀代价：在板载 ARM64 上 CPU 会瞬间突破 70%，避障反应反而变慢。切片投影是这门课最划算的一次“降维”。</div>
+
+<h2 id="s2">二、深度双目相机：H.265 硬件视频流解析</h2>
+
+<p>为了在板载百兆/千兆总线上稳定传输 1080P@30fps 双目画面，系统<b>不在网络上直接广播无压缩的原始 BGR8 像素矩阵</b>（未压缩双目码流高达 <b>1.5 Gbps ~ 3.0 Gbps</b>，会瞬间挤爆总线导致运动卡顿），而是采用硬件编码压缩：</p>
+
+<table>
+  <thead>
+    <tr><th>项目</th><th>取值</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>核心话题</td><td><code>/image_left_raw/h265</code></td></tr>
+    <tr><td>编码格式</td><td><b>H.265 / HEVC</b> 视频流</td></tr>
+    <tr><td>画面规格</td><td>1080P@30fps 双目画面</td></tr>
+    <tr><td>未压缩码流</td><td>1.5 Gbps ~ 3.0 Gbps（会挤爆总线）</td></tr>
+  </tbody>
+</table>
+
+<div class="chain" role="img" aria-label="双目 H.265 链路：相机到硬件编码、ROS 2 话题字节包、PyAV 解码、BGR 帧">
+  <div class="c"><b>双目相机</b>1080P@30fps</div>
+  <span class="a">→</span>
+  <div class="c"><b>硬件编码</b>H.265 / HEVC</div>
+  <span class="a">→</span>
+  <div class="c"><b>ROS 2 话题</b><code>/image_left_raw/h265</code></div>
+  <span class="a">→</span>
+  <div class="c"><b>PyAV 解码</b><code>av.open(..., format='h265')</code></div>
+  <span class="a">→</span>
+  <div class="c"><b>BGR 帧</b><code>bgr24</code> NumPy 矩阵</div>
+</div>
+
+<h3>Python 实时解码与去畸变流水线</h3>
+
+<p>使用 <code>av</code>（PyAV）库配合板载硬件解码加速，开箱即用：</p>
+
+<div class="codewrap"><span class="lang">python</span><button class="copy">复制</button>
+<pre><code>import av
+import cv2
+import numpy as np
+
+def decode_h265_frame(h265_bytes):
+    """将接收到的 H.265 字节包解码为 OpenCV BGR 图像"""
+    container = av.open(h265_bytes, format='h265')
+    for frame in container.decode(video=0):
+        # 转换为 NumPy BGR 矩阵
+        img = frame.to_ndarray(format='bgr24')
+        return img
+    return None</code></pre>
+</div>
+
+<table>
+  <thead>
+    <tr><th>代码行</th><th>作用</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>av.open(h265_bytes, format='h265')</code></td><td>把收到的字节包按 H.265 容器打开</td></tr>
+    <tr><td><code>container.decode(video=0)</code></td><td>解码第 0 路视频流，逐帧产出</td></tr>
+    <tr><td><code>frame.to_ndarray(format='bgr24')</code></td><td>转成 OpenCV 可直接使用的 NumPy BGR 矩阵</td></tr>
+    <tr><td><code>return None</code></td><td>没有解出任何一帧时的兜底返回值</td></tr>
+  </tbody>
+</table>
+
+<div class="callout"><span class="t">📌 关于“去畸变”这一环</span>源文档把这一节命名为“实时解码与去畸变流水线”，示例代码覆盖的是<b>解码</b>环节——把 H.265 字节包还原成 BGR 帧。去畸变属于拿到帧之后的后处理，接在你自己的视觉代码里；<code>cv2</code> 与 <code>numpy</code> 之所以在示例中导入，正是为后续处理留好接口。</div>
+
+<div class="callout warn"><span class="t">⚠️ 别把原始像素扔上网络</span>未压缩双目码流 1.5 Gbps ~ 3.0 Gbps，百兆网口直接被击穿，千兆网口也会被挤爆并连带运动卡顿。看到 <code>/image_left_raw/h265</code> 这个名字里的 <code>h265</code>，就该知道必须先解码。</div>
+
+<p>示例采用“一包一解”的最小实现：每收到一个 H.265 字节包，就打开、解码并返回第一帧。<code>return img</code> 写在 <code>for</code> 循环内部，因此函数只会返回解出的第一帧，这也是它适合做单帧取图的写法。</p>
+
+<h2 id="s3">三、板载 NPU 人体感知：17 点骨骼识别</h2>
+
+<div class="callout ok"><span class="t">🎁 官方模型免部署福利</span>你不需要在自己代码里额外运行耗费算力的 OpenPose 或 YOLO-Pose！VBOT 计算主板的 NPU 已经在后台常驻运行了实时人体检测与 17 点骨骼姿态估计算法，直接订阅话题即可获得解析结果。</div>
+
+<table>
+  <thead>
+    <tr><th>项目</th><th>取值</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>订阅话题</td><td><code>/perception/poses</code></td></tr>
+    <tr><td>数据结构</td><td>每个检测到的人员<b>边界框</b> + <b>17 个 COCO 骨骼关键点</b>（鼻子、左/右眼、左/右耳、肩、肘、腕、髋、膝、踝）</td></tr>
+    <tr><td>运行位置</td><td>VBOT 计算主板 NPU，后台常驻运行</td></tr>
+    <tr><td>开发者动作</td><td>直接订阅，无需自行部署姿态估计模型</td></tr>
+  </tbody>
+</table>
+
+<h3>17 个关键点 = 5 + 6 + 6</h3>
+
+<p>按身体部位把这 17 个 COCO 关键点分三组记，比死记列表快得多：</p>
+
+<div class="kpgrid">
+  <div class="kpgrp">
+    <div class="h">头部<em>5 点</em></div>
+    <ul>
+      <li>鼻子</li><li>左眼</li><li>右眼</li><li>左耳</li><li>右耳</li>
+    </ul>
+  </div>
+  <div class="kpgrp">
+    <div class="h">上肢<em>6 点</em></div>
+    <ul>
+      <li>左肩</li><li>右肩</li><li>左肘</li><li>右肘</li><li>左腕</li><li>右腕</li>
+    </ul>
+  </div>
+  <div class="kpgrp">
+    <div class="h">下肢<em>6 点</em></div>
+    <ul>
+      <li>左髋</li><li>右髋</li><li>左膝</li><li>右膝</li><li>左踝</li><li>右踝</li>
+    </ul>
+  </div>
+</div>
+
+<figure>
+  <img src="../assets/05-cases-yogago/03-action-伽伽狗现场下犬式动作演示.jpg" alt="姿态感知应用场景：伽伽狗现场下犬式动作演示" loading="lazy">
+  <figcaption>图 1：姿态感知应用场景——瑜伽动作演示。伽伽狗依据 17 点骨骼关键点的相对距离与角度判定下犬式，并截取动作片段重编排来“模仿”人（案例详见 4.3 CASE-02）。</figcaption>
+</figure>
+
+<p>一旦关键点可信，动作语义就浮出来了：肩、肘、腕与髋、膝、踝之间的相对距离和夹角，足以区分下犬式、站立、深蹲这类姿态。但前提是——你得先把置信度算对。</p>
+
+<h3>⚠️ 最易踩坑点：关键点置信度是 Logit，非概率！</h3>
+
+<p>许多开发者在过滤噪点时直接写 <code>if point.confidence &gt; 0.5</code>，结果发现所有点都被过滤掉了。原因很直接：<b>官方接口返回的 <code>confidence</code> 字段是未经激活函数计算的原始 Logit 实数值</b>！必须通过 Sigmoid 函数映射为 <code>[0.0, 1.0]</code> 区间：</p>
+
+<div class="formula">
+  Probability =
+  <span class="frac"><span class="num">1</span><span class="den">1 + e<sup>−logit</sup></span></span>
+  <span class="cap">Sigmoid：把无界的原始 Logit 压进 (0, 1) 区间，logit = 0 时概率恰好是 0.5</span>
+</div>
+
+<div class="logitmap" role="img" aria-label="Logit 与概率对照条：原始 Logit 取值范围为负值到超过 1 的无界实数，经 Sigmoid 后落入 0 到 1，阈值 0.5 对应 Logit 0">
+  <div class="lm-item">
+    <div class="lm-head"><b>原始 confidence 字段（Logit）</b><span>无界实数，可以为负，也可以远大于 1</span></div>
+    <div class="lm-track raw"><span class="lm-thr" style="left:50%"></span></div>
+    <div class="lm-ticks"><span>−10</span><span>0</span><span>+10</span></div>
+  </div>
+  <div class="lm-item">
+    <div class="lm-head"><b>Sigmoid 之后的概率</b><span>有界区间 [0.0, 1.0]，阈值 0.5 ↔ Logit 0</span></div>
+    <div class="lm-track prob"><span class="lm-thr" style="left:50%"></span></div>
+    <div class="lm-ticks"><span>0.0</span><span>0.5</span><span>1.0</span></div>
+  </div>
+</div>
+
+<p>同一条阈值判据，在两种读法下结论可能完全不同：</p>
+
+<table>
+  <thead>
+    <tr><th>原始 Logit</th><th>Sigmoid 概率</th><th>直接写 <code>confidence &gt; 0.5</code>（错误）</th><th>先 Sigmoid 再比 0.5（正确）</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>−3.5</td><td>0.0293</td><td>丢弃</td><td>丢弃 ✅</td></tr>
+    <tr><td>−0.8</td><td>0.3100</td><td>丢弃</td><td>丢弃 ✅</td></tr>
+    <tr><td><b>0.3</b></td><td><b>0.5744</b></td><td><span class="no">丢弃 ❌</span></td><td><b>保留 ✅</b></td></tr>
+    <tr><td>2.2</td><td>0.9002</td><td>通过（碰巧对）</td><td>保留 ✅</td></tr>
+    <tr><td>10.0</td><td>≈ 1.0000</td><td>通过（但该值已远超 1）</td><td>保留 ✅</td></tr>
+  </tbody>
+</table>
+
+<div class="callout danger"><span class="t">🚨 典型症状：所有关键点都被过滤空</span>Logit 落在 0 ~ 0.5 之间时，真实概率已经在 50% ~ 62% 上下，但 <code>confidence &gt; 0.5</code> 会把它当成“低置信”全部丢掉。表里 Logit = 0.3 那一行，就是这类误杀的现场。</div>
+
+<h3>Python 提取标准示例</h3>
+
+<p>订阅到 <code>/perception/poses</code> 后，按下法逐点做 Sigmoid，再把 <code>x</code>、<code>y</code> 与还原后的概率一起打包：</p>
+
+<div class="codewrap"><span class="lang">python</span><button class="copy">复制</button>
+<pre><code>import math
+
+def extract_keypoints(pose_msg):
+    """解析 17 点骨骼关键点并还原真实置信度概率"""
+    parsed_people = []
+
+    for person in pose_msg.persons:
+        kps = []
+        for raw_kp in person.keypoints:
+            # 执行 Sigmoid 转换
+            prob = 1.0 / (1.0 + math.exp(-raw_kp.confidence))
+            kps.append({
+                "x": raw_kp.x,       # 像素坐标 X
+                "y": raw_kp.y,       # 像素坐标 Y
+                "prob": prob        # 真实概率 (0.0 ~ 1.0)
+            })
+        parsed_people.append(kps)
+
+    return parsed_people</code></pre>
+</div>
+
+<p>注意返回结构是<b>按人分组</b>的：<code>parsed_people</code> 的每一项对应一个人，每个人是一个关键点列表。后续做动作判定时，请以“人”为单位成组使用坐标，不要把不同人的关节点混进同一个列表。</p>
+
+<h2 id="s4">四、IMU 惯导遥测：100 Hz 的姿态反馈</h2>
+
+<p>高频 <b>100Hz</b> 的姿态反馈对于越野平稳控制与跌倒判定至关重要。它同样是一条独立话题，字段不多但每一类都有明确用途：</p>
+
+<table>
+  <thead>
+    <tr><th>字段</th><th>含义</th><th>用途</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>linear_acceleration</code></td><td>三轴加速度</td><td>判断冲击、跌落与身体倾斜趋势</td></tr>
+    <tr><td><code>angular_velocity</code></td><td>三轴角速度</td><td>判断转向与姿态抖动</td></tr>
+    <tr><td><code>orientation</code></td><td>四元数姿态</td><td>机身朝向反馈、稳住越野步态</td></tr>
+  </tbody>
+</table>
+
+<div class="callout"><span class="t">🧪 初学者自检建议</span>在调试通信环境时，推荐优先订阅 <code>/imu_raw</code> 一条话题进行链路冒烟测试：它的<b>报文体积小、刷新率高</b>，能极快验证 RMW 是否真正通畅。点云和双目解码都可能掩盖链路问题，IMU 不会。</div>
+
+<ul>
+  <li><b>为什么先测它</b>：100Hz 的高频小报文，通不通几秒内就能看出来，不用等一帧 1080P 画面。</li>
+  <li><b>它证明什么</b>：RMW 通路、话题名、QoS 订阅关系都对了，再去接点云与视频流就只剩数据处理问题。</li>
+  <li><b>它服务谁</b>：越野平稳控制与跌倒判定这两类高频逻辑，直接吃这 100Hz 的姿态反馈。</li>
+</ul>
+
+<h2 id="s5">五、🧪 小实验：Logit → 概率转换器</h2>
+
+<p>第三节那个“置信度全被过滤空”的坑，亲手拖一遍就再也不会忘。拖动滑块改变模型输出的原始 Logit，观察 Sigmoid 如何把它压进 [0, 1]，以及 0.5 阈值线落在哪里。</p>
+
+<div class="lab">
+  <div class="lab-h">🧪 Logit → 概率转换器</div>
+  <p>输入范围 −10 ~ +10，步进 0.1。红色阈值线固定在“概率 = 0.5”，它对应的 Logit 恰好是 0。</p>
+  <p><b>提示：直接拿原始 Logit 当概率用会得到错误判断，必须先做 Sigmoid。</b></p>
+  <div class="labrow">
+    <input id="logit" type="range" min="-10" max="10" step="0.1" value="-3.5" aria-label="原始 Logit 值">
+  </div>
+  <div class="range-scale"><span>−10</span><span>0</span><span>+10</span></div>
+
+  <div class="labstats">
+    <div class="labstat"><span class="k">原始 Logit</span><span class="v" id="lgx">−3.5</span></div>
+    <div class="labstat"><span class="k">Sigmoid 概率</span><span class="v" id="lgp">0.0293</span></div>
+    <div class="labstat"><span class="k">置信度百分比</span><span class="v" id="lgpc">2.93%</span></div>
+  </div>
+
+  <div class="pbar-wrap">
+    <span class="pthr-lbl">阈值 0.5 · Logit 0</span>
+    <div class="pbar"><div class="pfill" id="pfill"></div><div class="pthr"></div></div>
+  </div>
+  <div class="pbar-scale"><span>0.0</span><span>0.5</span><span>1.0</span></div>
+
+  <div id="verdict" class="verdict no">🚫 丢弃该关键点（概率 &lt; 0.5）</div>
+  <div class="lgeq" id="lgeq"></div>
+  <div class="lgeq" id="lgnaive"></div>
+  <div class="labnote" id="labnote"></div>
+
+  <div class="presets">
+    <button type="button" class="ghost" data-x="-3.5">−3.5 · 低置信</button>
+    <button type="button" class="ghost" data-x="0.3">0.3 · 危险区</button>
+    <button type="button" class="ghost" data-x="2.2">2.2 · 高置信</button>
+  </div>
+</div>
+
+<p>把滑块停在 <b>0.3</b> 试试：这正是表里那行“误杀”的现场——原始值不到 0.5，Sigmoid 后的概率却已经有 0.5744。再拉到 <b>2.2</b> 看看：原始值早就越过 1，只有概率才适合和阈值比较。</p>
+
+<h2 id="s6">六、本课小结</h2>
+
+<p>四路感知、四条话题、四种下游用法，一张表收拢：</p>
+
+<table>
+  <colgroup><col style="width:20%"><col style="width:24%"><col style="width:33%"><col style="width:23%"></colgroup>
+  <thead>
+    <tr><th>感知流</th><th>话题</th><th>关键事实</th><th>下游 / 用途</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>📡 16 线激光雷达</td>
+      <td><code>/vbot/lidar/point_cloud</code></td>
+      <td>10Hz；<code>sensor_msgs/msg/PointCloud2</code>；高度 [0.1m, 0.6m] 切片</td>
+      <td>SLAM 建图；切片成 <code>LaserScan</code> 给 Nav2 避障</td>
+    </tr>
+    <tr>
+      <td>📷 深度双目相机</td>
+      <td><code>/image_left_raw/h265</code></td>
+      <td>1080P@30fps；H.265 / HEVC；未压缩码流 1.5–3.0 Gbps</td>
+      <td>PyAV 解码为 BGR 帧，交给视觉后处理</td>
+    </tr>
+    <tr>
+      <td>🧍 NPU 人体感知</td>
+      <td><code>/perception/poses</code></td>
+      <td>人员边界框 + 17 点 COCO 骨骼；<b>confidence 是 Logit</b></td>
+      <td>骨骼动作判定（如下犬式）、VLM 理解画面</td>
+    </tr>
+    <tr>
+      <td>🧭 IMU 惯导</td>
+      <td><code>/imu_raw</code></td>
+      <td>100Hz；<code>linear_acceleration</code> / <code>angular_velocity</code> / <code>orientation</code></td>
+      <td>越野平稳控制、跌倒判定、链路冒烟测试</td>
+    </tr>
+  </tbody>
+</table>
+
+<ul class="goals">
+  <li>三档频率心里要有数：雷达 <b>10Hz</b>、双目 <b>1080P@30fps</b>、IMU <b>100Hz</b></li>
+  <li>点云切片只留 <b>0.1–0.6 m</b> 高度带：开销降 <b>80%</b>，避障快 <b>5 倍</b></li>
+  <li>双目原始码流 <b>1.5–3.0 Gbps</b>，必须走 H.265 并先解码再处理</li>
+  <li><code>confidence</code> 是 Logit：先 <code>1 / (1 + e^(−logit))</code>，再和 0.5 比</li>
+  <li>调链路先订 <code>/imu_raw</code>：报文小、刷新快，几秒验证 RMW 是否通畅</li>
+</ul>
+
+<div class="callout"><span class="t">⏭️ 下一课预告</span>眼睛、触角与姿态都到位了，接下来该给机器狗装上“会思考”的中枢——下一课我们把多模态大模型接入进来，并打通设备端的 MCP 工具服务：<a href="lesson_03.html">3.3 多模态大模型集成与设备端 MCP 工具</a>。</div>
+
+</div>
+
+<div class="wrap" style="padding-top:0">
+<footer class="nav">
+  <a href="lesson_01.html"><span class="dir">← 上一课</span><span class="ttl">3.1 运动控制进阶与 RCP DAG 动作流编排</span></a>
+  <a class="home-link" href="index.html"><span class="dir">目录</span><span class="ttl">返回目录</span></a>
+  <a href="lesson_03.html" style="text-align:right"><span class="dir">下一课 →</span><span class="ttl">3.3 多模态大模型集成与设备端 MCP 工具</span></a>
+</footer>
+</div>
+
+</main>
+
+<script>
+document.querySelectorAll('.copy').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var pre=btn.parentElement.querySelector('pre');
+    if(!pre)return;
+    var txt=pre.textContent;
+    function done(t){btn.textContent=t;setTimeout(function(){btn.textContent='复制'},1500);}
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){done('已复制');},function(){done('请手动复制');});
+    }else{
+      done('请手动复制');
+    }
+  });
+});
+
+(function(){
+  var lg=document.getElementById('logit');
+  if(!lg)return;
+  var elX=document.getElementById('lgx');
+  var elP=document.getElementById('lgp');
+  var elPc=document.getElementById('lgpc');
+  var elFill=document.getElementById('pfill');
+  var elVerdict=document.getElementById('verdict');
+  var elEq=document.getElementById('lgeq');
+  var elNaive=document.getElementById('lgnaive');
+  var elNote=document.getElementById('labnote');
+
+  function sig(x){return 1/(1+Math.exp(-x));}
+  function fmt(x){return (x<0?'−':'+')+Math.abs(x).toFixed(1);}
+
+  function render(){
+    var x=parseFloat(lg.value)||0;
+    var p=sig(x);
+    var real=p>=0.5;
+    var naive=x>0.5;
+
+    elX.textContent=fmt(x);
+    elP.textContent=(p<0.0001?'<0.0001':p.toFixed(4));
+    elPc.textContent=(p*100).toFixed(2)+'%';
+    elFill.style.width=(p*100).toFixed(3)+'%';
+
+    elVerdict.className='verdict '+(real?'ok':'no');
+    elVerdict.textContent=real?'✅ 保留该关键点（概率 ≥ 0.5）':'🚫 丢弃该关键点（概率 < 0.5）';
+
+    elEq.textContent='p = 1 / (1 + e^(−(' + x.toFixed(1) + '))) = 1 / (1 + ' + Math.exp(-x).toFixed(4) + ') = ' + p.toFixed(4);
+
+    elNaive.innerHTML='若直接写成 <code>if point.confidence &gt; 0.5</code>：原始值 ' + fmt(x) + ' → <b>' + (naive?'通过':'不通过') + '</b>' +
+      (naive!==real?'　<span class="mismatch">与正确判法结论不一致</span>':'　（与正确判法结论一致）');
+
+    var msg;
+    if(x<=-8){
+      msg='几乎完全饱和：概率已经贴着 0，再小的 Logit 也挤不出更低的概率。';
+    }else if(x<-2){
+      msg='原始值是明显的负数，Sigmoid 后只有 ' + (p*100).toFixed(1) + '%——这类点确实该丢，但判断要建立在概率上。';
+    }else if(x<0){
+      msg='原始值落在 (−2, 0)：两种判法结论碰巧一致，但数值含义完全不同，别把 −0.8 当成“负 80% 置信度”。';
+    }else if(x<0.5){
+      msg='⚠️ 危险区：原始值 ' + x.toFixed(1) + ' 小于 0.5，按 <code>confidence &gt; 0.5</code> 会被直接丢掉；而 Sigmoid 后概率是 ' + (p*100).toFixed(1) + '%，这是一个本该保留的关键点。';
+    }else if(x<4){
+      msg='原始值已经大于 0.5，直接比较碰巧也能通过；但它可以大于 1，当概率读毫无意义——正确值看上面的 Sigmoid。';
+    }else{
+      msg='高置信区：Sigmoid 把大 Logit 压向 1 但永远到不了 1，概率不会溢出。';
+    }
+    elNote.innerHTML=msg;
+  }
+
+  lg.addEventListener('input',render);
+  document.querySelectorAll('.presets button').forEach(function(b){
+    b.addEventListener('click',function(){
+      lg.value=b.getAttribute('data-x');
+      render();
+    });
+  });
+  render();
+})();
+</script>
+</body>
+</html>

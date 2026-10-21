@@ -3,6 +3,8 @@
 > **定位**：面向具身智能极客、机器人创客、高校科研团队，以及 **AI Coding Agent** (Cursor / Claude Code) 的全景入门与实战指南。  
 > **教学范式**：*“案例先导 ➔ 双脑地基 ➔ Agent-Native 编排 ➔ 硬件改装 ➔ 分层排障”* —— 兼具人类极客直播讲授与大模型机器自动路由的双驱动架构。  
 > **基准版本**：机器人应用固件 **V1.6.0** (foot_quadruped) ｜ 通信核心：**Aorta (Zenoh)** 原生总线 (46 核心话题) + ROS 2 Humble 桥接子集。
+>
+> **🌐 网页版教程（GitHub Pages）**：仓库根目录 [`index.html`](index.html) 即课程首页（含大头 EDU 官方展示视频），发布地址为 [https://00make.github.io/vbot-docs/](https://00make.github.io/vbot-docs/)。5 个模块目录下既有 Markdown 源文档，也有对应的 `index.html` 与 `lesson_XX.html` 网页课页。
 
 ---
 

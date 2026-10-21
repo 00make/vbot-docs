@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.1 硬件工程规格与核心约束 | VBOT EDU 硬件改装</title>
+<meta name="description" content="VBOT EDU 模块 04 第 1 课：整机物理规格、5.0 kg 额定负载与 12.0 kg 极限边界、为运控预留 2 核的 CPU 亲和性隔离。">
+<meta name="reading-time" content="10 分钟">
+<style>
+/* ===== 风格契约 v1 · 预设 A 清爽技术文档风（全教程统一，勿改） ===== */
+:root{
+  --bg:#ffffff; --fg:#1f2937; --muted:#6b7280;
+  --accent:#0e7490; --accent-dark:#155e75; --accent-light:#ecfeff;
+  --code-bg:#f3f4f6; --code-fg:#111827; --code-border:#e5e7eb;
+  --border:#e5e7eb; --card:#f9fafb;
+  --warn-bg:#fffbeb; --warn-bd:#f59e0b;
+  --danger-bg:#fef2f2; --danger-bd:#ef4444;
+  --tip-bg:#ecfeff; --tip-bd:#0e7490;
+  --ok-bg:#f0fdf4; --ok-bd:#22c55e;
+  --radius:10px; --max-width:880px; --toc-w:250px;
+  --font-body:"Microsoft YaHei","Source Han Sans CN",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"Cascadia Code",Consolas,"JetBrains Mono","Courier New",monospace;
+}
+/* ===== 风格契约结束 ===== */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.8;font-size:16px}
+a{color:var(--accent)}
+a:hover{color:var(--accent-dark)}
+code{font-family:var(--font-mono);font-size:.875em;background:var(--code-bg);border:1px solid var(--code-border);border-radius:4px;padding:1px 6px;color:var(--code-fg)}
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:16px 18px;overflow:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;color:var(--code-fg);margin:0}
+pre code{background:none;border:none;padding:0;font-size:inherit}
+
+/* 布局：左 TOC + 右正文 */
+.toc{position:fixed;top:0;left:0;bottom:0;width:var(--toc-w);background:var(--card);border-right:1px solid var(--border);padding:28px 16px;overflow:auto}
+.toc .brand{font-weight:700;color:var(--accent-dark);font-size:17px;margin-bottom:2px}
+.toc .sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.toc ol{list-style:none;margin:0;padding:0;counter-reset:toc}
+.toc li{counter-increment:toc;margin-bottom:2px}
+.toc a{display:block;padding:7px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font-size:13.5px}
+.toc a::before{content:counter(toc) ". ";color:var(--accent);font-weight:600}
+.toc a:hover{background:var(--accent-light);color:var(--accent-dark)}
+.toc .home{display:inline-block;margin-top:18px;font-size:13px;color:var(--accent);text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--bg)}
+main{margin-left:var(--toc-w)}
+.wrap{max-width:var(--max-width);margin:0 auto;padding:40px 32px 24px}
+
+/* 页头 */
+header.lesson{border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:32px}
+header.lesson .hero-img{width:100%;max-height:280px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);margin-top:18px}
+.badges{margin-bottom:12px}
+.badge{display:inline-block;font-size:12px;font-weight:600;border-radius:99px;padding:2px 12px;margin-right:8px;vertical-align:middle}
+.badge.no{background:var(--accent);color:#fff}
+.badge.safe{background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.badge.ver{background:var(--card);color:var(--muted);border:1px solid var(--border)}
+h1{font-size:30px;line-height:1.4;margin:0 0 10px;color:var(--accent-dark)}
+.meta{font-size:13.5px;color:var(--muted)}
+.meta a{color:var(--accent)}
+
+/* 标题层级 */
+h2{font-size:22px;color:var(--accent-dark);margin:48px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--accent-light)}
+h3{font-size:17.5px;color:var(--fg);margin:28px 0 10px}
+
+/* 提示框 */
+.callout{border-left:4px solid var(--tip-bd);background:var(--tip-bg);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;margin:20px 0;font-size:15px}
+.callout.warn{border-color:var(--warn-bd);background:var(--warn-bg)}
+.callout.danger{border-color:var(--danger-bd);background:var(--danger-bg)}
+.callout.ok{border-color:var(--ok-bd);background:var(--ok-bg)}
+.callout .t{font-weight:700;display:block;margin-bottom:4px}
+
+/* 直播口播折叠 */
+details.talk{border:1px dashed var(--accent);border-radius:var(--radius);background:var(--bg);margin:20px 0}
+details.talk summary{cursor:pointer;padding:12px 18px;color:var(--accent);font-weight:600;font-size:14.5px}
+details.talk .body{padding:0 18px 14px;color:var(--muted);font-size:14.5px}
+
+/* 图片 */
+figure{margin:24px 0;text-align:center}
+figure img{max-width:100%;border:1px solid var(--border);border-radius:var(--radius);background:#fff}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+/* 表格 */
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px}
+th,td{border:1px solid var(--border);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--accent-light);color:var(--accent-dark);font-weight:700}
+tr:nth-child(even) td{background:var(--card)}
+td .no{color:var(--danger-bd);font-weight:700}
+
+/* 编号步骤 */
+ol.steps{list-style:none;counter-reset:st;padding:0;margin:18px 0}
+ol.steps>li{counter-increment:st;position:relative;padding:0 0 18px 48px}
+ol.steps>li::before{content:counter(st);position:absolute;left:0;top:2px;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;text-align:center;line-height:32px;font-size:15px}
+ol.steps>li>b:first-child{display:block;margin-bottom:4px}
+
+/* CSS 拓扑图 */
+.topo{display:flex;align-items:stretch;justify-content:center;gap:0;margin:24px 0;flex-wrap:wrap}
+.topo .node{background:var(--card);border:2px solid var(--accent);border-radius:var(--radius);padding:12px 16px;min-width:170px;text-align:center;font-size:13.5px}
+.topo .node b{display:block;color:var(--accent-dark);font-size:14.5px;margin-bottom:2px}
+.topo .node code{font-size:12px}
+.topo .node.dev{border-color:var(--muted)}
+.topo .node.gw{border-style:dashed}
+.topo .link{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 10px;color:var(--muted);font-size:12px;min-width:96px}
+.topo .link .arrow{font-size:20px;color:var(--accent);line-height:1.2}
+
+/* 代码块 + 复制按钮 + Tabs */
+.codewrap{position:relative;margin:14px 0}
+.codewrap .lang{position:absolute;top:0;right:88px;font-size:11px;color:var(--muted);background:var(--bg);border:1px solid var(--code-border);border-bottom:none;border-radius:6px 6px 0 0;padding:1px 8px}
+.copy{position:absolute;top:8px;right:8px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;font-family:var(--font-body)}
+.copy:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.tabs{display:flex;gap:6px;margin:18px 0 0}
+.tabs button{border:1px solid var(--border);border-bottom:none;background:var(--card);padding:8px 18px;border-radius:10px 10px 0 0;cursor:pointer;font-size:14px;color:var(--muted);font-family:var(--font-body)}
+.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+.panel{display:none;border:1px solid var(--border);border-radius:0 var(--radius) var(--radius) var(--radius);padding:16px 18px;background:var(--bg)}
+.panel.on{display:block}
+
+/* 目标清单 */
+ul.goals{margin:12px 0;padding-left:0;list-style:none}
+ul.goals li{padding:4px 0 4px 28px;position:relative}
+ul.goals li::before{content:"✓";position:absolute;left:4px;color:var(--accent);font-weight:700}
+
+/* 页脚导航 */
+footer.nav{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--border);margin-top:56px;padding:24px 0 40px;flex-wrap:wrap}
+footer.nav a{flex:1;min-width:200px;border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;text-decoration:none;background:var(--card)}
+footer.nav a:hover{border-color:var(--accent);background:var(--accent-light)}
+footer.nav .dir{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
+footer.nav .ttl{display:block;font-size:15px;color:var(--accent-dark);font-weight:600}
+footer.nav a.home-link{flex:0 0 auto;text-align:center}
+
+/* 甘特时间线 */
+.gantt{margin:20px 0}
+.gantt .row{display:flex;align-items:center;margin:8px 0}
+.gantt .lbl{width:190px;font-size:13.5px;color:var(--fg);flex-shrink:0}
+.gantt .track{flex:1;position:relative;height:28px;background:var(--card);border:1px solid var(--border);border-radius:6px}
+.gantt .bar{position:absolute;top:3px;bottom:3px;background:linear-gradient(90deg,var(--accent),#22d3ee);border-radius:5px;color:#fff;font-size:11.5px;display:flex;align-items:center;padding:0 8px;white-space:nowrap;overflow:hidden}
+.gantt .axis{display:flex;margin-left:190px;font-size:11.5px;color:var(--muted)}
+.gantt .axis span{flex:1;text-align:left}
+
+/* 决策流程图 */
+.flow{display:flex;flex-direction:column;align-items:center;margin:24px 0}
+.fnode{border:2px solid var(--accent);background:var(--accent-light);border-radius:var(--radius);padding:10px 18px;font-size:14px;text-align:center;max-width:460px}
+.fnode b{color:var(--accent-dark)}
+.fnode.start{border-radius:99px;background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.fnode.decision{background:var(--warn-bg);border-color:var(--warn-bd)}
+.fnode.end{border-radius:99px;background:var(--ok-bg);border-color:var(--ok-bd);color:#15803d;font-weight:600}
+.fdown{color:var(--accent);font-size:18px;line-height:1.5;text-align:center}
+.fdown small{display:block;font-size:12px;color:var(--muted)}
+.fbranch{display:flex;gap:28px;justify-content:center;align-items:flex-start;flex-wrap:wrap;margin:4px 0}
+.fcol{display:flex;flex-direction:column;align-items:center}
+.fcol .tag-y{font-size:12px;font-weight:700;color:#15803d;background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+.fcol .tag-n{font-size:12px;font-weight:700;color:#92400e;background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+
+/* 交互小实验 */
+.lab{background:var(--card);border:1px solid var(--accent);border-radius:var(--radius);padding:18px 20px;margin:26px 0}
+.lab h4{margin:0 0 6px;color:var(--accent-dark);font-size:16px}
+.lab p{margin:4px 0;font-size:14px;color:var(--muted)}
+.labrow{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;align-items:center}
+.lab input{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font-mono);font-size:14px;width:220px;background:var(--bg);color:var(--fg)}
+.lab button{padding:8px 18px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:14px;font-family:var(--font-body)}
+.lab button:hover{background:var(--accent-dark)}
+.result{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:14px;display:none}
+.result.ok{display:block;background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.result.bad{display:block;background:var(--danger-bg);color:#b91c1c;border:1px solid var(--danger-bd)}
+.result.warn{display:block;background:var(--warn-bg);color:#92400e;border:1px solid var(--warn-bd)}
+.lab pre{margin-top:10px}
+
+/* 移动端 */
+@media (max-width:768px){
+  .toc{position:static;width:auto;border-right:none;border-bottom:1px solid var(--border);padding:18px 16px}
+  .toc ol{columns:2}
+  main{margin-left:0}
+  .wrap{padding:24px 18px 12px}
+  h1{font-size:24px}
+  .topo{flex-direction:column;align-items:center}
+  .topo .link{min-width:auto;padding:6px 0}
+  .topo .link .arrow{transform:rotate(90deg)}
+  .gantt .lbl{width:110px;font-size:12px}
+  .gantt .axis{margin-left:110px}
+  .fbranch{flex-direction:column;align-items:center;gap:8px}
+}
+/* 打印 */
+@media print{
+  .toc,.copy,.tabs{display:none}
+  main{margin-left:0}
+  .panel{display:block!important;border:none;padding:8px 0}
+  body{font-size:12px}
+  a{color:var(--fg);text-decoration:none}
+}
+
+/* ===== 本课专属组件（仅追加，不改动上方契约样式） ===== */
+/* 硬件工程安全徽章：琥珀色风险提示 */
+.badge.risk{background:var(--warn-bg);color:#92400e;border:1px solid var(--warn-bd)}
+
+/* 竖幅实拍图：限制高度，避免图片淹没正文 */
+figure.photo-tall img{max-height:560px;width:auto;max-width:100%}
+
+/* 正文列表 */
+.callout p{margin:6px 0}
+.callout ul{margin:6px 0 0;padding-left:20px}
+.callout li{margin-bottom:3px}
+ul.bullets{margin:12px 0;padding-left:22px}
+ul.bullets li{margin-bottom:7px}
+
+/* 负载包络图 */
+.envelope{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px 12px;margin:24px 0}
+.envelope .env-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.envelope .env-head b{color:var(--accent-dark);font-size:14.5px}
+.env-live{font-size:12.5px;color:var(--muted);font-family:var(--font-mono)}
+.env-live.ok{color:#15803d}
+.env-live.warn{color:#92400e}
+.env-live.bad{color:#b91c1c}
+.env-track{position:relative;display:flex;height:96px;border:1px solid var(--border);border-radius:8px;background:var(--bg)}
+.env-zone{position:relative;display:flex;flex-direction:column;justify-content:center;padding:8px 10px;font-size:12px;border-right:1px dashed var(--border);overflow:hidden}
+.env-zone:first-of-type{border-radius:7px 0 0 7px}
+.env-zone:last-of-type{border-right:none;border-radius:0 7px 7px 0}
+.env-zone.cruise{flex:5;background:var(--ok-bg);color:#15803d}
+.env-zone.impact{flex:7;background:var(--warn-bg);color:#92400e}
+.env-zone.forbid{flex:3;background:var(--danger-bg);color:#b91c1c}
+.env-zone b{font-size:13px;line-height:1.4;position:relative;z-index:1}
+.env-zone small{display:block;font-size:11px;line-height:1.5;margin-top:2px;position:relative;z-index:1}
+.env-needle{position:absolute;top:-6px;bottom:-6px;width:0;border-left:2px dashed var(--accent);z-index:2;transition:left .15s ease}
+.env-needle.ok{border-color:#15803d}
+.env-needle.warn{border-color:var(--warn-bd)}
+.env-needle.bad{border-color:var(--danger-bd)}
+.env-needle span{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);background:var(--bg);border:1px solid currentColor;color:var(--accent-dark);font-family:var(--font-mono);font-size:11px;line-height:1.5;padding:0 6px;border-radius:6px;white-space:nowrap}
+.env-needle.ok span{color:#15803d}
+.env-needle.warn span{color:#92400e}
+.env-needle.bad span{color:#b91c1c}
+.env-scale{position:relative;height:20px;margin-top:30px;font-size:11px;color:var(--muted);font-family:var(--font-mono)}
+.env-scale span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.env-scale span:first-child{transform:none}
+.env-scale span:last-child{transform:translateX(-100%)}
+.env-note{font-size:12px;color:var(--muted);margin:8px 0 0}
+
+/* 重心俯视示意 */
+.cg{display:grid;grid-template-columns:1.1fr 1fr;gap:22px;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin:20px 0}
+.cg-board{position:relative;height:132px;background:var(--bg);border:2px solid var(--accent);border-radius:10px}
+.cg-board::before{content:"机身俯视示意";position:absolute;top:-9px;left:10px;background:var(--card);padding:0 6px;font-size:11px;color:var(--muted)}
+.cg-axis{position:absolute;left:50%;top:8px;bottom:8px;border-left:2px dashed var(--accent);opacity:.8;z-index:1}
+.cg-tol{position:absolute;left:36%;width:28%;top:26px;bottom:26px;background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:6px}
+.cg-tol span{position:absolute;left:50%;bottom:-18px;transform:translateX(-50%);font-size:11px;color:#15803d;white-space:nowrap;background:var(--bg);padding:0 4px;border-radius:3px;z-index:3}
+.cg-hole{position:absolute;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;border:2px solid var(--accent-dark);background:var(--bg);z-index:2}
+.cg-load{position:absolute;left:56%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--warn-bd);border:2px solid #fff;box-shadow:0 0 0 1px var(--warn-bd);z-index:2}
+.cg-load::after{content:"外挂负载重心";position:absolute;left:16px;top:-8px;font-size:11px;color:#92400e;white-space:nowrap}
+.cg-notes{font-size:13.5px}
+.cg-notes b{color:var(--accent-dark)}
+.cg-notes ul{margin:6px 0 0;padding-left:18px}
+.cg-notes li{margin-bottom:4px}
+
+/* 8 核分配条 */
+.cores{margin:22px 0 10px}
+.cores .bar{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
+.cores .core{border:2px solid var(--accent);border-radius:8px;background:var(--accent-light);padding:10px 4px;text-align:center;font-size:11.5px;color:var(--accent-dark);line-height:1.35;overflow:hidden;min-width:0}
+.cores .core .idx{display:block;font-family:var(--font-mono);font-size:10.5px;color:var(--muted);margin-bottom:2px}
+.cores .core b{display:block;font-size:13px}
+.cores .core.res{background:var(--accent);border-color:var(--accent);color:#fff}
+.cores .core.res .idx{color:#ecfeff}
+.cores .core.res small{display:block;font-size:10px;font-weight:400;opacity:.9;white-space:nowrap}
+.cores .core.dev{background:var(--bg);border-style:dashed}
+.cores .brackets{display:grid;grid-template-columns:repeat(8,1fr);margin-top:9px;font-size:11.5px;text-align:center}
+.cores .brackets span{border-top:2px solid var(--muted);padding-top:4px;color:var(--muted)}
+.cores .brackets .res-b{grid-column:span 2;border-color:var(--accent);color:var(--accent-dark);font-weight:600}
+.cores .brackets .dev-b{grid-column:span 6;border-color:var(--accent);color:var(--accent-dark)}
+
+/* 失效链 */
+.chain{display:flex;align-items:stretch;margin:14px 0 2px;flex-wrap:wrap}
+.chain .step{flex:1;min-width:130px;background:var(--bg);border:1px solid var(--danger-bd);border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.5;color:#b91c1c}
+.chain .step b{display:block;font-size:12px;color:#b91c1c}
+.chain .arrow{display:flex;align-items:center;justify-content:center;color:var(--danger-bd);font-size:16px;padding:0 6px}
+
+/* 规划器表单 */
+.lab .field{margin:12px 0}
+.lab .field>label{display:block;font-size:13.5px;color:var(--fg);margin-bottom:4px}
+.lab .range-row{display:flex;align-items:center;gap:12px}
+.lab input[type="range"]{flex:1;width:auto;min-width:0;padding:0;border:none;background:transparent;accent-color:var(--accent);cursor:pointer}
+.lab .val{font-family:var(--font-mono);font-size:15px;font-weight:700;color:var(--accent-dark);min-width:76px;text-align:right}
+.lab .checks{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.lab .checks label{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;color:var(--fg)}
+.lab .checks label:hover{border-color:var(--accent)}
+.lab input[type="checkbox"]{width:auto;height:auto;padding:0;margin:0;border:none;background:transparent;accent-color:var(--accent);cursor:pointer}
+.lab .corehint{display:none;margin:8px 0;padding:8px 12px;border-left:3px solid var(--warn-bd);background:var(--warn-bg);color:#92400e;font-size:13px;border-radius:0 6px 6px 0}
+.lab .corehint code{background:#fff;white-space:nowrap}
+.lab .labnote{font-size:12px;color:var(--muted)}
+#loadres ul{margin:6px 0 0;padding-left:18px}
+#loadres li{margin-bottom:4px}
+#loadres code{background:rgba(255,255,255,.75)}
+
+/* 本课专属：移动端补充 */
+@media (max-width:768px){
+  .toc ol{columns:1}
+  .toc li{break-inside:avoid}
+  .cg{grid-template-columns:1fr;gap:16px}
+  .cg-board{height:118px}
+  figure.photo-tall img{max-height:380px}
+  .env-track{height:78px}
+  .env-zone{padding:6px;font-size:11px}
+  .env-zone b{font-size:11px}
+  .env-zone small{display:none}
+  .env-needle span{font-size:10px}
+  .cores .bar{gap:3px}
+  .cores .core{padding:7px 1px;font-size:10.5px}
+  .cores .core .idx{font-size:8px}
+  .cores .core b{font-size:11px}
+  .cores .core.res small{display:none}
+  .cores .brackets{font-size:10px}
+  .chain{flex-direction:column}
+  .chain .arrow{transform:rotate(90deg);padding:2px 0}
+  .lab .val{min-width:60px;font-size:14px}
+}
+</style>
+</head>
+<body>
+
+<nav class="toc" id="nav">
+  <div class="brand">VBOT EDU 硬件改装</div>
+  <div class="sub">模块 04 · Lesson 01</div>
+  <ol>
+    <li><a href="#s1">机体基础物理规格</a></li>
+    <li><a href="#s2">负重边界：5.0 / 12.0 kg</a></li>
+    <li><a href="#s3">算力隔离：运控留 2 核</a></li>
+    <li><a href="#s4">小实验：负载与算力规划器</a></li>
+    <li><a href="#s5">本课小结</a></li>
+  </ol>
+  <a class="home" href="index.html">← 返回目录</a>
+</nav>
+
+<main>
+<div class="wrap">
+
+<header class="lesson">
+  <div class="badges">
+    <span class="badge no">Lesson 01</span>
+    <span class="badge risk">安全级别：硬件工程（hardware_engineering）</span>
+    <span class="badge ver">固件基准 V1.6.0</span>
+  </div>
+  <h1>硬件工程规格与核心约束</h1>
+  <p class="meta">预计阅读 10 分钟 · 模块 04 硬件改装与黑客松蓝本 · 前置：已熟悉基本软硬件开发</p>
+</header>
+
+<details class="talk">
+  <summary>🎙️ 展开直播口播导语（讲师版）</summary>
+  <div class="body">
+    <p>“机器人不是纯粹的虚拟代码，任何一行失控的指令都会转化为真实的物理破坏力！在为机器狗加装外设、机械臂或运行大型模型之前，必须牢记其物理负重、供电与算力分配边界！狗背上到底能装多重？重心往哪偏会翻车？还有最致命的——为什么高负载推理时，必须给运控死死留出 2 个 CPU 核心？今天这节课，我们把这些硬核的机电物理约束一次讲透！”</p>
+  </div>
+</details>
+
+<h2 id="goals" style="margin-top:24px;border-bottom:none;padding-bottom:0;font-size:17.5px">本课学习目标</h2>
+<ul class="goals">
+  <li>记住整机关键规格：约 16.0 kg 自重、14 个 VGeer 关节、594 Wh 电池、8 核 ARM64 + 128 TOPS NPU</li>
+  <li>分清 5.0 kg 额定长期负载与 12.0 kg 极限结构边界，知道 5.0–12.0 kg 必须限速 0.2 m/s</li>
+  <li>说清为什么 Core 0–1 必须留给系统与运控，并会用 <code>taskset -c 2-7</code> 绑定外部算法</li>
+  <li>用负载与算力规划器判断自己的改装方案是否越界</li>
+</ul>
+
+<h2 id="s1">一、机体基础物理规格</h2>
+
+<p>在画第一根支架线之前，先把四个数字背下来：<b>16.0 kg</b> 的整机自重、<b>14</b> 个自研关节、<b>594 Wh</b> 的电池，以及 <b>8 核 ARM64 + 128 TOPS NPU</b>。它们决定了这只狗能背多重、能跑多久，还剩下多少算力留给你的算法。</p>
+
+<table>
+  <thead>
+    <tr><th>参数维度</th><th>规格指标</th><th>工程开发警示</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>整机自重</b></td>
+      <td><b>约 16.0 kg</b>（含标准电池）</td>
+      <td>搬运时请双手托举机身腹部，<span class="no">严禁拉扯小腿与头部</span></td>
+    </tr>
+    <tr>
+      <td><b>关节自由度</b></td>
+      <td><b>14 个</b>自研 VGeer 高扭矩一体化关节（四肢各 3 + 头部 2）</td>
+      <td>头部电机主要用于视场与表情交互，不可挂载过重配重</td>
+    </tr>
+    <tr>
+      <td><b>电池容量</b></td>
+      <td><b>594 Wh</b> 大容量动力锂电组</td>
+      <td>满电典型二开续航约 <b>2.0 ~ 3.5 小时</b>（视负载而定）</td>
+    </tr>
+    <tr>
+      <td><b>机身算力</b></td>
+      <td><b>8 核 ARM64 处理器</b> + <b>128 TOPS</b> 混合精度 NPU</td>
+      <td>必须严格实施计算核心隔离（见第三节）</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <span class="t">⚠️ 三个容易被忽略的细节</span>
+  <ul>
+    <li><b>受力点：</b>搬运时双手托举机身腹部；小腿与头部是关节与减速器，不是提手。</li>
+    <li><b>头部配重：</b>头部 2 个电机为视场与表情交互服务，不适合当作云台挂载点。</li>
+    <li><b>续航预算：</b>2.0 ~ 3.5 小时是“典型二开”区间，外挂负载加重时，按 2.0 小时下限做任务规划。</li>
+  </ul>
+</div>
+
+<figure class="photo-tall">
+  <img src="../assets/04-cases-linbot/04-photo-聆灵加装AED侧视实拍.jpg" alt="聆灵陪诊机器狗侧视实拍：背部加装 AED 急救箱、药篮与延伸摄像头支架" loading="lazy">
+  <figcaption>图 1：真实案例——聆灵背负 AED 急救箱、药篮与高位摄像头支架，这类总重必须控制在 5.0 kg 额定载荷内（详见 4.3 CASE-01）</figcaption>
+</figure>
+
+<h2 id="s2">二、负重边界：额定 5.0 kg 与极限 12.0 kg</h2>
+
+<p>外挂箱、AED 医疗盒、全景相机或机械臂上机之前，先看负载落在哪一段。机器狗不会因为你超载就立刻报警——它只会用姿态、步频和电机温度慢慢告诉你。工程上把负载划成三段：</p>
+
+<div class="envelope" role="img" aria-label="负载包络图：0 到 5.0 公斤为巡航区，5.0 到 12.0 公斤为仅瞬时冲击区并限速 0.2 米每秒，超过 12.0 公斤为禁止区">
+  <div class="env-head">
+    <b>负载包络（外挂负载，不含整机 16.0 kg 自重）</b>
+    <span class="env-live" id="envlive">当前规划：3.0 kg · 5.0 kg 巡航区</span>
+  </div>
+  <div class="env-track">
+    <div class="env-zone cruise">
+      <b>0–5.0 kg 巡航区</b>
+      <small>额定长期点 · 全速与小跑</small>
+    </div>
+    <div class="env-zone impact">
+      <b>5.0–12.0 kg</b>
+      <small>仅瞬时冲击区 · 限速 0.2 m/s</small>
+    </div>
+    <div class="env-zone forbid">
+      <b>&gt; 12.0 kg 禁止区</b>
+      <small>电机过流 / 摔机停机</small>
+    </div>
+    <div class="env-needle ok" id="envneedle" style="left:20%"><span id="envtag">3.0</span></div>
+  </div>
+  <div class="env-scale">
+    <span style="left:0%">0</span>
+    <span style="left:33.333%">5.0</span>
+    <span style="left:80%">12.0</span>
+    <span style="left:100%">15 kg</span>
+  </div>
+  <p class="env-note">横轴按 0–15 kg 等比例绘制；5.0 kg 与 12.0 kg 是两条硬边界，不是建议值。</p>
+</div>
+
+<h3>1. 额定长期工作负载点：≤ 5.0 kg</h3>
+<ul class="bullets">
+  <li><b>工况表现：</b>底盘动态逆运动学（IK）与落足姿态保持最佳平衡，平地行走、爬坡（≤ 20°）与小跑姿态完全稳定。</li>
+  <li><b>重心要求：</b>负重重心必须严格落在机身前后轴距正中（背板中心定位孔附近），偏心距离不得超过 5cm。</li>
+</ul>
+
+<div class="cg">
+  <div class="cg-board" role="img" aria-label="重心俯视示意：负载重心须落在背板中心定位孔附近的容差带内，偏心不超过 5 厘米">
+    <div class="cg-tol"><span>±5 cm 容差带</span></div>
+    <div class="cg-axis"></div>
+    <div class="cg-hole"></div>
+    <div class="cg-load"></div>
+  </div>
+  <div class="cg-notes">
+    <b>先定重心，再定孔位</b>
+    <ul>
+      <li>中心定位孔是前后轴距的中点，也是额定负载下 IK 平衡的基准点。</li>
+      <li>箱体、电池与支架围绕它对称布置，偏心距离不得超过 5cm。</li>
+      <li>高位摄像头、机械臂等“高且远”的负载，应尽量靠近机身中心布置。</li>
+    </ul>
+  </div>
+</div>
+
+<h3>2. 极限结构负重边界：12.0 kg</h3>
+<ul class="bullets">
+  <li><b>工况表现：</b>机器狗能完成起立与静态支撑，但小跑与急转弯时步频显著变缓，电机发热量增加。</li>
+  <li><b>开发策略：</b>若外挂物在 <b>5kg ~ 12kg</b> 之间，必须通过软件将最大线速度主动限制在 <b>0.2 m/s</b> 以下，并禁用原地急转弯与跃起等剧烈动作。</li>
+</ul>
+
+<div class="callout">
+  <span class="t">📌 这一段不是“新的巡航档位”</span>
+  5.0–12.0 kg 是仅允许瞬时冲击通过的缓冲带：能起立、能静态支撑，也能在 0.2 m/s 以下低速通过，但不能按额定负载的步态去跑。超过 5.0 kg 的每一公斤，都要用限速和动作裁剪来换。
+</div>
+
+<h3>3. 禁止区：&gt; 12.0 kg</h3>
+<p>超过 12.0 kg 没有“慢一点就能走”的选项：这是结构安全极限之外，直接对应<b>严重电机过流 / 摔机停机</b>。任何加装方案称重后越过这条线，都必须先减重，再谈调试。</p>
+
+<div class="callout danger">
+  <span class="t">🚨 别用限速去“换”超载</span>
+  0.2 m/s 的限速只适用于 5.0–12.0 kg 区间；超过 12.0 kg 时，风险来自结构与电机负载本身，不是靠降速就能抵消的。
+</div>
+
+<h2 id="s3">三、算力隔离硬准则：为运控保留 2 个核心</h2>
+
+<p>负载决定狗背不背得动，算力分配决定它会不会在背得动的时候突然趴下。VBOT 机身是一颗 8 核 ARM64 处理器，核数并不宽裕，所以“谁可以用哪些核”必须是硬规则，而不是调度器的心情。</p>
+
+<div class="callout danger">
+  <span class="t">🚨 一线黑客松惨痛教训</span>
+  <p>某些团队在主板上并发运行 Whisper、YOLO 与 Python 爬虫，将 8 个 CPU 核心全部跑到 100%。导致底盘核心运控进程 <code>locomotion_exec</code> 无法获取 CPU 时间片，触发 0.5s 看门狗超时，机器狗瞬间当场“四脚朝天”硬砸地面！</p>
+  <div class="chain">
+    <div class="step"><b>① 8 核跑满</b>Whisper / YOLO / 爬虫并发</div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="step"><b>② 运控挨饿</b>locomotion_exec 抢不到时间片</div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="step"><b>③ 看门狗超时</b>0.5s 内运控未响应</div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="step"><b>④ 硬砸地面</b>四脚朝天，物理损坏风险</div>
+  </div>
+</div>
+
+<h3>1. 8 个核心怎么分</h3>
+
+<p>VBOT 的 8 个 CPU 核心中，<b>必须将 Core 0 与 Core 1 锁定留给系统与运控进程</b>。开发者的外部算法应用，必须通过 <code>taskset</code> 绑定在 <b>Core 2 ~ 7</b>：</p>
+
+<div class="cores" role="img" aria-label="8 核分配：Core 0 系统、Core 1 运控预留、Core 2 到 Core 7 供开发者推理与外部算法使用">
+  <div class="bar">
+    <div class="core res"><span class="idx">Core 0</span><b>系统</b></div>
+    <div class="core res"><span class="idx">Core 1</span><b>运控</b></div>
+    <div class="core dev"><span class="idx">Core 2</span><b>推理</b></div>
+    <div class="core dev"><span class="idx">Core 3</span><b>推理</b></div>
+    <div class="core dev"><span class="idx">Core 4</span><b>推理</b></div>
+    <div class="core dev"><span class="idx">Core 5</span><b>推理</b></div>
+    <div class="core dev"><span class="idx">Core 6</span><b>推理</b></div>
+    <div class="core dev"><span class="idx">Core 7</span><b>推理</b></div>
+  </div>
+  <div class="brackets">
+    <span class="res-b">运控预留 2 核 · 禁止外部算法占用</span>
+    <span class="dev-b">开发者可用 6 核 · 推理 / VLM / 对话</span>
+  </div>
+</div>
+
+<div class="callout">
+  <span class="t">📌 记住这条分界线</span>
+  Core 0–1 是系统与运控的“生命线”，Core 2–7 才是你的算法工作区。8 核里给运控预留 2 核，意味着开发者最多只有 6 个核可以把算力吃满。
+</div>
+
+<h3>2. 用 taskset 把外部算法关进 Core 2–7</h3>
+
+<p>启动任何视觉、语音或大模型脚本时，都在命令前加上亲和性绑定：</p>
+
+<div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code># 将你的视觉大模型推理脚本绑定在 2-7 号核心运行
+taskset -c 2-7 python3 my_vision_agent.py</code></pre>
+</div>
+
+<div class="callout warn">
+  <span class="t">⚠️ 别只在跑大模型时才想起来</span>
+  YOLO 推理、VLM、大模型对话、数据录制——只要是你自己的进程，都应该统一走 <code>taskset -c 2-7</code>。临时起的脚本最容易在你不注意时把 Core 0–1 吃满。
+</div>
+
+<h3>3. Systemd 配额兜底</h3>
+
+<p>如果外部算法以服务方式常驻，也可以在 Systemd 服务守护单元中通过 <code>CPUQuota=600%</code> 进行整体资源配额截断，避免单个服务把整机算力拖垮。</p>
+
+<h2 id="s4">四、🧪 小实验：负载与算力规划器</h2>
+
+<p>把前面两条边界合成一次规划：先拖动滑块设定外挂负载，再勾选你打算并发的高负载任务，点击“评估”，看看这套方案是能巡航、只能瞬时通过，还是根本不该上电。</p>
+
+<h3>先称重，再勾选任务</h3>
+
+<div class="lab">
+  <h4>🧪 小实验：负载与算力规划器</h4>
+  <p>滑块只计算外挂负载，不含整机 16.0 kg 自重；高负载任务按 YOLO 推理、VLM、大模型对话三类计。</p>
+
+  <div class="field">
+    <label for="loadrange">外挂负载（0–15 kg）</label>
+    <div class="range-row">
+      <input id="loadrange" type="range" min="0" max="15" step="0.1" value="3" aria-label="外挂负载，单位千克">
+      <span class="val" id="loadval">3.0 kg</span>
+    </div>
+  </div>
+
+  <div class="checks">
+    <label><input type="checkbox" data-task="YOLO 推理"> YOLO 推理</label>
+    <label><input type="checkbox" data-task="VLM"> VLM</label>
+    <label><input type="checkbox" data-task="大模型对话"> 大模型对话</label>
+  </div>
+
+  <div class="corehint" id="corehint" aria-live="polite"></div>
+
+  <div class="labrow">
+    <button id="loadbtn" type="button">评估</button>
+    <span class="labnote">判定依据：额定 5.0 kg · 极限 12.0 kg · 运控 Core 0–1</span>
+  </div>
+
+  <div id="loadres" class="result" role="status" aria-live="polite"></div>
+</div>
+
+<div class="callout ok">
+  <span class="t">✅ 规划通过之后</span>
+  按“称重 → 定重心 → 写启动命令”的顺序落地：先确认总重落在 5.0 kg 巡航区，再把重心对准背板中心定位孔，最后把所有外部脚本改成 <code>taskset -c 2-7</code> 启动。
+</div>
+
+<h2 id="s5">五、本课小结</h2>
+
+<p>把这一页压缩成一张表，改装前先对照一遍：</p>
+
+<table>
+  <thead>
+    <tr><th>边界 / 资源</th><th>数值</th><th>工程含义</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>额定长期负载</b></td>
+      <td><b>≤ 5.0 kg</b></td>
+      <td>可平地行走、爬坡 ≤ 20°、小跑；重心居中，偏心 ≤ 5cm</td>
+    </tr>
+    <tr>
+      <td><b>极限结构负重</b></td>
+      <td><b>5.0–12.0 kg</b></td>
+      <td>仅瞬时冲击；最大线速度 ≤ 0.2 m/s，禁用原地急转弯与跃起</td>
+    </tr>
+    <tr>
+      <td><b>禁止区</b></td>
+      <td><b>&gt; 12.0 kg</b></td>
+      <td>严重电机过流 / 摔机停机，禁止上电行走</td>
+    </tr>
+    <tr>
+      <td><b>运控核心</b></td>
+      <td><b>Core 0–1</b></td>
+      <td>锁定留给系统与运控进程，外部算法不得占用</td>
+    </tr>
+    <tr>
+      <td><b>开发者算力</b></td>
+      <td><b>Core 2–7</b></td>
+      <td><code>taskset -c 2-7</code> 绑定；常驻服务可用 <code>CPUQuota=600%</code> 兜底</td>
+    </tr>
+  </tbody>
+</table>
+
+<ul class="goals">
+  <li>整机 16.0 kg 自重、14 个 VGeer 关节、594 Wh 电池、8 核 ARM64 + 128 TOPS NPU</li>
+  <li>≤ 5.0 kg 是额定长期工作点；5.0–12.0 kg 只能限速 0.2 m/s 瞬时通过；&gt; 12.0 kg 禁止</li>
+  <li>负重重心落在背板中心定位孔附近，偏心距离不超过 5cm</li>
+  <li>Core 0–1 锁定给系统与运控，外部算法一律 <code>taskset -c 2-7</code></li>
+</ul>
+
+<div class="callout">
+  <span class="t">⏭️ 下一课预告</span>
+  规格与边界清楚了，下一步就是动手改：下一课进入 <a href="lesson_02.html">4.2 硬件改装、机械臂与外接算力板</a>，看无损打孔、PiPER 机械臂与 RDK 板卡怎么挂上机身。
+</div>
+
+</div>
+
+<div class="wrap" style="padding-top:0">
+<footer class="nav">
+  <a href="../03-embodied-agent/lesson_03.html"><span class="dir">← 上一课</span><span class="ttl">3.3 多模态大模型与设备端 MCP</span></a>
+  <a class="home-link" href="index.html"><span class="dir">目录</span><span class="ttl">返回目录</span></a>
+  <a href="lesson_02.html" style="text-align:right"><span class="dir">下一课 →</span><span class="ttl">4.2 硬件改装、机械臂与外接算力板</span></a>
+</footer>
+</div>
+
+</main>
+
+<script>
+document.querySelectorAll('.copy').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var pre=btn.parentElement.querySelector('pre');
+    var text=pre.textContent;
+    function done(){
+      btn.textContent='已复制';
+      setTimeout(function(){btn.textContent='复制'},1500);
+    }
+    function fallback(){
+      var ta=document.createElement('textarea');
+      ta.value=text;
+      ta.setAttribute('readonly','');
+      ta.style.position='fixed';
+      ta.style.top='-1000px';
+      document.body.appendChild(ta);
+      ta.select();
+      try{document.execCommand('copy');done();}
+      catch(e){btn.textContent='复制失败';setTimeout(function(){btn.textContent='复制'},1500);}
+      document.body.removeChild(ta);
+    }
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done,fallback);
+    }else{fallback();}
+  });
+});
+
+(function(){
+  var range=document.getElementById('loadrange');
+  if(!range)return;
+  var val=document.getElementById('loadval');
+  var needle=document.getElementById('envneedle');
+  var tag=document.getElementById('envtag');
+  var live=document.getElementById('envlive');
+  var res=document.getElementById('loadres');
+  var btn=document.getElementById('loadbtn');
+  var hint=document.getElementById('corehint');
+  var boxes=Array.prototype.slice.call(document.querySelectorAll('.checks input[type="checkbox"]'));
+  var shown=false;
+
+  function zoneOf(w){return w>12?'bad':(w>5?'warn':'ok');}
+  function zoneName(z){
+    if(z==='bad')return '> 12.0 kg 禁止区';
+    if(z==='warn')return '5.0–12.0 kg 仅瞬时冲击区';
+    return '5.0 kg 巡航区';
+  }
+  function picked(){
+    return boxes.filter(function(b){return b.checked;}).map(function(b){return b.getAttribute('data-task');});
+  }
+  function sync(render){
+    var w=parseFloat(range.value);
+    var z=zoneOf(w);
+    var ps=picked();
+    val.textContent=w.toFixed(1)+' kg';
+    needle.style.left=(w/15*100)+'%';
+    needle.className='env-needle '+z;
+    tag.textContent=w.toFixed(1);
+    live.className='env-live '+z;
+    live.textContent='当前规划：'+w.toFixed(1)+' kg · '+zoneName(z);
+    if(ps.length){
+      hint.style.display='block';
+      hint.innerHTML='⚠️ 已选 <b>'+ps.length+'</b> 项高负载任务（'+ps.join(' / ')+'）：外部脚本必须用 <code>taskset -c 2-7</code> 启动，Core 0–1 锁定留给系统与运控。';
+    }else{
+      hint.style.display='none';
+      hint.innerHTML='';
+    }
+    if(render)renderResult(w,z,ps);
+  }
+  function renderResult(w,z,ps){
+    var html='';
+    if(z==='ok'){
+      html='<b>✅ 安全：'+w.toFixed(1)+' kg 位于巡航区（额定长期工作点 ≤ 5.0 kg）。</b><ul>'+
+        '<li>可执行平地行走、≤ 20° 爬坡与小跑，底盘 IK 与落足姿态处于最佳平衡。</li>'+
+        '<li>负重重心必须落在机身前后轴距正中（背板中心定位孔附近），偏心距离不得超过 5cm。</li>'+
+        '<li>继续加装前先称重：留给箱体、支架与线缆的余量只有 '+(5-w).toFixed(1)+' kg。</li></ul>';
+    }else if(z==='warn'){
+      html='<b>⚠️ 警告：'+w.toFixed(1)+' kg 已超出 5.0 kg 额定长期负载，落在 5.0–12.0 kg 的仅瞬时冲击区。</b><ul>'+
+        '<li>必须通过软件把最大线速度限制在 <b>0.2 m/s</b> 以下。</li>'+
+        '<li>禁用原地急转弯与跃起等剧烈动作；小跑与急转弯步频会显著变缓，电机发热量增加。</li>'+
+        '<li>减重 <b>'+(w-5).toFixed(1)+' kg</b> 可回到 5.0 kg 额定长期工作点，恢复完整步态。</li></ul>';
+    }else{
+      html='<b>🚨 超限：'+w.toFixed(1)+' kg 超过 12.0 kg 结构安全极限，属于禁止区。</b><ul>'+
+        '<li>风险：严重电机过流 / 摔机停机，禁止上电行走。</li>'+
+        '<li>至少减重 <b>'+(w-12).toFixed(1)+' kg</b> 才回到 12.0 kg 边界内，且仍需按 5–12 kg 工况限速 0.2 m/s、禁用急转弯与跃起。</li>'+
+        '<li>减重 <b>'+(w-5).toFixed(1)+' kg</b> 才回到 5.0 kg 额定长期工作点，可恢复完整步态。</li>'+
+        '<li>先拆下非必要外设与配重，重新称重后再上电。</li></ul>';
+    }
+    if(ps.length){
+      html+='<p style="margin:8px 0 0"><b>🖥️ 算力：'+ps.length+' 项高负载任务（'+ps.join(' / ')+'）必须 <code>taskset -c 2-7</code> 启动。</b> Core 0–1 锁定留给系统与运控 <code>locomotion_exec</code>；'+
+        (ps.length>1?'多项任务共享 Core 2–7 的 6 个核心，建议错峰运行或降低推理频率。':'单个任务同样不得越界占用 Core 0–1。')+
+        ' 运控抢不到 CPU 时间片会触发 0.5s 看门狗超时。</p>';
+    }else{
+      html+='<p style="margin:8px 0 0"><b>🖥️ 算力：未勾选高负载任务。</b> 仍建议所有外部脚本统一用 <code>taskset -c 2-7</code> 启动，养成留核习惯。</p>';
+    }
+    res.className='result '+z;
+    res.innerHTML=html;
+    shown=true;
+  }
+  range.addEventListener('input',function(){sync(shown);});
+  boxes.forEach(function(b){b.addEventListener('change',function(){sync(shown);});});
+  btn.addEventListener('click',function(){sync(true);});
+  sync(false);
+})();
+</script>
+</body>
+</html>

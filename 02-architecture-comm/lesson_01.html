@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.1 双大脑硬件架构拆解与物理边界 | VBOT EDU 架构拓扑与通信机制</title>
+<meta name="description" content="VBOT EDU 教程 02 模块 Lesson 01：拆解双大脑硬件架构，理解计算主板与主控网关板的物理边界。预计阅读 10 分钟。">
+<meta name="reading-time" content="10 分钟">
+<style>
+/* ===== 风格契约 v1 · 预设 A 清爽技术文档风（全教程统一，勿改） ===== */
+:root{
+  --bg:#ffffff; --fg:#1f2937; --muted:#6b7280;
+  --accent:#0e7490; --accent-dark:#155e75; --accent-light:#ecfeff;
+  --code-bg:#f3f4f6; --code-fg:#111827; --code-border:#e5e7eb;
+  --border:#e5e7eb; --card:#f9fafb;
+  --warn-bg:#fffbeb; --warn-bd:#f59e0b;
+  --danger-bg:#fef2f2; --danger-bd:#ef4444;
+  --tip-bg:#ecfeff; --tip-bd:#0e7490;
+  --ok-bg:#f0fdf4; --ok-bd:#22c55e;
+  --radius:10px; --max-width:880px; --toc-w:250px;
+  --font-body:"Microsoft YaHei","Source Han Sans CN",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"Cascadia Code",Consolas,"JetBrains Mono","Courier New",monospace;
+}
+/* ===== 风格契约结束 ===== */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.8;font-size:16px}
+a{color:var(--accent)}
+a:hover{color:var(--accent-dark)}
+code{font-family:var(--font-mono);font-size:.875em;background:var(--code-bg);border:1px solid var(--code-border);border-radius:4px;padding:1px 6px;color:var(--code-fg)}
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:16px 18px;overflow:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;color:var(--code-fg);margin:0}
+pre code{background:none;border:none;padding:0;font-size:inherit}
+
+/* 布局：左 TOC + 右正文 */
+.toc{position:fixed;top:0;left:0;bottom:0;width:var(--toc-w);background:var(--card);border-right:1px solid var(--border);padding:28px 16px;overflow:auto}
+.toc .brand{font-weight:700;color:var(--accent-dark);font-size:17px;margin-bottom:2px}
+.toc .sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.toc ol{list-style:none;margin:0;padding:0;counter-reset:toc}
+.toc li{counter-increment:toc;margin-bottom:2px}
+.toc a{display:block;padding:7px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font-size:13.5px}
+.toc a::before{content:counter(toc) ". ";color:var(--accent);font-weight:600}
+.toc a:hover{background:var(--accent-light);color:var(--accent-dark)}
+.toc .home{display:inline-block;margin-top:18px;font-size:13px;color:var(--accent);text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--bg)}
+main{margin-left:var(--toc-w)}
+.wrap{max-width:var(--max-width);margin:0 auto;padding:40px 32px 24px}
+
+/* 页头 */
+header.lesson{border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:32px}
+header.lesson .hero-img{width:100%;max-height:280px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);margin-top:18px}
+.badges{margin-bottom:12px}
+.badge{display:inline-block;font-size:12px;font-weight:600;border-radius:99px;padding:2px 12px;margin-right:8px;vertical-align:middle}
+.badge.no{background:var(--accent);color:#fff}
+.badge.safe{background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.badge.ver{background:var(--card);color:var(--muted);border:1px solid var(--border)}
+h1{font-size:30px;line-height:1.4;margin:0 0 10px;color:var(--accent-dark)}
+.meta{font-size:13.5px;color:var(--muted)}
+.meta a{color:var(--accent)}
+
+/* 标题层级 */
+h2{font-size:22px;color:var(--accent-dark);margin:48px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--accent-light)}
+h3{font-size:17.5px;color:var(--fg);margin:28px 0 10px}
+
+/* 提示框 */
+.callout{border-left:4px solid var(--tip-bd);background:var(--tip-bg);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;margin:20px 0;font-size:15px}
+.callout.warn{border-color:var(--warn-bd);background:var(--warn-bg)}
+.callout.danger{border-color:var(--danger-bd);background:var(--danger-bg)}
+.callout.ok{border-color:var(--ok-bd);background:var(--ok-bg)}
+.callout .t{font-weight:700;display:block;margin-bottom:4px}
+
+/* 直播口播折叠 */
+details.talk{border:1px dashed var(--accent);border-radius:var(--radius);background:var(--bg);margin:20px 0}
+details.talk summary{cursor:pointer;padding:12px 18px;color:var(--accent);font-weight:600;font-size:14.5px}
+details.talk .body{padding:0 18px 14px;color:var(--muted);font-size:14.5px}
+
+/* 图片 */
+figure{margin:24px 0;text-align:center}
+figure img{max-width:100%;border:1px solid var(--border);border-radius:var(--radius);background:#fff}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+
+/* 表格 */
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px}
+th,td{border:1px solid var(--border);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--accent-light);color:var(--accent-dark);font-weight:700}
+tr:nth-child(even) td{background:var(--card)}
+td .no{color:var(--danger-bd);font-weight:700}
+
+/* 编号步骤 */
+ol.steps{list-style:none;counter-reset:st;padding:0;margin:18px 0}
+ol.steps>li{counter-increment:st;position:relative;padding:0 0 18px 48px}
+ol.steps>li::before{content:counter(st);position:absolute;left:0;top:2px;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;text-align:center;line-height:32px;font-size:15px}
+ol.steps>li>b:first-child{display:block;margin-bottom:4px}
+
+/* CSS 拓扑图 */
+.topo{display:flex;align-items:stretch;justify-content:center;gap:0;margin:24px 0;flex-wrap:wrap}
+.topo .node{background:var(--card);border:2px solid var(--accent);border-radius:var(--radius);padding:12px 16px;min-width:170px;text-align:center;font-size:13.5px}
+.topo .node b{display:block;color:var(--accent-dark);font-size:14.5px;margin-bottom:2px}
+.topo .node code{font-size:12px}
+.topo .node.dev{border-color:var(--muted)}
+.topo .node.gw{border-style:dashed}
+.topo .link{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 10px;color:var(--muted);font-size:12px;min-width:96px}
+.topo .link .arrow{font-size:20px;color:var(--accent);line-height:1.2}
+
+/* 代码块 + 复制按钮 + Tabs */
+.codewrap{position:relative;margin:14px 0}
+.codewrap .lang{position:absolute;top:0;right:88px;font-size:11px;color:var(--muted);background:var(--bg);border:1px solid var(--code-border);border-bottom:none;border-radius:6px 6px 0 0;padding:1px 8px}
+.copy{position:absolute;top:8px;right:8px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;font-family:var(--font-body)}
+.copy:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.tabs{display:flex;gap:6px;margin:18px 0 0}
+.tabs button{border:1px solid var(--border);border-bottom:none;background:var(--card);padding:8px 18px;border-radius:10px 10px 0 0;cursor:pointer;font-size:14px;color:var(--muted);font-family:var(--font-body)}
+.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+.panel{display:none;border:1px solid var(--border);border-radius:0 var(--radius) var(--radius) var(--radius);padding:16px 18px;background:var(--bg)}
+.panel.on{display:block}
+
+/* 目标清单 */
+ul.goals{margin:12px 0;padding-left:0;list-style:none}
+ul.goals li{padding:4px 0 4px 28px;position:relative}
+ul.goals li::before{content:"✓";position:absolute;left:4px;color:var(--accent);font-weight:700}
+
+/* 页脚导航 */
+footer.nav{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--border);margin-top:56px;padding:24px 0 40px;flex-wrap:wrap}
+footer.nav a{flex:1;min-width:200px;border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;text-decoration:none;background:var(--card)}
+footer.nav a:hover{border-color:var(--accent);background:var(--accent-light)}
+footer.nav .dir{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
+footer.nav .ttl{display:block;font-size:15px;color:var(--accent-dark);font-weight:600}
+footer.nav a.home-link{flex:0 0 auto;text-align:center}
+
+/* 甘特时间线 */
+.gantt{margin:20px 0}
+.gantt .row{display:flex;align-items:center;margin:8px 0}
+.gantt .lbl{width:190px;font-size:13.5px;color:var(--fg);flex-shrink:0}
+.gantt .track{flex:1;position:relative;height:28px;background:var(--card);border:1px solid var(--border);border-radius:6px}
+.gantt .bar{position:absolute;top:3px;bottom:3px;background:linear-gradient(90deg,var(--accent),#22d3ee);border-radius:5px;color:#fff;font-size:11.5px;display:flex;align-items:center;padding:0 8px;white-space:nowrap;overflow:hidden}
+.gantt .axis{display:flex;margin-left:190px;font-size:11.5px;color:var(--muted)}
+.gantt .axis span{flex:1;text-align:left}
+
+/* 决策流程图 */
+.flow{display:flex;flex-direction:column;align-items:center;margin:24px 0}
+.fnode{border:2px solid var(--accent);background:var(--accent-light);border-radius:var(--radius);padding:10px 18px;font-size:14px;text-align:center;max-width:460px}
+.fnode b{color:var(--accent-dark)}
+.fnode.start{border-radius:99px;background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.fnode.decision{background:var(--warn-bg);border-color:var(--warn-bd)}
+.fnode.end{border-radius:99px;background:var(--ok-bg);border-color:var(--ok-bd);color:#15803d;font-weight:600}
+.fdown{color:var(--accent);font-size:18px;line-height:1.5;text-align:center}
+.fdown small{display:block;font-size:12px;color:var(--muted)}
+.fbranch{display:flex;gap:28px;justify-content:center;align-items:flex-start;flex-wrap:wrap;margin:4px 0}
+.fcol{display:flex;flex-direction:column;align-items:center}
+.fcol .tag-y{font-size:12px;font-weight:700;color:#15803d;background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+.fcol .tag-n{font-size:12px;font-weight:700;color:#92400e;background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+
+/* 交互小实验 */
+.lab{background:var(--card);border:1px solid var(--accent);border-radius:var(--radius);padding:18px 20px;margin:26px 0}
+.lab h4{margin:0 0 6px;color:var(--accent-dark);font-size:16px}
+.lab p{margin:4px 0;font-size:14px;color:var(--muted)}
+.labrow{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;align-items:center}
+.lab input{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font-mono);font-size:14px;width:220px;background:var(--bg);color:var(--fg)}
+.lab button{padding:8px 18px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:14px;font-family:var(--font-body)}
+.lab button:hover{background:var(--accent-dark)}
+.result{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:14px;display:none}
+.result.ok{display:block;background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.result.bad{display:block;background:var(--danger-bg);color:#b91c1c;border:1px solid var(--danger-bd)}
+.result.warn{display:block;background:var(--warn-bg);color:#92400e;border:1px solid var(--warn-bd)}
+.lab pre{margin-top:10px}
+
+/* 移动端 */
+@media (max-width:768px){
+  .toc{position:static;width:auto;border-right:none;border-bottom:1px solid var(--border);padding:18px 16px}
+  .toc ol{columns:2}
+  main{margin-left:0}
+  .wrap{padding:24px 18px 12px}
+  h1{font-size:24px}
+  .topo{flex-direction:column;align-items:center}
+  .topo .link{min-width:auto;padding:6px 0}
+  .topo .link .arrow{transform:rotate(90deg)}
+  .gantt .lbl{width:110px;font-size:12px}
+  .gantt .axis{margin-left:110px}
+  .fbranch{flex-direction:column;align-items:center;gap:8px}
+}
+/* 打印 */
+@media print{
+  .toc,.copy,.tabs{display:none}
+  main{margin-left:0}
+  .panel{display:block!important;border:none;padding:8px 0}
+  body{font-size:12px}
+  a{color:var(--fg);text-decoration:none}
+}
+
+/* ===== 本课专属组件（仅追加，不改既有变量与基础组件） ===== */
+/* 口播列表 */
+details.talk ul{margin:8px 0;padding-left:20px}
+details.talk li{margin:2px 0}
+
+/* 双脑拓扑 */
+.brainmap{display:grid;grid-template-columns:190px 92px minmax(0,1fr);gap:10px 0;margin:26px 0;align-items:center}
+.bm-pc{grid-column:1}
+.bm-wire{grid-column:2}
+.bm-compute{grid-column:3}
+.bm-bus{grid-column:3;display:flex;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-size:12.5px;padding:2px 0;text-align:center;flex-wrap:wrap}
+.bm-bus .bt{font-size:18px;color:var(--accent);line-height:1}
+.bm-gw{grid-column:3}
+.bm-card{border:2px solid var(--accent);border-radius:var(--radius);background:var(--bg);padding:12px 16px;font-size:13px;line-height:1.65}
+.bm-card.compute{background:var(--accent-light)}
+.bm-card.gw{border-style:dashed;background:var(--card)}
+.bm-card.pc{border-color:var(--muted);background:var(--card);text-align:center}
+.bm-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--accent-dark);background:var(--bg);border:1px solid var(--border);border-radius:99px;padding:0 8px;margin-bottom:6px}
+.bm-card.gw .bm-tag{color:#92400e;background:var(--warn-bg);border-color:var(--warn-bd)}
+.bm-card b{display:block;font-size:15px;color:var(--accent-dark);margin-bottom:2px}
+.bm-card.gw b{color:var(--fg)}
+.bm-ip{display:inline-block;font-family:var(--font-mono);font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:0 6px;margin:2px 0 6px}
+.bm-sys{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+.bm-duties{display:grid;grid-template-columns:1fr 1fr;gap:2px 14px;margin:0;padding:0;list-style:none;font-size:12.5px;color:var(--fg)}
+.bm-duties li::before{content:"·";color:var(--accent);font-weight:700;margin-right:4px}
+.bm-card.gw .bm-duties li::before{color:var(--warn-bd)}
+.bm-wire{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:11.5px;color:var(--muted);line-height:1.4;padding:0 6px}
+.bm-wire .ar{font-size:20px;color:var(--accent);line-height:1.1}
+
+/* 无线数据路径 */
+.datapath{display:flex;align-items:stretch;justify-content:center;gap:0;margin:24px 0;flex-wrap:wrap}
+.dp-srcs{display:flex;flex-direction:column;gap:6px;justify-content:center;min-width:150px}
+.dp-src{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:12.5px;text-align:center}
+.dp-arrow{display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:18px;padding:0 8px;min-width:34px}
+.dp-stage{border:2px solid var(--accent);border-radius:var(--radius);background:var(--bg);padding:10px 14px;min-width:150px;display:flex;flex-direction:column;justify-content:center;text-align:center;font-size:12px;color:var(--muted)}
+.dp-stage b{display:block;color:var(--accent-dark);font-size:14px;margin-bottom:1px}
+.dp-stage code{font-size:11.5px;margin-top:4px}
+.dp-stage.gw{border-style:dashed;border-color:var(--warn-bd);background:var(--warn-bg)}
+.dp-stage.gw b{color:#92400e}
+.dp-stage.linux{background:var(--accent-light)}
+.dp-stage.bus{border-color:var(--muted);background:var(--card)}
+.dp-stage.bus b{color:var(--fg)}
+
+/* 14 关节分布 */
+.joints{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:22px 0}
+.joint-card{border:1px solid var(--border);border-radius:var(--radius);background:var(--card);padding:10px 12px;text-align:center;font-size:12px}
+.joint-card .leg{font-weight:700;color:var(--accent-dark);font-size:13px;display:block}
+.joint-card .cnt{font-size:11px;color:var(--muted);display:block;margin-bottom:6px}
+.joint-card .jrow{display:block;border:1px solid var(--border);border-radius:6px;background:var(--bg);margin:3px 0;padding:2px 4px;font-family:var(--font-mono);font-size:11px;color:var(--fg)}
+.joint-card.head{border-color:var(--warn-bd);background:var(--warn-bg)}
+.joint-card.head .leg{color:#92400e}
+.joint-card.head .jrow{border-color:var(--warn-bd)}
+.joint-note{font-size:12.5px;color:var(--muted);text-align:center;margin-top:-6px}
+
+/* 物理边界 */
+.boundary{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:22px 0}
+.bound-card{border:1px solid var(--border);border-top:4px solid var(--ok-bd);border-radius:var(--radius);background:var(--bg);padding:14px 16px;font-size:13.5px}
+.bound-card.stop{border-top-color:var(--danger-bd)}
+.bound-card h3{margin:0 0 4px;font-size:15.5px;color:#15803d}
+.bound-card.stop h3{color:#b91c1c}
+.b-list{list-style:none;margin:8px 0 0;padding:0}
+.b-list li{position:relative;padding:3px 0 3px 22px;font-size:13px;line-height:1.6}
+.b-list li::before{position:absolute;left:0;top:3px;font-weight:700;color:var(--ok-bd);content:"✓"}
+.bound-card.stop .b-list li::before{content:"✕";color:var(--danger-bd)}
+.chain{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;margin:18px 0;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);font-size:12.5px}
+.chain .cn{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 10px;text-align:center}
+.chain .cn b{display:block;color:var(--accent-dark);font-size:13px}
+.chain .cn.rt{border-color:var(--warn-bd);background:var(--warn-bg)}
+.chain .cn.rt b{color:#92400e}
+.chain .ca{color:var(--accent);font-size:16px}
+
+/* 职责路由实验 */
+.lab h3{margin:0 0 6px;color:var(--accent-dark);font-size:16px}
+.lab .choices{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.lab .choice{text-align:left;background:var(--bg);color:var(--fg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13.5px;line-height:1.5;cursor:pointer;font-family:var(--font-body)}
+.lab .choice:hover{border-color:var(--accent);background:var(--accent-light);color:var(--accent-dark)}
+.lab .choice.on{border-color:var(--accent);background:var(--accent-light);color:var(--accent-dark);font-weight:600}
+.lab .choice .n{display:inline-block;min-width:20px;font-weight:700;color:var(--accent)}
+.lab .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:4px 0 0}
+.lab .lg::before{content:"●";margin-right:4px}
+.lab .lg.ok::before{color:var(--ok-bd)}
+.lab .lg.warn::before{color:var(--warn-bd)}
+.lab .lg.bad::before{color:var(--danger-bd)}
+#routeRes b{display:block;margin-bottom:2px}
+
+/* 本课专属移动端补充 */
+@media (max-width:768px){
+  .brainmap{grid-template-columns:1fr;gap:6px}
+  .bm-pc,.bm-wire,.bm-compute,.bm-bus,.bm-gw{grid-column:1}
+  .bm-wire{flex-direction:row;gap:8px;padding:4px 0}
+  .bm-wire .ar{transform:rotate(90deg)}
+  .datapath{flex-direction:column;align-items:stretch}
+  .dp-srcs{flex-direction:row;flex-wrap:wrap;justify-content:center}
+  .dp-src{flex:1;min-width:120px}
+  .dp-arrow{transform:rotate(90deg);padding:2px 0;min-height:28px}
+  .dp-stage{width:100%}
+  .joints{grid-template-columns:1fr 1fr}
+  .joint-card.head{grid-column:span 2}
+  .boundary{grid-template-columns:1fr}
+  .lab .choices{grid-template-columns:1fr}
+}
+@media print{
+  .brainmap,.datapath{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<nav class="toc" id="nav">
+  <div class="brand">VBOT EDU 架构拓扑</div>
+  <div class="sub">模块 02 · Lesson 01</div>
+  <ol>
+    <li><a href="#s1">双脑拓扑深度剖析</a></li>
+    <li><a href="#s2">为什么找不到 wlan0</a></li>
+    <li><a href="#s3">14 个 VGeer 关节矩阵</a></li>
+    <li><a href="#s4">物理边界与开发准则</a></li>
+    <li><a href="#s5">小实验：双脑职责路由器</a></li>
+    <li><a href="#s6">本课小结与下一课</a></li>
+  </ol>
+  <a class="home" href="index.html">← 返回目录</a>
+</nav>
+
+<main>
+<div class="wrap">
+
+<header class="lesson">
+  <div class="badges">
+    <span class="badge no">Lesson 01</span>
+    <span class="badge safe">安全级别：信息型（informational）</span>
+    <span class="badge ver">固件基准 V1.6.0</span>
+  </div>
+  <h1>双大脑硬件架构拆解与物理边界</h1>
+  <p class="meta">预计阅读 10 分钟 · 所属模块：<a href="index.html">02 架构拓扑与通信机制</a> · 前置课程：<a href="../01-getting-started/lesson_03.html">1.2 Hello World：/vel_cmd 运控</a></p>
+  <img class="hero-img" src="../assets/01-brand-hardware/vbot-dog-edu.png" alt="VBOT EDU 四足机器人标准外观，配备萌系交互大头与模块化扩展骨架" loading="lazy">
+</header>
+
+<details class="talk">
+  <summary>🎙️ 展开直播口播导语（讲师版）</summary>
+  <div class="body">
+    <p>“欢迎回到直播间！在上一篇，我们让机器狗稳稳走出了第一步。但现在，我们必须收起感性的兴奋，换上一副‘硬核工程师’的严谨眼镜。想安全地驾驭这只 16 公斤的钢铁机器狗，秘密就在于 VBOT 极其精妙的<b>‘双脑架构’</b>。打个生物学的比方：</p>
+    <ul>
+      <li><b>计算主板</b>，就像是大脑皮层，专门负责高级的 Agent 规划、视觉思考和语音大模型推理；</li>
+      <li><b>网关主板</b>，就是它的神经系统与脑干，死死盯住底层的 14 个关键电机还有电源状态。</li>
+    </ul>
+    <p>哪怕你在大脑皮层跑的 AI 代码死锁甚至疯狂报错，底层的神经反射也能瞬间兜底，确保机器狗绝不会发疯撞墙！今天，我们就把这套生物级架构彻底扒开看清楚！”</p>
+  </div>
+</details>
+
+<h2 id="goals" style="margin-top:24px;border-bottom:none;padding-bottom:0;font-size:17.5px">本课学习目标</h2>
+<ul class="goals">
+  <li>说清双脑物理隔离：计算主板 <code>192.168.126.2</code>（Ubuntu 22.04 / ROS 2）与主控网关板 <code>192.168.127.10</code>（RTOS）</li>
+  <li>解释 Linux 里为什么根本找不到 <code>wlan0</code>，并建立正确的排查路径</li>
+  <li>记住 14 个 VGeer 关节的分布：四足各 3 自由度 + 头部 2 自由度，单体峰值扭矩 24.5 N·m</li>
+  <li>划清开发边界：哪些任务必须跑在计算主板、哪些绝对不能绕过网关板</li>
+  <li>用“双脑职责路由器”判断一个任务该连哪块板、走什么入口</li>
+</ul>
+
+<h2 id="s1">一、双脑拓扑深度剖析：大脑皮层与神经脑干</h2>
+
+<p>VBOT 放弃了消费级机器人常见的“单板大杂烩”设计，采用工业级物理级硬件隔离：一颗板负责“思考”，另一颗板负责“保命”。先看清整机的物理连接关系——开发者电脑经千兆有线接入计算主板，计算主板再经板间高速总线连接网关板：</p>
+
+<div class="brainmap" role="img" aria-label="双脑拓扑：开发者电脑 192.168.126.100 经千兆网线连接计算主板 192.168.126.2，计算主板经板间高速总线 192.168.127.x 连接主控网关板 192.168.127.10">
+  <div class="bm-card pc bm-pc">
+    <span class="bm-tag">开发者工位</span>
+    <b>调试电脑</b>
+    <span class="bm-ip">192.168.126.100</span>
+    <span class="bm-sys">静态 IP · 网关 / DNS 留空</span>
+  </div>
+  <div class="bm-wire"><span class="ar">→</span>千兆网线<br>Type-C 扩展口</div>
+  <div class="bm-card compute bm-compute">
+    <span class="bm-tag">大脑皮层 · 开发者主战场</span>
+    <b>计算主板 Compute Board</b>
+    <span class="bm-ip">eth2 · 192.168.126.2</span>
+    <span class="bm-sys">Ubuntu 22.04 LTS · ROS 2 · 用户 vbot（开放 sudo）</span>
+    <ul class="bm-duties">
+      <li>8 核 ARM64</li>
+      <li>128 TOPS NPU</li>
+      <li>视觉 VLM / 语音 ASR</li>
+      <li>ROS 2 / Python</li>
+    </ul>
+  </div>
+  <div class="bm-bus"><span class="bt">⇅</span> 板间高速工业总线（PCIe / RGMII 直连）· <code>192.168.127.x</code></div>
+  <div class="bm-card gw bm-gw">
+    <span class="bm-tag">神经脑干 · 安全长城</span>
+    <b>主控网关板 Gateway Board</b>
+    <span class="bm-ip">192.168.127.10</span>
+    <span class="bm-sys">RTOS · 微秒级确定性响应 · 不开放 SSH / Root</span>
+    <ul class="bm-duties">
+      <li>14 轴 VGeer 电机</li>
+      <li>BMS 594 Wh</li>
+      <li>0.5 s 看门狗</li>
+      <li>Wi-Fi 6 / BT 5.2 / UWB</li>
+    </ul>
+  </div>
+</div>
+
+<h3>计算主板（<code>192.168.126.2</code>）—— 开发者的主战场</h3>
+<ul class="goals">
+  <li><b>算力配置</b>：8 核 ARM64 处理器 + <b>128 TOPS NPU</b>，为轻量化视觉大模型（如 Qwen2-VL）、YOLO 实时目标追踪与 Cartographer 激光 SLAM 提供充沛算力。</li>
+  <li><b>开放权限</b>：官方提供完全开放的 <code>vbot</code> 用户（具备 <code>sudo</code> 提权能力），可自由安装 Conda / Python 虚拟环境、拉取 Docker 容器、配置 Git 仓库。</li>
+  <li><b>数据接口</b>：对外暴露机身唯一的千兆有线网络节点（系统内网卡 <code>eth2</code>，默认固定 IP <code>192.168.126.2</code>）。</li>
+</ul>
+
+<h3>主控网关板（<code>192.168.127.10</code>）—— 机器狗的生命盾牌</h3>
+<ul class="goals">
+  <li><b>运行机制</b>：运行超低延迟、强确定性的硬实时操作系统（RTOS），响应可达微秒级。</li>
+  <li><b>物理管辖</b>：直接控制分布在四肢与头部的 <b>14 个自研 VGeer 一体化高扭矩关节电机</b>。</li>
+  <li><b>不可越级性</b>：<b>不对外开放 SSH 或 Root 登录</b>。即使计算主板上的 Python 代码因死循环或内存暴涨导致 Linux 内核挂起，网关板也能在毫秒级内切断动力或保持自平衡姿态，绝不让电机失控过扭。</li>
+</ul>
+
+<table>
+  <thead>
+    <tr><th>对比维度</th><th>计算主板（大脑皮层）</th><th>主控网关板（神经脑干）</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>内网地址</b></td>
+      <td><code>192.168.126.2</code>（eth2，千兆有线）</td>
+      <td><code>192.168.127.10</code>（板间总线 <code>192.168.127.x</code>）</td>
+    </tr>
+    <tr>
+      <td><b>操作系统</b></td>
+      <td>Ubuntu 22.04 LTS + ROS 2</td>
+      <td>硬实时 RTOS，微秒级确定性响应</td>
+    </tr>
+    <tr>
+      <td><b>算力配置</b></td>
+      <td>8 核 ARM64 处理器 + 128 TOPS 混合精度 NPU</td>
+      <td>实时微控制器，专注电机驱动与安全闭环</td>
+    </tr>
+    <tr>
+      <td><b>核心职责</b></td>
+      <td>ROS 2、Aorta、视觉 VLM、语音 ASR、Python 脚本</td>
+      <td>14 轴电机驱动总线（CAN-FD / RS-485）、BMS 594Wh、看门狗与急停熔断、Wi-Fi 6 / 蓝牙 5.2 / UWB</td>
+    </tr>
+    <tr>
+      <td><b>可访问性</b></td>
+      <td>开放 <code>vbot</code> 用户与 <code>sudo</code>，SSH 可登录</td>
+      <td><span class="no">不开放 SSH 或 Root 登录</span>，开发者不可直连</td>
+    </tr>
+    <tr>
+      <td><b>失效后果</b></td>
+      <td>AI 代码死锁 / 内存暴涨时，Linux 可能挂起</td>
+      <td>毫秒级切断动力或保持自平衡，兜住底层安全</td>
+    </tr>
+  </tbody>
+</table>
+
+<figure>
+  <img src="../assets/01-brand-hardware/vbot-dog-photo-1.png" alt="VBOT 机器狗机身腹部与关节高集成度一体化电机排布实拍" loading="lazy">
+  <figcaption>图 2-2：机身腹部与关节高集成度一体化电机排布实拍——这些执行器全部归网关板管辖</figcaption>
+</figure>
+
+<div class="callout warn"><span class="t">🧭 开发者入口只有一条</span>日常开发只需连计算主板：<code>ssh vbot@192.168.126.2</code>。网关板不开放直连，任何“登录网关板改底层”的尝试都属于越级操作。</div>
+
+<div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code>ssh vbot@192.168.126.2</code></pre>
+</div>
+<h2 id="s2">二、极客经典困惑：为什么 Linux 里根本找不到 <code>wlan0</code>？</h2>
+
+<div class="callout"><span class="t">💡 学员弹幕高频提问</span>“主播，我用网线连上机器狗 SSH 进去了，想给机器狗配个 Wi-Fi 连外网，执行 <code>ifconfig</code> 或 <code>ip link</code>，发现只有 <code>eth0</code>、<code>eth2</code>、<code>lo</code>，无线网卡 <code>wlan0</code> 到底去哪了？！”</div>
+
+<p>这是几乎所有刚接触 VBOT 的极客都会踩的第一个大坑。答案不是驱动没装、也不是系统坏了，而是 <b>Wi-Fi / 蓝牙的射频硬件根本不在 Linux 这一侧</b>。看下面这条数据路径：手机 App、4 麦克风与 WiFi 按键的请求，全部先进入网关板 RTOS，再由板间总线转交给计算主板：</p>
+
+<div class="datapath" role="img" aria-label="无线数据路径：手机 App、4 麦克风与 WiFi 按键先进入主控网关板 RTOS，经内部总线 192.168.127.x 转发给计算主板 Linux；Linux 只暴露 eth0、eth2、lo，没有 wlan0">
+  <div class="dp-srcs">
+    <div class="dp-src">📱 手机 App</div>
+    <div class="dp-src">🎙️ 4 麦克风</div>
+    <div class="dp-src">🔘 WiFi 按键</div>
+  </div>
+  <div class="dp-arrow">→</div>
+  <div class="dp-stage gw">
+    <b>网关板 RTOS</b>
+    <span>射频托管 · 路由器角色</span>
+    <code>192.168.127.10</code>
+  </div>
+  <div class="dp-arrow">→</div>
+  <div class="dp-stage bus">
+    <b>内部总线</b>
+    <span>无线流量透明转发</span>
+    <code>192.168.127.x</code>
+  </div>
+  <div class="dp-arrow">→</div>
+  <div class="dp-stage linux">
+    <b>计算主板 Linux</b>
+    <span>只见 eth0 / eth2 / lo</span>
+    <code>192.168.126.2</code>
+  </div>
+</div>
+
+<h3>原因一：射频软中断隔离，把抖动挡在 Linux 之外</h3>
+<p>传统无线网卡在进行 Wi-Fi 数据重传、信号协商时，会向 Linux CPU 发出大量不可控的软中断（softirq）。在毫秒级的高频运动平衡控制中，哪怕 5ms 的延迟抖动都会导致机器狗落足不稳摔倒。因此，<b>物理 Wi-Fi 芯片直接硬件焊死在网关板上，与 Linux 计算板物理隔离</b>。</p>
+
+<h3>原因二：网关板扮演路由器，无线流量透明转发</h3>
+<p>在最新 V1.6 固件中，当启用板载 Wi-Fi 时，网关板自身扮演“路由器”角色，通过板间总线（<code>192.168.127.x</code> 网段）将无线流量透明转发给计算主板。开发者完全无需在 Linux 层折腾复杂的 <code>wpa_supplicant</code> 无线驱动。</p>
+
+<h3>正确认知与排查路径</h3>
+<ol class="steps">
+  <li><b>先确认登录目标</b>执行 <code>ssh vbot@192.168.126.2</code> 后运行 <code>ip link</code>，只看到 <code>eth0</code>、<code>eth2</code>、<code>lo</code> 是设计结果，不是故障。</li>
+  <li><b>不要在计算主板装无线驱动</b>射频芯片不在 Linux 侧，安装驱动或运行 <code>wpa_supplicant</code> 都不会凭空变出 <code>wlan0</code>。</li>
+  <li><b>配 Wi-Fi / 蓝牙走官方入口</b>由网关板托管射频；网关板不开放直连，开发者应使用官方 App 与系统设置界面。</li>
+  <li><b>联网异常先查转发链路</b>确认 Wi-Fi 已启用，再检查板间总线 <code>192.168.127.x</code> 的透明转发，而不是反复扫描无线网卡。</li>
+</ol>
+
+<div class="callout ok"><span class="t">✅ 一句话记住</span><code>wlan0</code> 不是“丢了”，而是从来就不在 Linux 的硬件清单里。Linux 看到的 <code>eth0</code>、<code>eth2</code>、<code>lo</code> 才是它真正拥有的三块接口。</div>
+
+<h2 id="s3">三、14 个 VGeer 一体化关节动力学矩阵</h2>
+
+<p>理解关节命名与分布，是编写复杂运动逻辑与排查电机故障的基础。四足每条腿 3 个自由度，头部 2 个自由度，合计 <b>14 个自研 VGeer 一体化高扭矩关节电机</b>：</p>
+
+<div class="joints" role="img" aria-label="14 个 VGeer 关节分布：左前、右前、左后、右后各 3 个关节，头部俯仰与偏航 2 个自由度">
+  <div class="joint-card">
+    <span class="leg">左前肢 FL</span>
+    <span class="cnt">3 自由度</span>
+    <span class="jrow">FL_hip</span>
+    <span class="jrow">FL_thigh</span>
+    <span class="jrow">FL_calf</span>
+  </div>
+  <div class="joint-card">
+    <span class="leg">右前肢 FR</span>
+    <span class="cnt">3 自由度</span>
+    <span class="jrow">FR_hip</span>
+    <span class="jrow">FR_thigh</span>
+    <span class="jrow">FR_calf</span>
+  </div>
+  <div class="joint-card">
+    <span class="leg">左后肢 RL</span>
+    <span class="cnt">3 自由度</span>
+    <span class="jrow">RL_hip</span>
+    <span class="jrow">RL_thigh</span>
+    <span class="jrow">RL_calf</span>
+  </div>
+  <div class="joint-card">
+    <span class="leg">右后肢 RR</span>
+    <span class="cnt">3 自由度</span>
+    <span class="jrow">RR_hip</span>
+    <span class="jrow">RR_thigh</span>
+    <span class="jrow">RR_calf</span>
+  </div>
+  <div class="joint-card head">
+    <span class="leg">头部 Head</span>
+    <span class="cnt">2 自由度</span>
+    <span class="jrow">head_pitch</span>
+    <span class="jrow">head_yaw</span>
+  </div>
+</div>
+<p class="joint-note">每条腿 3 自由度：hip 航向 / thigh 俯仰 / calf 屈伸 · 头部：pitch 俯仰 / yaw 偏航 · 合计 12 + 2 = 14</p>
+
+<table>
+  <thead>
+    <tr><th>关节归属</th><th>关节编号（名称标识）</th><th>自由度</th><th>职责与工程警示</th><th>峰值扭矩</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>左前肢（FL）</b></td>
+      <td><code>FL_hip</code>, <code>FL_thigh</code>, <code>FL_calf</code></td>
+      <td>3 自由度（航向 / 俯仰 / 屈伸）</td>
+      <td>承载前向抓地力与避障支撑</td>
+      <td><b>24.5 N·m</b></td>
+    </tr>
+    <tr>
+      <td><b>右前肢（FR）</b></td>
+      <td><code>FR_hip</code>, <code>FR_thigh</code>, <code>FR_calf</code></td>
+      <td>3 自由度（航向 / 俯仰 / 屈伸）</td>
+      <td>协同双目前端俯仰平衡</td>
+      <td><b>24.5 N·m</b></td>
+    </tr>
+    <tr>
+      <td><b>左后肢（RL）</b></td>
+      <td><code>RL_hip</code>, <code>RL_thigh</code>, <code>RL_calf</code></td>
+      <td>3 自由度（航向 / 俯仰 / 屈伸）</td>
+      <td>主动力驱动推力来源</td>
+      <td><b>24.5 N·m</b></td>
+    </tr>
+    <tr>
+      <td><b>右后肢（RR）</b></td>
+      <td><code>RR_hip</code>, <code>RR_thigh</code>, <code>RR_calf</code></td>
+      <td>3 自由度（航向 / 俯仰 / 屈伸）</td>
+      <td>主动力驱动推力来源</td>
+      <td><b>24.5 N·m</b></td>
+    </tr>
+    <tr>
+      <td><b>头部交互（Head）</b></td>
+      <td><code>head_pitch</code>, <code>head_yaw</code></td>
+      <td>2 自由度（俯仰 -30°~+45°，偏航 ±60°）</td>
+      <td>视场朝向与点头 / 摇头拟人交互，<span class="no">禁止悬挂 &gt;500g 负重</span></td>
+      <td><b>24.5 N·m</b></td>
+    </tr>
+    <tr>
+      <td><b>合计</b></td>
+      <td>14 个 VGeer 关节</td>
+      <td>14 自由度</td>
+      <td>四足 12 + 头部 2，由网关板统一驱动</td>
+      <td><b>24.5 N·m</b>（单体峰值）</td>
+    </tr>
+  </tbody>
+</table>
+
+<figure>
+  <img src="../assets/02-simulation/vbot-viewer-editor.jpg" alt="Vbot Viewer 在线 3D 动力学模型编辑器，展示 14 关节连杆树与碰撞体" loading="lazy">
+  <figcaption>图 2-3：Vbot Viewer 在线 3D 动力学模型检查，直观展示 14 关节连杆树与碰撞体</figcaption>
+</figure>
+
+<div class="callout danger"><span class="t">⚠️ 头部是“交互件”，不是“承重件”</span><code>head_pitch</code> 行程 -30°~+45°，<code>head_yaw</code> 行程 ±60°，且<b>禁止悬挂 &gt;500g 负重</b>。给大头挂相机云台、机械爪之前，先算清重量，否则最先过载的就是这两个自由度。</div>
+<h2 id="s4">四、物理边界与开发准则：什么能碰、什么绝不能绕</h2>
+
+<p>双脑不是营销概念，而是硬性开发边界。把任务放错板子，轻则跑不起来，重则触碰整机安全闭环。下面两条清单请直接背下来：</p>
+
+<div class="boundary">
+  <div class="bound-card">
+    <h3>✅ 必须跑在计算主板（192.168.126.2）</h3>
+    <ul class="b-list">
+      <li>ROS 2 节点、Aorta 应用与 Python 脚本</li>
+      <li>视觉 VLM（如 Qwen2-VL）、YOLO 目标追踪</li>
+      <li>Cartographer 激光 SLAM 与激光点云处理</li>
+      <li>Conda / Docker / Git 等开发者环境</li>
+      <li>语音 ASR 与高层 Agent 规划</li>
+    </ul>
+  </div>
+  <div class="bound-card stop">
+    <h3>⛔ 绝对不能绕过网关板（192.168.127.10）</h3>
+    <ul class="b-list">
+      <li>14 个 VGeer 电机的驱动与力矩输出</li>
+      <li>BMS 电源管理（594Wh、实时温度与过流监测）</li>
+      <li>0.5s 无指令悬停看门狗与姿态倾覆急停熔断</li>
+      <li>Wi-Fi 6 / 蓝牙 5.2 / UWB 的射频托管</li>
+      <li>任何直接登录网关板或改写底层策略的操作</li>
+    </ul>
+  </div>
+</div>
+
+<h3>一条指令的合法路径</h3>
+<p>高层算法可以把“走”拆成速度、步态与力矩意图，但最终落地必须经过网关板的实时闭环。合法链路只有这一条：</p>
+
+<div class="chain" role="img" aria-label="合法指令链：计算主板 ROS 2 经板间总线 192.168.127.x 到网关板 RTOS，再到 14 个 VGeer 电机">
+  <div class="cn"><b>计算主板 ROS 2</b>192.168.126.2</div>
+  <span class="ca">→</span>
+  <div class="cn"><b>板间总线</b>192.168.127.x</div>
+  <span class="ca">→</span>
+  <div class="cn rt"><b>网关板 RTOS</b>192.168.127.10</div>
+  <span class="ca">→</span>
+  <div class="cn"><b>14 个 VGeer 电机</b>四肢 12 + 头部 2</div>
+</div>
+
+<p>这条链路的意义在于兜底：即使计算主板的 Python 代码因死循环或内存暴涨导致 Linux 内核当场挂起，网关板也能在毫秒级内切断动力或保持自平衡姿态，绝不让电机发生失控过扭。<b>网关板不开放 SSH 或 Root 登录</b>，正是这层安全长城的最后一块砖。</p>
+
+<div class="callout danger"><span class="t">🚨 三条安全红线</span>① 不尝试在计算主板上直接向电机总线发指令；② 不扫描、不尝试登录网关板；③ 不通过非官方途径修改电源、看门狗或急停策略。越级操作没有“开发者模式”可救。</div>
+
+<h3>三句话开发准则</h3>
+<ol class="steps">
+  <li><b>思考放大脑皮层</b>凡是感知、规划、推理、交互类代码，全部放在计算主板的 Ubuntu 22.04 / ROS 2 环境里。</li>
+  <li><b>动作走脑干</b>凡是电机、电源、射频相关的动作，必须经过网关板 RTOS，由实时闭环统一执行。</li>
+  <li><b>怀疑先看边界</b>连不上、找不到设备时，先判断任务属于哪块板，再找该板对应的入口，而不是在 Linux 里盲试驱动。</li>
+</ol>
+
+<h2 id="s5">五、🧪 小实验：双脑职责路由器</h2>
+
+<p>下面 4 个任务分别该交给哪块板？点击任务，立即查看目标板、入口与判定原因：</p>
+
+<div class="lab">
+  <h3>把任务路由到正确的板子</h3>
+  <p>判定规则：绿色 = 开发者可操作，黄色 = 需官方接口，红色 = 禁止触碰。</p>
+  <div class="choices" id="routeChoices">
+    <button class="choice" type="button" data-key="ros" aria-pressed="false"><span class="n">①</span> 编译运行 ROS 2 节点</button>
+    <button class="choice" type="button" data-key="wifi" aria-pressed="false"><span class="n">②</span> 查看 / 配置 WiFi 与蓝牙</button>
+    <button class="choice" type="button" data-key="lidar" aria-pressed="false"><span class="n">③</span> 读取激光雷达点云</button>
+    <button class="choice" type="button" data-key="power" aria-pressed="false"><span class="n">④</span> 修改整机电源管理策略</button>
+  </div>
+  <div class="legend">
+    <span class="lg ok">开发者可操作</span>
+    <span class="lg warn">需官方接口</span>
+    <span class="lg bad">禁止触碰</span>
+  </div>
+  <div id="routeRes" class="result" role="status" aria-live="polite"></div>
+</div>
+
+<div class="callout"><span class="t">💡 实验提示</span>判断顺序建议是：先问“这件事碰不碰电机、电源、射频”，再问“这块板开不开放入口”。两个问题答完，路由结果基本就唯一了。</div>
+<h2 id="s6">本课小结与下一课预告</h2>
+
+<p>把这一课压缩成一张路由表，以后遇到任何任务，先查表再动手：</p>
+
+<table>
+  <thead>
+    <tr><th>你要做的事</th><th>目标板</th><th>入口 / 边界</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>写 ROS 2、跑视觉 / 语音、读点云</td>
+      <td>计算主板 <code>192.168.126.2</code></td>
+      <td><code>ssh vbot@192.168.126.2</code>，<code>vbot</code> 用户可 <code>sudo</code></td>
+    </tr>
+    <tr>
+      <td>配 Wi-Fi / 蓝牙、使用 UWB 能力</td>
+      <td>主控网关板 <code>192.168.127.10</code></td>
+      <td>官方 App / 系统设置入口；网关板不开放直连</td>
+    </tr>
+    <tr>
+      <td>驱动电机、改电源、动看门狗</td>
+      <td>主控网关板 RTOS</td>
+      <td><span class="no">禁止越级</span>，只能走官方接口</td>
+    </tr>
+  </tbody>
+</table>
+
+<ul class="goals">
+  <li>计算主板 <code>192.168.126.2</code> 是大脑皮层与开发者主战场；网关板 <code>192.168.127.10</code> 是神经脑干与生命盾牌。</li>
+  <li>Linux 没有 <code>wlan0</code> 是物理隔离设计：射频在网关板，V1.6 固件由网关板做透明转发，不要在 Ubuntu 里装无线驱动。</li>
+  <li>14 个 VGeer 关节 = 四足 4×3 + 头部 2，单体峰值扭矩 24.5 N·m；头部俯仰 -30°~+45°、偏航 ±60°，禁止悬挂 &gt;500g。</li>
+  <li>一条合法指令链：计算主板 ROS 2 → 板间总线 <code>192.168.127.x</code> → 网关板 RTOS → 14 个 VGeer 电机。</li>
+</ul>
+
+<div class="callout"><span class="t">⏭️ 下一课预告</span>地基打牢了：大脑皮层负责思考，脑干负责保命。但两颗大脑之间到底靠什么语言对话？为什么你电脑上的 ROS 2 发指令狗根本不听？下一课进入整套通信的核心——<a href="lesson_02.html">2.2 Aorta（Zenoh 46 话题）主干道与 ROS 2 兼容子集</a>，拆解 46 个话题与桥接层的真实边界。</div>
+
+</div>
+
+<div class="wrap" style="padding-top:0">
+<footer class="nav">
+  <a href="../01-getting-started/lesson_03.html"><span class="dir">← 上一课</span><span class="ttl">1.2 Hello World：/vel_cmd 20Hz 运控</span></a>
+  <a class="home-link" href="index.html"><span class="dir">目录</span><span class="ttl">返回目录</span></a>
+  <a href="lesson_02.html" style="text-align:right"><span class="dir">下一课 →</span><span class="ttl">2.2 Aorta 与 ROS 2 兼容子集</span></a>
+</footer>
+</div>
+
+</main>
+
+<script>
+document.querySelectorAll('.copy').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var pre=btn.parentElement.querySelector('pre');
+    navigator.clipboard.writeText(pre.textContent).then(function(){
+      btn.textContent='已复制'; setTimeout(function(){btn.textContent='复制'},1500);
+    });
+  });
+});
+
+var routeData={
+  ros:{
+    cls:'ok',
+    tag:'✅ 开发者可操作 · 计算主板',
+    board:'计算主板 <code>192.168.126.2</code>',
+    entry:'<code>ssh vbot@192.168.126.2</code>（vbot 用户可 sudo）',
+    why:'ROS 2 节点、编译工具链与 Python 环境都装在 Ubuntu 22.04 这一侧，这是大脑皮层的主战场，放心编译、运行、调试。'
+  },
+  wifi:{
+    cls:'warn',
+    tag:'⚠️ 需官方接口 · 网关板托管',
+    board:'主控网关板 <code>192.168.127.10</code>',
+    entry:'官方 App / 系统设置中的 Wi-Fi、蓝牙入口（网关板不开放直连）',
+    why:'Wi-Fi 6 与蓝牙 5.2 射频焊死在网关板，由 RTOS 托管；Linux 里没有 wlan0，在计算主板折腾无线驱动是无效操作。'
+  },
+  lidar:{
+    cls:'ok',
+    tag:'✅ 开发者可操作 · 计算主板',
+    board:'计算主板 <code>192.168.126.2</code>',
+    entry:'<code>ssh vbot@192.168.126.2</code> 后由 ROS 2 节点订阅点云',
+    why:'激光点云服务于 Cartographer 激光 SLAM 与感知链路，属于视觉 / 感知算力侧任务，应落在计算主板。'
+  },
+  power:{
+    cls:'bad',
+    tag:'⛔ 禁止触碰 · 网关板安全闭环',
+    board:'主控网关板 <code>192.168.127.10</code>（BMS 电源管理）',
+    entry:'无开发者直连入口，网关板不开放 SSH / Root',
+    why:'电源管理、实时温度 / 过流监测与 0.5s 无指令悬停看门狗属于整机安全兜底；绕过网关板修改策略会直接破坏安全长城。'
+  }
+};
+
+var routeChoices=document.getElementById('routeChoices');
+if(routeChoices){
+  routeChoices.addEventListener('click',function(e){
+    var btn=e.target.closest('button.choice');
+    if(!btn) return;
+    routeChoices.querySelectorAll('.choice').forEach(function(x){
+      x.classList.remove('on');
+      x.setAttribute('aria-pressed','false');
+    });
+    btn.classList.add('on');
+    btn.setAttribute('aria-pressed','true');
+    var d=routeData[btn.dataset.key];
+    if(!d) return;
+    var res=document.getElementById('routeRes');
+    res.className='result '+d.cls;
+    res.innerHTML='<b>'+d.tag+'</b>目标板：'+d.board+'<br>入口：'+d.entry+'<br>原因：'+d.why;
+  });
+}
+</script>
+</body>
+</html>

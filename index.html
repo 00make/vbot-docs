@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VBOT EDU 网页版教程 · 全课程</title>
+<style>
+/* ===== 风格契约 v2 · 预设 A 清爽技术文档风（与 lesson_01~03 一致） ===== */
+:root{
+  --bg:#ffffff; --fg:#1f2937; --muted:#6b7280;
+  --accent:#0e7490; --accent-dark:#155e75; --accent-light:#ecfeff;
+  --code-bg:#f3f4f6; --code-fg:#111827; --code-border:#e5e7eb;
+  --border:#e5e7eb; --card:#f9fafb;
+  --warn-bg:#fffbeb; --warn-bd:#f59e0b;
+  --danger-bg:#fef2f2; --danger-bd:#ef4444;
+  --tip-bg:#ecfeff; --tip-bd:#0e7490;
+  --ok-bg:#f0fdf4; --ok-bd:#22c55e;
+  --radius:10px; --max-width:880px; --toc-w:250px;
+  --font-body:"Microsoft YaHei","Source Han Sans CN",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"Cascadia Code",Consolas,"JetBrains Mono","Courier New",monospace;
+}
+/* ===== 风格契约结束 ===== */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.8;font-size:16px}
+a{color:var(--accent);text-decoration:none}
+a:hover{color:var(--accent-dark)}
+code{font-family:var(--font-mono);font-size:.875em;background:var(--code-bg);border:1px solid var(--code-border);border-radius:4px;padding:1px 6px}
+.wrap{max-width:960px;margin:0 auto;padding:48px 24px 32px}
+.hero{border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);background:linear-gradient(135deg,var(--accent-dark),var(--accent));color:#fff;padding:44px 40px}
+.hero-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:32px;align-items:center}
+.hero-video{width:100%;max-width:290px;justify-self:center}
+.hero-video video{width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:16px;border:1px solid rgba(255,255,255,.35);background:#000;display:block;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.hero-video .cap{font-size:12px;opacity:.85;margin-top:8px;text-align:center}
+.hero .kicker{font-size:13px;letter-spacing:.18em;opacity:.85;text-transform:uppercase;margin-bottom:10px}
+.hero h1{font-size:34px;line-height:1.35;margin:0 0 12px}
+.hero p{margin:0;max-width:640px;font-size:15.5px;opacity:.92}
+.hero .badges{margin-top:20px}
+.badge{display:inline-block;font-size:12.5px;border-radius:99px;padding:3px 13px;margin:0 8px 6px 0;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.35)}
+h2{font-size:21px;color:var(--accent-dark);margin:44px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--accent-light)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:20px 0}
+.card{display:block;border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;background:var(--bg);color:var(--fg);transition:border-color .15s,background .15s}
+.card:hover{border-color:var(--accent);background:var(--accent-light);color:var(--fg)}
+.card .no{display:inline-block;font-size:12px;font-weight:700;color:#fff;background:var(--accent);border-radius:99px;padding:1px 11px;margin-bottom:10px}
+.card h3{margin:0 0 8px;font-size:18px;color:var(--accent-dark)}
+.card p{margin:0 0 14px;font-size:14px;color:var(--muted);line-height:1.7}
+.card .meta{font-size:12.5px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.card .go{font-size:14px;font-weight:600;color:var(--accent)}
+ul.check{list-style:none;padding:0;margin:12px 0}
+ul.check li{padding:4px 0 4px 28px;position:relative}
+ul.check li::before{content:"✓";position:absolute;left:4px;color:var(--accent);font-weight:700}
+.callout{border-left:4px solid var(--warn-bd);background:var(--warn-bg);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;margin:20px 0;font-size:14.5px}
+.callout .t{font-weight:700;display:block;margin-bottom:4px}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left}
+th{background:var(--accent-light);color:var(--accent-dark)}
+tr:nth-child(even) td{background:var(--card)}
+footer.page{border-top:1px solid var(--border);margin-top:52px;padding:22px 0 8px;font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media (max-width:768px){
+  .wrap{padding:24px 16px 20px}
+  .hero{padding:28px 22px}
+  .hero h1{font-size:25px}
+  .hero-grid{grid-template-columns:1fr;gap:20px}
+  .hero-video{max-width:240px}
+}
+@media print{
+  body{font-size:12px}
+  .hero{background:#fff;color:var(--fg);border:1px solid var(--border)}
+  .badge{background:#fff;color:var(--fg);border:1px solid var(--border)}
+  a{color:var(--fg)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="hero-grid">
+    <div>
+      <div class="kicker">VBOT EDU · 网页版教程</div>
+      <h1>从小白到整机实战：五模块通关开发链路</h1>
+      <p>五个模块、十四课，覆盖硬件边界、通信中间件、运动与感知、多模态 Agent、硬件改装与安全排障。每课含 CSS 图示与可交互小实验，固件基准 V1.6.0。</p>
+      <div class="badges">
+        <span class="badge">5 模块 · 14 课</span>
+        <span class="badge">固件基准 V1.6.0</span>
+        <span class="badge">ROS 2 Humble + Aorta(Zenoh)</span>
+      </div>
+    </div>
+    <div class="hero-video">
+      <video controls muted loop playsinline preload="metadata" poster="assets/01-brand-hardware/vbot-dog-edu.png" aria-label="维他动力大头 EDU 官方展示视频">
+        <source src="assets/videos/维他动力大头EDU发布视频.mp4" type="video/mp4">
+        你的浏览器不支持 HTML5 视频，请 <a href="assets/videos/维他动力大头EDU发布视频.mp4">下载观看</a>。
+      </video>
+      <div class="cap">大头 EDU 官方展示视频 · 37 秒</div>
+    </div>
+  </div>
+</header>
+
+<h2>选择模块</h2>
+
+<div class="cards">
+  <a class="card" href="01-getting-started/index.html">
+    <span class="no">01</span>
+    <h3>快速开始</h3>
+    <p>从认识平台、网络接入到 /vel_cmd 20Hz 运控，三课打通入门链路。</p>
+    <div class="meta"><span>3 课</span><span>入门必学</span></div>
+    <span class="go">进入模块 →</span>
+  </a>
+  <a class="card" href="02-architecture-comm/index.html">
+    <span class="no">02</span>
+    <h3>架构拓扑与通信机制</h3>
+    <p>双脑硬件边界、Aorta(Zenoh) 46 话题与 ROS 2 桥接、生产级开发环境。</p>
+    <div class="meta"><span>3 课</span><span>概念为主</span></div>
+    <span class="go">进入模块 →</span>
+  </a>
+  <a class="card" href="03-embodied-agent/index.html">
+    <span class="no">03</span>
+    <h3>具身智能体开发</h3>
+    <p>RCP 动作编排、多传感器数据流、多模态大模型与设备端 MCP。</p>
+    <div class="meta"><span>3 课</span><span>代码实战</span></div>
+    <span class="go">进入模块 →</span>
+  </a>
+  <a class="card" href="04-hardware-recipes/index.html">
+    <span class="no">04</span>
+    <h3>硬件改装与黑客松蓝本</h3>
+    <p>负载与算力约束、3D 打印/机械臂/RDK 改装、6 大真实案例复盘。</p>
+    <div class="meta"><span>3 课</span><span>含硬件工程</span></div>
+    <span class="go">进入模块 →</span>
+  </a>
+  <a class="card" href="05-diagnostics-faq/index.html">
+    <span class="no">05</span>
+    <h3>诊断与安全 FAQ</h3>
+    <p>四层排障法与 15+ FAQ、安全守规与开机自启动防死锁。</p>
+    <div class="meta"><span>2 课</span><span>收官模块</span></div>
+    <span class="go">进入模块 →</span>
+  </a>
+</div>
+
+<h2>阅读方式</h2>
+
+<ul class="check">
+  <li>新手按 01 → 02 → 03 → 04 → 05 顺序学习；每课页脚可上一课/下一课连续阅读</li>
+  <li>做项目时按需跳读：控制代码看 03，硬件改装看 04，排障看 05</li>
+  <li>配合 <code>vbot-docs/AGENTS.md</code> 把教程喂给 AI Coding Agent 效果更佳</li>
+</ul>
+
+<div class="callout">
+  <span class="t">⚠️ 版本与安全</span>
+  全部内容以固件 V1.6.0 为准；<code>/vbot/sportmode_cmd</code> 已废弃，请使用 <code>/vel_cmd</code>。运动测试请在开阔场地并保留物理急停。
+</div>
+
+<footer class="page">
+  <span>源文档：<code>vbot-docs/</code> · 风格契约 v2</span>
+  <span>VBOT EDU 开发者教程 · 维他动力生态</span>
+</footer>
+
+</div>
+</body>
+</html>

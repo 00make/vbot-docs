@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.2 Aorta（Zenoh 46 话题）主干道与 ROS 2 兼容子集 | VBOT EDU 架构与通信</title>
+<meta name="description" content="VBOT EDU 架构与通信模块 Lesson 02：拆解 ROS 2 DDS 与 Aorta(Zenoh) 的协议巴别塔，速查 46 条核心话题，掌握板载节点与 rmw_zenoh_cpp 两套破壁方案。">
+<style>
+/* ===== 风格契约 v1 · 预设 A 清爽技术文档风（全教程统一，勿改） ===== */
+:root{
+  --bg:#ffffff; --fg:#1f2937; --muted:#6b7280;
+  --accent:#0e7490; --accent-dark:#155e75; --accent-light:#ecfeff;
+  --code-bg:#f3f4f6; --code-fg:#111827; --code-border:#e5e7eb;
+  --border:#e5e7eb; --card:#f9fafb;
+  --warn-bg:#fffbeb; --warn-bd:#f59e0b;
+  --danger-bg:#fef2f2; --danger-bd:#ef4444;
+  --tip-bg:#ecfeff; --tip-bd:#0e7490;
+  --ok-bg:#f0fdf4; --ok-bd:#22c55e;
+  --radius:10px; --max-width:880px; --toc-w:250px;
+  --font-body:"Microsoft YaHei","Source Han Sans CN",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"Cascadia Code",Consolas,"JetBrains Mono","Courier New",monospace;
+}
+/* ===== 风格契约结束 ===== */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.8;font-size:16px}
+a{color:var(--accent)}
+a:hover{color:var(--accent-dark)}
+code{font-family:var(--font-mono);font-size:.875em;background:var(--code-bg);border:1px solid var(--code-border);border-radius:4px;padding:1px 6px;color:var(--code-fg)}
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:16px 18px;overflow:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;color:var(--code-fg);margin:0}
+pre code{background:none;border:none;padding:0;font-size:inherit}
+
+/* 布局：左 TOC + 右正文 */
+.toc{position:fixed;top:0;left:0;bottom:0;width:var(--toc-w);background:var(--card);border-right:1px solid var(--border);padding:28px 16px;overflow:auto}
+.toc .brand{font-weight:700;color:var(--accent-dark);font-size:17px;margin-bottom:2px}
+.toc .sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.toc ol{list-style:none;margin:0;padding:0;counter-reset:toc}
+.toc li{counter-increment:toc;margin-bottom:2px}
+.toc a{display:block;padding:7px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font-size:13.5px}
+.toc a::before{content:counter(toc) ". ";color:var(--accent);font-weight:600}
+.toc a:hover{background:var(--accent-light);color:var(--accent-dark)}
+.toc .home{display:inline-block;margin-top:18px;font-size:13px;color:var(--accent);text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--bg)}
+main{margin-left:var(--toc-w)}
+.wrap{max-width:var(--max-width);margin:0 auto;padding:40px 32px 24px}
+
+/* 页头 */
+header.lesson{border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:32px}
+header.lesson .hero-img{width:100%;max-height:280px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);margin-top:18px}
+.badges{margin-bottom:12px}
+.badge{display:inline-block;font-size:12px;font-weight:600;border-radius:99px;padding:2px 12px;margin-right:8px;vertical-align:middle}
+.badge.no{background:var(--accent);color:#fff}
+.badge.safe{background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.badge.ver{background:var(--card);color:var(--muted);border:1px solid var(--border)}
+h1{font-size:30px;line-height:1.4;margin:0 0 10px;color:var(--accent-dark)}
+.meta{font-size:13.5px;color:var(--muted)}
+.meta a{color:var(--accent)}
+
+/* 标题层级 */
+h2{font-size:22px;color:var(--accent-dark);margin:48px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--accent-light)}
+h3{font-size:17.5px;color:var(--fg);margin:28px 0 10px}
+
+/* 提示框 */
+.callout{border-left:4px solid var(--tip-bd);background:var(--tip-bg);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;margin:20px 0;font-size:15px}
+.callout.warn{border-color:var(--warn-bd);background:var(--warn-bg)}
+.callout.danger{border-color:var(--danger-bd);background:var(--danger-bg)}
+.callout.ok{border-color:var(--ok-bd);background:var(--ok-bg)}
+.callout .t{font-weight:700;display:block;margin-bottom:4px}
+
+/* 直播口播折叠 */
+details.talk{border:1px dashed var(--accent);border-radius:var(--radius);background:var(--bg);margin:20px 0}
+details.talk summary{cursor:pointer;padding:12px 18px;color:var(--accent);font-weight:600;font-size:14.5px}
+details.talk .body{padding:0 18px 14px;color:var(--muted);font-size:14.5px}
+
+/* 图片 */
+figure{margin:24px 0;text-align:center}
+figure img{max-width:100%;border:1px solid var(--border);border-radius:var(--radius);background:#fff}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+
+/* 表格 */
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px}
+th,td{border:1px solid var(--border);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--accent-light);color:var(--accent-dark);font-weight:700}
+tr:nth-child(even) td{background:var(--card)}
+td .no{color:var(--danger-bd);font-weight:700}
+
+/* 编号步骤 */
+ol.steps{list-style:none;counter-reset:st;padding:0;margin:18px 0}
+ol.steps>li{counter-increment:st;position:relative;padding:0 0 18px 48px}
+ol.steps>li::before{content:counter(st);position:absolute;left:0;top:2px;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;text-align:center;line-height:32px;font-size:15px}
+ol.steps>li>b:first-child{display:block;margin-bottom:4px}
+
+/* CSS 拓扑图 */
+.topo{display:flex;align-items:stretch;justify-content:center;gap:0;margin:24px 0;flex-wrap:wrap}
+.topo .node{background:var(--card);border:2px solid var(--accent);border-radius:var(--radius);padding:12px 16px;min-width:170px;text-align:center;font-size:13.5px}
+.topo .node b{display:block;color:var(--accent-dark);font-size:14.5px;margin-bottom:2px}
+.topo .node code{font-size:12px}
+.topo .node.dev{border-color:var(--muted)}
+.topo .node.gw{border-style:dashed}
+.topo .link{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 10px;color:var(--muted);font-size:12px;min-width:96px}
+.topo .link .arrow{font-size:20px;color:var(--accent);line-height:1.2}
+
+/* 代码块 + 复制按钮 + Tabs */
+.codewrap{position:relative;margin:14px 0}
+.codewrap .lang{position:absolute;top:0;right:88px;font-size:11px;color:var(--muted);background:var(--bg);border:1px solid var(--code-border);border-bottom:none;border-radius:6px 6px 0 0;padding:1px 8px}
+.copy{position:absolute;top:8px;right:8px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;font-family:var(--font-body)}
+.copy:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.tabs{display:flex;gap:6px;margin:18px 0 0}
+.tabs button{border:1px solid var(--border);border-bottom:none;background:var(--card);padding:8px 18px;border-radius:10px 10px 0 0;cursor:pointer;font-size:14px;color:var(--muted);font-family:var(--font-body)}
+.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+.panel{display:none;border:1px solid var(--border);border-radius:0 var(--radius) var(--radius) var(--radius);padding:16px 18px;background:var(--bg)}
+.panel.on{display:block}
+
+/* 目标清单 */
+ul.goals{margin:12px 0;padding-left:0;list-style:none}
+ul.goals li{padding:4px 0 4px 28px;position:relative}
+ul.goals li::before{content:"✓";position:absolute;left:4px;color:var(--accent);font-weight:700}
+
+/* 页脚导航 */
+footer.nav{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--border);margin-top:56px;padding:24px 0 40px;flex-wrap:wrap}
+footer.nav a{flex:1;min-width:200px;border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;text-decoration:none;background:var(--card)}
+footer.nav a:hover{border-color:var(--accent);background:var(--accent-light)}
+footer.nav .dir{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
+footer.nav .ttl{display:block;font-size:15px;color:var(--accent-dark);font-weight:600}
+footer.nav a.home-link{flex:0 0 auto;text-align:center}
+
+/* 交互小实验 */
+.lab{background:var(--card);border:1px solid var(--accent);border-radius:var(--radius);padding:18px 20px;margin:26px 0}
+.lab h4{margin:0 0 6px;color:var(--accent-dark);font-size:16px}
+.lab p{margin:4px 0;font-size:14px;color:var(--muted)}
+.labrow{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;align-items:center}
+.lab input{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font-mono);font-size:14px;width:220px;background:var(--bg);color:var(--fg)}
+.lab button{padding:8px 18px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:14px;font-family:var(--font-body)}
+.lab button:hover{background:var(--accent-dark)}
+.result{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:14px;display:none}
+.result.ok{display:block;background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.result.bad{display:block;background:var(--danger-bg);color:#b91c1c;border:1px solid var(--danger-bd)}
+.result.warn{display:block;background:var(--warn-bg);color:#92400e;border:1px solid var(--warn-bd)}
+.lab pre{margin-top:10px}
+
+/* 移动端 */
+@media (max-width:768px){
+  .toc{position:static;width:auto;border-right:none;border-bottom:1px solid var(--border);padding:18px 16px}
+  .toc ol{columns:2}
+  main{margin-left:0}
+  .wrap{padding:24px 18px 12px}
+  h1{font-size:24px}
+  .topo{flex-direction:column;align-items:center}
+  .topo .link{min-width:auto;padding:6px 0}
+  .topo .link .arrow{transform:rotate(90deg)}
+  .fbranch{flex-direction:column;align-items:center;gap:8px}
+}
+/* 打印 */
+@media print{
+  .toc,.copy,.tabs{display:none}
+  main{margin-left:0}
+  .panel{display:block!important;border:none;padding:8px 0}
+  body{font-size:12px}
+  a{color:var(--fg);text-decoration:none}
+}
+
+/* ===== 本课专属：Lesson 02（仅追加，不改配色 / 字体 / 间距体系） ===== */
+/* 目录“返回目录”不参与编号 */
+.toc .home::before{content:none}
+/* 关键数字 */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:22px 0}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 12px;text-align:center}
+.stat b{display:block;font-size:22px;line-height:1.35;color:var(--accent-dark)}
+.stat span{font-size:12.5px;color:var(--muted)}
+
+/* 协议隔离巴别塔 */
+.babel{display:grid;grid-template-columns:1fr 1.05fr 1fr;gap:14px;align-items:stretch;margin:26px 0}
+.zone{border:2px solid var(--border);border-radius:var(--radius);padding:14px;background:var(--bg)}
+.zone.dds{border-color:var(--muted);background:var(--card)}
+.zone.zenoh{border-color:var(--accent);background:var(--accent-light)}
+.zone-h{font-weight:700;font-size:14.5px;color:var(--accent-dark);margin-bottom:10px;line-height:1.5}
+.zone.dds .zone-h{color:var(--muted)}
+.zone-h span{display:block;font-size:11.5px;font-weight:400;color:var(--muted);font-family:var(--font-mono)}
+.chip{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12.5px;margin:6px 0;line-height:1.55}
+.chip code{font-size:11.5px;padding:0 4px}
+.chip.dim{color:var(--muted)}
+.chip.bridge{border-style:dashed;border-color:var(--accent);background:var(--tip-bg);color:var(--accent-dark);font-weight:600}
+.zone-note{font-size:12px;color:var(--danger-bd);margin-top:8px;font-weight:600;line-height:1.5}
+.rift{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:6px 0;text-align:center}
+.rift-x{width:34px;height:34px;border-radius:50%;background:var(--danger-bg);border:2px solid var(--danger-bd);color:var(--danger-bd);font-weight:700;font-size:18px;line-height:30px}
+.rift-t{font-size:12.5px;font-weight:700;color:var(--danger-bd)}
+.rift-s{font-size:11.5px;color:var(--muted);line-height:1.55}
+.bridge-box{margin-top:10px;width:100%;border:1px dashed var(--accent);border-radius:8px;background:var(--bg);padding:8px 6px;font-size:11.5px;color:var(--accent-dark);line-height:1.55}
+.bridge-box b{display:block;font-family:var(--font-mono);font-size:10.5px;word-break:break-all}
+.bridge-box span{color:var(--muted)}
+
+/* 两方案对比流程 */
+.duel{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:24px 0}
+.scheme{border:1px solid var(--border);border-radius:var(--radius);padding:16px;background:var(--bg)}
+.scheme.a{border-color:var(--accent);background:var(--card)}
+.scheme.b{border-style:dashed}
+.scheme-h{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.scheme-h b{font-size:14.5px;color:var(--accent-dark)}
+.scheme.b .scheme-h b{color:var(--muted)}
+.pill{font-size:11px;font-weight:700;border-radius:99px;padding:1px 9px;background:var(--ok-bg);border:1px solid var(--ok-bd);color:#15803d;white-space:nowrap}
+.pill.gray{background:var(--card);border-color:var(--border);color:var(--muted)}
+.path{display:flex;flex-direction:column;gap:0}
+.pstep{border:1px solid var(--border);border-radius:8px;background:var(--bg);padding:8px 10px;font-size:12.5px;text-align:center;line-height:1.5}
+.pstep b{display:block;font-size:12.5px;color:var(--fg)}
+.pstep small{color:var(--muted);font-size:11.5px}
+.pstep.hot{border-color:var(--accent);background:var(--accent-light)}
+.parr{text-align:center;color:var(--accent);font-size:14px;line-height:1.45}
+.scheme.b .parr{color:var(--muted)}
+.scheme-note{font-size:12px;color:var(--muted);margin:10px 0 0;line-height:1.6}
+
+/* 46 话题表 */
+.table-scroll{overflow-x:auto;margin:18px 0;-webkit-overflow-scrolling:touch}
+.table-scroll table{margin:0;min-width:640px}
+.table-scroll td code{white-space:nowrap}
+.topic-table{min-width:720px}
+.topic-table th.grp{background:var(--accent-light);color:var(--accent-dark);font-size:13px;letter-spacing:.02em;border-top:2px solid var(--accent)}
+.topic-table td:first-child{font-weight:600}
+.topic-table code{white-space:nowrap}
+.topic-table .tnote{font-size:12.5px;color:var(--muted);background:var(--bg)}
+.table-note{font-size:12.5px;color:var(--muted);margin:8px 0 0;line-height:1.7}
+.scroll-hint{display:none}
+
+/* 实验：下拉与轨迹 */
+.lab .lab-lead{color:var(--fg);font-size:14.5px;margin:0 0 12px}
+.labgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.labfield{display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--muted);line-height:1.5}
+.labfield select{padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font-body);font-size:14px;background:var(--bg);color:var(--fg);width:100%}
+.labfield select:focus{outline:2px solid var(--accent-light);border-color:var(--accent)}
+.lab button.ghost{background:var(--bg);color:var(--muted);border:1px solid var(--border)}
+.lab button.ghost:hover{background:var(--card);color:var(--fg);border-color:var(--accent)}
+.result .verdict{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:1px 10px;margin-right:8px;border:1px solid transparent;white-space:nowrap;vertical-align:1px}
+.result.ok .verdict{background:#dcfce7;border-color:var(--ok-bd);color:#15803d}
+.result.bad .verdict{background:#fee2e2;border-color:var(--danger-bd);color:#b91c1c}
+.result.warn .verdict{background:#fef3c7;border-color:var(--warn-bd);color:#92400e}
+.result code{background:rgba(255,255,255,.65)}
+.trace{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:12px;padding:12px;border:1px dashed var(--border);border-radius:8px;background:var(--bg);font-size:12.5px}
+.trace[hidden]{display:none}
+.tstep{border:1px solid var(--border);border-radius:7px;padding:4px 9px;background:var(--card);color:var(--fg);line-height:1.5}
+.tstep small{display:block;font-size:10.5px;color:var(--muted)}
+.tstep.good{border-color:var(--ok-bd);background:var(--ok-bg);color:#15803d}
+.tstep.bad{border-color:var(--danger-bd);background:var(--danger-bg);color:#b91c1c;font-weight:600}
+.tarr{color:var(--muted);font-size:12px}
+.lab-hint{font-size:12px;color:var(--muted);margin-top:8px}
+
+@media (max-width:768px){
+  .babel{grid-template-columns:1fr}
+  .rift{flex-direction:row;flex-wrap:wrap;justify-content:center}
+  .bridge-box{width:auto;margin-top:0}
+  .duel{grid-template-columns:1fr}
+  .labgrid{grid-template-columns:1fr}
+  .trace{gap:4px;flex-direction:column;align-items:stretch}
+  .tarr{transform:rotate(90deg);text-align:center}
+  .tstep{text-align:center}
+  .scroll-hint{display:block;font-size:12px;color:var(--muted);margin:6px 0 0;text-align:right}
+}
+/* ===== 本课专属样式结束 ===== */
+</style>
+</head>
+<body>
+
+<nav class="toc" id="nav">
+  <div class="brand">VBOT EDU 架构与通信</div>
+  <div class="sub">模块 02 · Lesson 02</div>
+  <ol>
+    <li><a href="#s0">巴别塔：协议隔离根因</a></li>
+    <li><a href="#s1">46 条核心话题速查</a></li>
+    <li><a href="#s2">破壁两套方案</a></li>
+    <li><a href="#s3">Aorta 命令行万能探针</a></li>
+    <li><a href="#s4">小实验：话题穿越测试</a></li>
+    <li><a href="#s5">本课小结</a></li>
+  </ol>
+  <a class="home" href="index.html">← 返回目录</a>
+</nav>
+
+<main>
+<div class="wrap">
+
+<header class="lesson">
+  <div class="badges">
+    <span class="badge no">Lesson 02</span>
+    <span class="badge safe">安全级别：信息型（informational）</span>
+    <span class="badge ver">固件基准 V1.6.0</span>
+  </div>
+  <h1>Aorta（Zenoh 46 话题）主干道与 ROS 2 兼容子集</h1>
+  <p class="meta">预计阅读 12 分钟 · 前置课程：<a href="lesson_01.html">2.1 双大脑硬件架构拆解与物理边界</a> · 关键词：Aorta · Zenoh · rmw_zenoh_cpp · Domain 178</p>
+</header>
+
+<details class="talk">
+  <summary>🎙️ 展开直播口播导语（讲师版）</summary>
+  <div class="body">
+    <p>“各位直播间的同学们，请大家打起十二分精神！本节是整套进阶体系中价值最高、最容易拯救你生命的一堂课！几乎 90% 的 ROS 老手在刚拿到这台机器狗时，都会经历长达数天的怀疑人生：‘为什么我在自己笔记本电脑上明明能 ping 通机器狗，执行 <code>ros2 topic list</code> 甚至能看到话题名字，但执行 <code>ros2 topic echo /imu_raw</code> 却像死水一潭，半天吐不出来一个字节？为什么向 <code>/vel_cmd</code> 投递速度包，机器狗却稳如泰山、毫无反应？’答案只有一句话：<b>Aorta 通信总线才是整个系统的绝对主力主干道，ROS 2 在这里仅仅是一个本地兼容子集！</b>今天我们就来彻底拆穿这个‘通信巴别塔’的秘密！”</p>
+  </div>
+</details>
+
+<h2 id="goals" style="margin-top:24px;border-bottom:none;padding-bottom:0;font-size:17.5px">本课学习目标</h2>
+<ul class="goals">
+  <li>说清 ROS 2 DDS 与 Aorta（Zenoh）为什么互相“看不见”：协议栈不同、Domain 隔离与 ACL 静默丢弃三重叠加</li>
+  <li>记住 46 条核心话题 = 43 条遥测输出 + 3 条控制输入，能查到常用话题的 Aorta 原生路由与 ROS 2 桥接名</li>
+  <li>用方案 A 在板载节点跑通通信，理解共享内存路径 &lt; 0.2 毫秒的意义</li>
+  <li>仅在外接 GPU 工作站场景下使用方案 B（<code>rmw_zenoh_cpp</code> + Domain 178）</li>
+  <li>用 <code>aorta topic list</code> / <code>echo</code> / <code>service list</code> / <code>schema get</code> 四条命令 3 秒摸清总线状况</li>
+</ul>
+
+<h2 id="s0">一、根因拆解：协议隔离的“巴别塔”</h2>
+
+<p>传统 ROS 2（从 Foxy 到 Humble）默认采用基于 <b>DDS</b>（Data Distribution Service）的中间件，其中最普及的实现是 eProsima 的 <b>FastRTPS</b>，而它严重依赖局域网内频繁的 <b>UDP 组播发现</b>机制。</p>
+
+<p>在追求高带宽视频流传输与端侧微秒级确定性的现代化具身机器人上，VBOT 自研了 <b>Aorta 通信框架</b>——底层基于 Eclipse 顶级开源项目 <b>Zenoh</b> 协议构建。两套协议栈各跑各的，于是就有了这座“通信巴别塔”：</p>
+
+<div class="babel" role="img" aria-label="协议隔离示意图：左侧为 PC 上的 ROS 2 DDS 域（Domain 0，FastRTPS 组播发现），右侧为主板上的 Aorta Zenoh 域（Domain 178，46 条核心话题），中间是不可直连的屏障与仅在本机回环桥接的 aorta_ros2_bridge">
+  <div class="zone dds">
+    <div class="zone-h">ROS 2 DDS 域<span>PC · 默认 Domain 0</span></div>
+    <div class="chip">开发节点 / 调试终端</div>
+    <div class="chip">RMW：<code>rmw_fastrtps_cpp</code></div>
+    <div class="chip dim">UDP 组播发现</div>
+    <div class="chip dim"><code>ros2 topic echo</code> 持续无输出</div>
+    <div class="zone-note">看得到残留话题名，收不到真实载荷</div>
+  </div>
+  <div class="rift">
+    <div class="rift-x">×</div>
+    <div class="rift-t">两侧不可直连</div>
+    <div class="rift-s">DDS 报文无法穿透 Zenoh Session 屏障<br>PC Domain 0 ≠ 主板 Domain 178</div>
+    <div class="bridge-box"><b>aorta_ros2_bridge</b><span>板载协议转接器<br>仅 127.0.0.1 桥接</span></div>
+  </div>
+  <div class="zone zenoh">
+    <div class="zone-h">Aorta（Zenoh）域<span>主板 · ROS_DOMAIN_ID=178</span></div>
+    <div class="chip">Aorta 原生总线 · 开放 46 条核心话题</div>
+    <div class="chip bridge">aorta_ros2_bridge → 本地 ROS 2 子集</div>
+    <div class="chip dim">底盘 14 关节运控与传感器硬件驱动</div>
+    <div class="chip dim">共享内存（POSIX Shared Memory）</div>
+  </div>
+</div>
+
+<p>一句话总结图意：<b>你 PC 上的 ROS 2 域和主板上的 Aorta 域，中间没有默认直通的车道。</b>桥接器只长在主板这一侧，而且仅在本地回环上工作。</p>
+
+<h3>为什么会出现“能看到话题却收不到数据”的灵异现象？</h3>
+
+<ol class="steps">
+  <li><b>网络层假握手</b>偶尔看到的节点信息，往往来自此前残留的组播缓存；真实的底层数据载荷全部流淌在 Zenoh 会话内，DDS 订阅者根本无法解包。</li>
+  <li><b>域隔离（Domain Isolation）</b>板载 ROS 2 系统被硬件严格约束在 <code>ROS_DOMAIN_ID=178</code>；如果你的电脑运行在默认的 Domain 0，两者在物理逻辑端口上根本不在同一个次元。</li>
+  <li><b>ACL 访问控制表的“静默丢弃”</b>Aorta 内部配备了经过强类型校验的 <b>56 行 EDU Schema 规则</b>。任何未在白名单中声明的非法话题名或非法数据类型，在总线层面会被直接静默丢弃——既不报错，也不响应，表现就是完全没有反应。</li>
+</ol>
+
+<div class="callout danger"><span class="t">🚨 能 ping 通，不等于能收数据</span>ICMP 只证明 IP 层可达，数据要走的是协议层。排障时按顺序核对三件事：<b>协议栈</b>（DDS 还是 Zenoh）、<b>域号</b>（是不是 178）、<b>白名单</b>（话题名与消息类型是否在 56 行 EDU Schema 内）。</div>
+
+<h2 id="s1">二、46 条 Aorta 核心话题全景速查</h2>
+
+<p>Aorta 总线向开发者一次性开放了 <b>46 条核心话题</b>——包括 <b>43 条高频遥测输出</b>与 <b>3 条控制输入</b>。下表按运动控制、感知、音频与灯光、系统分组，照录官方速查表中的 9 条常用核心路径：左列是主干道上的 Aorta 原生路由，右列是板载 ROS 2 桥接后你熟悉的名字。</p>
+
+<div class="stats">
+  <div class="stat"><b>46</b><span>条核心话题</span></div>
+  <div class="stat"><b>43 + 3</b><span>遥测输出 + 控制输入</span></div>
+  <div class="stat"><b>178</b><span>强制 ROS Domain</span></div>
+  <div class="stat"><b>&lt; 0.2 ms</b><span>板载共享内存延迟</span></div>
+</div>
+
+<div class="table-scroll">
+<table class="topic-table">
+  <thead>
+    <tr><th>功能模块</th><th>Aorta 原生路由（主干道）</th><th>ROS 2 本地桥接话题</th><th>传输语义 / 频次 / 消息类型</th></tr>
+  </thead>
+  <tbody>
+    <tr><th class="grp" colspan="4">运动控制与遥控</th></tr>
+    <tr>
+      <td>底盘速度输入</td>
+      <td><code>/locomotion/velocity_command</code></td>
+      <td><b><code>/vel_cmd</code></b></td>
+      <td><b>唯一合法底盘速度写入</b>，20Hz 连续输入（<code>Twist</code>）</td>
+    </tr>
+    <tr>
+      <td>手柄遥控输入</td>
+      <td><code>/locomotion/joy</code></td>
+      <td><code>/joy</code></td>
+      <td>模拟遥控器摇杆与按键状态（<code>Joy</code>）</td>
+    </tr>
+  </tbody>
+  <tbody>
+    <tr><th class="grp" colspan="4">感知与视觉</th></tr>
+    <tr>
+      <td>机身高频姿态</td>
+      <td><code>/imu_raw</code></td>
+      <td><code>/lowlevel/imu_raw</code></td>
+      <td>100Hz 原始加速度计 / 陀螺仪 / 四元数（<code>Imu</code>）</td>
+    </tr>
+    <tr>
+      <td>360° 激光雷达</td>
+      <td><code>/lidar_points</code></td>
+      <td><code>/vbot/lidar/point_cloud</code></td>
+      <td>10Hz 三维空间深度点云（<code>PointCloud2</code>）</td>
+    </tr>
+    <tr>
+      <td>双目视频流</td>
+      <td><code>/image_left_raw/h265</code></td>
+      <td>—</td>
+      <td>H.265 硬件视频压缩编码流（需 Aorta SDK）</td>
+    </tr>
+    <tr>
+      <td>17 点人体骨骼</td>
+      <td><code>/perception/poses</code></td>
+      <td><code>/perception/poses</code></td>
+      <td>NPU 内置骨骼模型推理结果（Logit 置信度）</td>
+    </tr>
+  </tbody>
+  <tbody>
+    <tr><th class="grp" colspan="4">音频与灯光（外设输入）</th></tr>
+    <tr>
+      <td>耳灯调制输入</td>
+      <td><code>/light/ear_modulation</code></td>
+      <td><code>/light/ear_modulation</code></td>
+      <td>左右耳 RGB 灯光动态调制输入</td>
+    </tr>
+  </tbody>
+  <tbody>
+    <tr><th class="grp" colspan="4">系统与任务编排</th></tr>
+    <tr>
+      <td>BMS 电池健康</td>
+      <td><code>/bms_state</code></td>
+      <td><code>/vbot/bms_state</code></td>
+      <td>实时电量百分比、母线电压、各电芯温度</td>
+    </tr>
+    <tr>
+      <td>RCP 任务编排</td>
+      <td><code>/rcp/execute_task</code></td>
+      <td><code>/rcp/execute_task</code></td>
+      <td>Action 动作流服务（支持 DAG 任务图）</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="scroll-hint">← 左右滑动查看完整表格 →</p>
+<p class="table-note">说明：官方速查表仅列出上述 9 条常用核心路径；音频等其余话题未在源文档中给出具体路由名，本课不作臆造，完整 46 条请以主板实机的 <code>aorta topic list</code> 输出为准。</p>
+
+<div class="callout warn"><span class="t">⚠️ 两个容易踩的坑</span>第一，底盘速度只有 <code>/vel_cmd</code>（原生 <code>/locomotion/velocity_command</code>）这一条合法写入通道，20Hz 连续输入 <code>Twist</code>；第二，话题名或消息类型一旦不在 56 行白名单内，总线会<b>静默丢弃</b>，不会给你任何报错——看起来就像“发出去石沉大海”。</div>
+
+<h2 id="s2">三、破壁两套方案：板载节点 vs PC Zenoh 插件</h2>
+
+<p>要让数据跨过这座巴别塔，官方给了两条路。路线一旦选错，后面所有配置和排障都是白费——先看两条数据路径的本质差异：</p>
+
+<div class="duel" role="img" aria-label="两方案数据路径对比：方案 A 板载节点经 POSIX 共享内存直达 Aorta 总线；方案 B 在 PC 上使用 rmw_zenoh_cpp 经 Zenoh 会话接入 Aorta 总线">
+  <div class="scheme a">
+    <div class="scheme-h"><span class="pill">★★★★★ 强烈推荐</span><b>方案 A：板载节点</b></div>
+    <div class="path">
+      <div class="pstep"><b>你的节点（板载）</b><small>SSH 登录计算主板直接运行</small></div>
+      <div class="parr">↓</div>
+      <div class="pstep hot"><b>POSIX 共享内存</b><small>零拷贝 · 延迟 &lt; 0.2 ms</small></div>
+      <div class="parr">↓</div>
+      <div class="pstep"><b>Aorta 总线（Zenoh）</b><small>46 条核心话题</small></div>
+      <div class="parr">↓</div>
+      <div class="pstep"><b>运控 / 传感器驱动</b><small>底盘 14 关节与硬件</small></div>
+    </div>
+    <p class="scheme-note">数据不出主板，完全摆脱 Wi-Fi 丢包困扰。</p>
+  </div>
+  <div class="scheme b">
+    <div class="scheme-h"><span class="pill gray">仅外接 GPU 工作站</span><b>方案 B：PC + Zenoh RMW</b></div>
+    <div class="path">
+      <div class="pstep"><b>你的节点（PC）</b><small>如外挂 RTX 4090 移动工作站</small></div>
+      <div class="parr">↓</div>
+      <div class="pstep hot"><b>rmw_zenoh_cpp</b><small>RMW_IMPLEMENTATION</small></div>
+      <div class="parr">↓</div>
+      <div class="pstep"><b>Zenoh 会话</b><small>ROS_DOMAIN_ID=178</small></div>
+      <div class="parr">↓</div>
+      <div class="pstep"><b>Aorta 总线 · 桥接话题</b><small>如 /lowlevel/imu_raw</small></div>
+    </div>
+    <p class="scheme-note">用于订阅全量激光点云等重负载场景，日常调试不作为默认路线。</p>
+  </div>
+</div>
+
+<h3>方案 A：板载节点运行模式（强烈推荐 ★★★★★）</h3>
+
+<p><b>一句话法则：不要在你的电脑上去费劲编译配置一整套 RMW，直接 SSH 登录到机器狗计算主板上写代码！</b></p>
+
+<ul class="goals">
+  <li><b>零拷贝极速通信</b>：节点间直接通过 Linux 共享内存（POSIX Shared Memory）通信，传输延迟 <b>&lt; 0.2 毫秒</b>，完全摆脱 Wi-Fi 丢包困扰；</li>
+  <li><b>环境完全开箱即用</b>：主板出厂即预装了完全匹配的 <code>aorta-sdk</code> 与 <code>vbot_ros2_msgs</code>。</li>
+</ul>
+
+<p><b>板载快速启动环境配置：</b>在计算主板终端的 <code>~/.bashrc</code> 尾部，确保包含官方标准注入块：</p>
+
+<div class="codewrap"><span class="lang">bash</span><button class="copy" type="button">复制</button>
+<pre><code># 激活板载 ROS 2 与 Aorta 运行时
+source /opt/vita/ros/humble/setup.bash
+source /opt/vita/aorta/ros/local_setup.bash
+
+# 强制绑定本地回环与官方 178 域
+export ROS_DOMAIN_ID=178
+export ROS_LOCALHOST_ONLY=1
+export ZENOH_SESSION_CONFIG_URI=/opt/vita/aorta/edu/edu_session.json5</code></pre>
+</div>
+
+<div class="callout ok"><span class="t">✅ 三行 export 各司其职</span><code>ROS_DOMAIN_ID=178</code> 对齐官方域；<code>ROS_LOCALHOST_ONLY=1</code> 强制绑定本地回环；<code>ZENOH_SESSION_CONFIG_URI</code> 指向 EDU 会话配置 <code>edu_session.json5</code>。写进 <code>~/.bashrc</code> 后记得重新登录或 <code>source ~/.bashrc</code> 使其生效。</div>
+
+<h3>方案 B：PC 安装 Zenoh RMW 插件（仅外接 GPU 工作站）</h3>
+
+<p>如果你有一台外挂的 RTX 4090 移动工作站，需要订阅全量激光点云，可以按官方三步走：</p>
+
+<div class="codewrap"><span class="lang">bash</span><button class="copy" type="button">复制</button>
+<pre><code># 1. 在 PC 上安装 Zenoh RMW
+sudo apt update &amp;&amp; sudo apt install ros-humble-rmw-zenoh-cpp
+
+# 2. 导出环境变量
+export RMW_IMPLEMENTATION=rmw_zenoh_cpp
+export ROS_DOMAIN_ID=178
+# 3. 此时再执行 echo 即可畅通接收数据流
+ros2 topic echo /lowlevel/imu_raw</code></pre>
+</div>
+
+<div class="callout warn"><span class="t">⚠️ 方案 B 的三个前提，缺一不可</span>PC 上装好 <code>ros-humble-rmw-zenoh-cpp</code>；<code>RMW_IMPLEMENTATION=rmw_zenoh_cpp</code> 已导出；<code>ROS_DOMAIN_ID=178</code> 已对齐。源文档同时标注板载桥接器“仅在 127.0.0.1 桥接”，因此方案 B 的定位是外接 GPU 工作站的专用通道，日常开发请优先方案 A。</div>
+
+<h3>怎么选：一张表定路线</h3>
+
+<div class="table-scroll">
+<table>
+  <thead>
+    <tr><th>维度</th><th>方案 A：板载节点</th><th>方案 B：PC + Zenoh RMW</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>代码运行位置</td><td>计算主板（SSH 登录）</td><td>你的 PC</td></tr>
+    <tr><td>通信路径</td><td>POSIX 共享内存 → Aorta 总线</td><td><code>rmw_zenoh_cpp</code> → Zenoh 会话 → Aorta 总线</td></tr>
+    <tr><td>延迟</td><td>&lt; 0.2 ms</td><td>源文档未给出指标</td></tr>
+    <tr><td>适用场景</td><td>日常开发、高频运控、现场调测</td><td>外接 GPU 工作站订阅全量点云</td></tr>
+    <tr><td>环境准备</td><td>主板预装 <code>aorta-sdk</code> 与 <code>vbot_ros2_msgs</code>，注入环境变量即可</td><td><code>apt</code> 安装 <code>ros-humble-rmw-zenoh-cpp</code>，再导出两个环境变量</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="scroll-hint">← 左右滑动查看完整表格 →</p>
+
+<h2 id="s3">四、Aorta 命令行万能探针（排障杀手锏）</h2>
+
+<p>在计算主板上，善用官方提供的 <code>aorta</code> CLI 工具，能在 3 秒内摸清总线状况：</p>
+
+<div class="codewrap"><span class="lang">bash</span><button class="copy" type="button">复制</button>
+<pre><code># 1. 查看总线上当前所有活跃的话题清单
+aorta topic list
+
+# 2. 采样 1 条 IMU 原始报文验证总线是否真的活蹦乱跳
+aorta topic echo /imu_raw --count 1
+
+# 3. 检查所有注册的 RPC 服务
+aorta service list
+
+# 4. 打印指定话题的底层数据结构契约描述
+aorta schema get /imu_raw --describe</code></pre>
+</div>
+
+<h3>四条命令分别回答什么问题</h3>
+
+<div class="table-scroll">
+<table>
+  <thead>
+    <tr><th>命令</th><th>回答的问题</th><th>典型使用时机</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>aorta topic list</code></td><td>总线上现在有哪些活跃话题？</td><td>刚接手设备，确认话题是否真的起来了</td></tr>
+    <tr><td><code>aorta topic echo /imu_raw --count 1</code></td><td>总线是否真的在出数据？</td><td><code>ros2 topic echo</code> 卡住时，先验证源头是否有数据</td></tr>
+    <tr><td><code>aorta service list</code></td><td>注册了哪些 RPC 服务？</td><td>调用 Action / RPC 之前确认服务在线</td></tr>
+    <tr><td><code>aorta schema get /imu_raw --describe</code></td><td>这个话题的底层结构契约是什么？</td><td>写解析代码前对齐字段与类型，避免被 56 行白名单丢弃</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="scroll-hint">← 左右滑动查看完整表格 →</p>
+
+<div class="callout"><span class="t">💡 排障顺序不要反</span>先跑 <code>aorta topic echo /imu_raw --count 1</code> 确认总线有数据，再用 <code>ros2 topic echo</code> 验证桥接。探针有数据、PC 收不到 → 按“桥接话题 → Domain → RMW”三层核对；探针也没数据 → 问题在总线或驱动层，先别折腾 ROS 2 环境。</div>
+
+<h2 id="s4">五、🧪 小实验：话题穿越测试</h2>
+
+<p>下面把真实排障场景压缩成一次点击：选一条话题，再选代码运行的位置，看看数据能不能穿过协议边界抵达你的节点。判定结果会同时给出原因和关键配置。</p>
+
+<div class="lab">
+  <p class="lab-lead"><b>选择话题与运行位置，点击“测试连通”。</b></p>
+  <div class="labgrid">
+    <label class="labfield" for="lab-topic">① 话题（ROS 2 桥接名 · 消息类型）
+      <select id="lab-topic">
+        <option value="vel_cmd">/vel_cmd · 底盘速度（Twist）</option>
+        <option value="imu">/lowlevel/imu_raw · 机身高频姿态（Imu）</option>
+        <option value="poses">/perception/poses · 17 点人体骨骼</option>
+        <option value="lidar">/vbot/lidar/point_cloud · 360° 激光雷达</option>
+        <option value="bms">/vbot/bms_state · BMS 电池健康</option>
+        <option value="image">/image_left_raw/h265 · 双目视频流</option>
+      </select>
+    </label>
+    <label class="labfield" for="lab-place">② 运行位置
+      <select id="lab-place">
+        <option value="board">板载节点（SSH 登录计算主板）</option>
+        <option value="pc_rmw">PC + Zenoh RMW 插件（rmw_zenoh_cpp）</option>
+        <option value="pc_dds">PC 裸 ROS 2 DDS（默认 FastRTPS）</option>
+      </select>
+    </label>
+  </div>
+  <div class="labrow">
+    <button id="lab-btn" type="button">测试连通</button>
+    <button id="lab-reset" class="ghost" type="button">重置</button>
+  </div>
+  <div id="lab-res" class="result" role="status" aria-live="polite"></div>
+  <div id="lab-trace" class="trace" hidden></div>
+  <p class="lab-hint">提示：改动任一选项后需重新测试；判定逻辑只依据本课源文档中的路由、桥接与 Domain 事实。</p>
+</div>
+
+<h2 id="s5">六、本课小结</h2>
+
+<p>把这一课压缩成三句话：<b>主干道是 Aorta，不是 ROS 2；ROS 2 数据只走板载本地桥接；跨设备调试先对齐 Domain 178 与 RMW。</b></p>
+
+<div class="table-scroll">
+<table>
+  <thead>
+    <tr><th>你现在的处境</th><th>首选做法</th><th>关键动作</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>日常写算法、调运控</td><td>方案 A：板载节点</td><td>SSH 上主板，注入 <code>ROS_DOMAIN_ID=178</code> / <code>ROS_LOCALHOST_ONLY=1</code> / <code>edu_session.json5</code></td></tr>
+    <tr><td>外接 GPU 工作站拉点云</td><td>方案 B：PC Zenoh RMW</td><td>安装 <code>ros-humble-rmw-zenoh-cpp</code>，导出 <code>rmw_zenoh_cpp</code> 与 Domain 178</td></tr>
+    <tr><td>怀疑总线没数据</td><td><code>aorta</code> 探针</td><td><code>aorta topic echo /imu_raw --count 1</code> 先验证源头</td></tr>
+    <tr><td>不知道话题结构或类型</td><td><code>aorta schema</code></td><td><code>aorta schema get /imu_raw --describe</code>，对照 56 行白名单</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="scroll-hint">← 左右滑动查看完整表格 →</p>
+
+<div class="callout ok"><span class="t">🏆 黄金铁律</span><b>Aorta 是主动脉，ROS 2 是小支流，通信对齐 Domain 178，写代码直接上板载！</b>PC 裸 DDS 永远 echo 不到 Aorta 数据——下次再遇到“能看到话题却收不到数据”，先回到这三句话。</div>
+
+<ul class="goals">
+  <li>PC 默认 Domain 0 + FastRTPS，与主板 Domain 178 + Zenoh 之间没有默认直连通道</li>
+  <li>46 条核心话题 = 43 条遥测 + 3 条控制输入；底盘唯一合法速度入口是 <code>/vel_cmd</code></li>
+  <li>排障先跑 <code>aorta</code> 探针确认总线活着，再查 ROS 2 桥接、Domain 与 RMW</li>
+</ul>
+
+<div class="callout"><span class="t">⏭️ 下一课预告</span>通信主干已经摸清，接下来就该部署环境了：标准容器怎么搭？官方标准的五步部署法怎么跑通？下一课进入 <a href="lesson_03.html">2.3 规范化开发环境搭建与生产级 Python 骨架</a>。</div>
+
+</div>
+
+<div class="wrap" style="padding-top:0">
+<footer class="nav">
+  <a href="lesson_01.html"><span class="dir">← 上一课</span><span class="ttl">2.1 双大脑硬件架构拆解与物理边界</span></a>
+  <a class="home-link" href="index.html"><span class="dir">目录</span><span class="ttl">返回目录</span></a>
+  <a href="lesson_03.html" style="text-align:right"><span class="dir">下一课 →</span><span class="ttl">2.3 规范化开发环境搭建与生产级 Python 骨架</span></a>
+</footer>
+</div>
+
+</main>
+
+<script>
+document.querySelectorAll('.copy').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var pre=btn.parentElement.querySelector('pre');
+    if(!pre)return;
+    var done=function(){btn.textContent='已复制';setTimeout(function(){btn.textContent='复制'},1500);};
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(pre.textContent).then(done).catch(function(){
+        btn.textContent='请手动复制';setTimeout(function(){btn.textContent='复制'},1500);
+      });
+    }else{
+      btn.textContent='请手动复制';setTimeout(function(){btn.textContent='复制'},1500);
+    }
+  });
+});
+
+(function(){
+  var TOPICS={
+    vel_cmd:{native:'/locomotion/velocity_command',bridge:'/vel_cmd',type:'Twist',name:'底盘速度输入'},
+    imu:{native:'/imu_raw',bridge:'/lowlevel/imu_raw',type:'Imu',name:'机身高频姿态'},
+    poses:{native:'/perception/poses',bridge:'/perception/poses',type:'Logit 置信度',name:'17 点人体骨骼'},
+    lidar:{native:'/lidar_points',bridge:'/vbot/lidar/point_cloud',type:'PointCloud2',name:'360° 激光雷达'},
+    bms:{native:'/bms_state',bridge:'/vbot/bms_state',type:'电池状态',name:'BMS 电池健康'},
+    image:{native:'/image_left_raw/h265',bridge:'',type:'H.265 编码流',name:'双目视频流'}
+  };
+  var tsel=document.getElementById('lab-topic');
+  var psel=document.getElementById('lab-place');
+  var btn=document.getElementById('lab-btn');
+  var reset=document.getElementById('lab-reset');
+  var res=document.getElementById('lab-res');
+  var trace=document.getElementById('lab-trace');
+  if(!tsel||!psel||!btn||!res||!trace)return;
+
+  function el(tag,cls,txt){
+    var n=document.createElement(tag);
+    if(cls)n.className=cls;
+    if(txt)n.textContent=txt;
+    return n;
+  }
+  function clearLab(){
+    res.className='result';
+    res.textContent='';
+    trace.hidden=true;
+    trace.textContent='';
+  }
+  function show(cls,verdict,msg,steps){
+    res.className='result '+cls;
+    res.textContent='';
+    res.appendChild(el('span','verdict',verdict));
+    res.appendChild(document.createTextNode(msg));
+    trace.textContent='';
+    steps.forEach(function(s,i){
+      if(i)trace.appendChild(el('span','tarr','→'));
+      var box=el('span','tstep'+(s.ok?' good':' bad'));
+      box.appendChild(document.createTextNode(s.t));
+      if(s.sub)box.appendChild(el('small','',s.sub));
+      trace.appendChild(box);
+    });
+    trace.hidden=false;
+  }
+
+  btn.addEventListener('click',function(){
+    var key=tsel.value;
+    var place=psel.value;
+    var t=TOPICS[key];
+    if(!t)return;
+
+    if(place==='board'){
+      var bmsg='板载节点直接挂在 Aorta 主干道上：可直接访问原生话题 '+t.native;
+      if(t.bridge){
+        bmsg+='；ROS 2 侧还能通过本地桥接访问 '+t.bridge+'（Domain 178 + LOCALHOST_ONLY）。';
+      }else{
+        bmsg+='；这条流没有 ROS 2 桥接话题，需使用 Aorta SDK 解码。';
+      }
+      bmsg+=' 数据走 POSIX 共享内存，延迟 < 0.2 ms。';
+      show('ok',t.bridge?'可达':'可达（需 SDK）',bmsg,[
+        {t:'你的节点（板载）',sub:'SSH 登录计算主板',ok:true},
+        {t:'POSIX 共享内存',sub:'延迟 < 0.2 ms',ok:true},
+        {t:'Aorta 总线（Zenoh）',sub:'46 条核心话题',ok:true},
+        {t:t.native,sub:t.type,ok:true}
+      ]);
+      return;
+    }
+
+    if(place==='pc_rmw'){
+      if(!t.bridge){
+        show('bad','不可达',t.native+' 在 ROS 2 桥接表中是“—”，官方注明需 Aorta SDK。即使 RMW_IMPLEMENTATION=rmw_zenoh_cpp 与 ROS_DOMAIN_ID=178 全部配对，PC 侧也没有可订阅的 ROS 2 话题。',[
+          {t:'你的节点（PC）',sub:'ros2 topic echo',ok:true},
+          {t:'rmw_zenoh_cpp',sub:'RMW 已切换',ok:true},
+          {t:'ROS 2 桥接表',sub:'无 '+t.native,ok:false}
+        ]);
+        return;
+      }
+      show('ok','可达（有条件）','桥接表里存在 '+t.bridge+'。前提是 PC 上三件事全部满足：RMW_IMPLEMENTATION=rmw_zenoh_cpp、ROS_DOMAIN_ID=178、Zenoh 会话与总线互通。验证：ros2 topic echo '+t.bridge+'。方案 B 仅建议外接 GPU 工作站使用。',[
+        {t:'你的节点（PC）',sub:'ros2 topic echo',ok:true},
+        {t:'rmw_zenoh_cpp',sub:'RMW 实现',ok:true},
+        {t:'Zenoh 会话',sub:'Domain 178',ok:true},
+        {t:t.bridge,sub:'ROS 2 桥接话题',ok:true}
+      ]);
+      return;
+    }
+
+    var dmsg='PC 默认 rmw_fastrtps_cpp 跑在 Domain 0，主板强制 ROS_DOMAIN_ID=178：DDS 组播报文穿不透 Zenoh Session 屏障，56 行 EDU Schema 还会对白名单外的话题静默丢弃。ros2 topic list 偶尔看到的名字只是残留组播缓存。修复：改用方案 A，或按方案 B 配好 rmw_zenoh_cpp 与 Domain 178。';
+    if(!t.bridge)dmsg+=' 另外，'+t.native+' 本身也没有 ROS 2 桥接话题。';
+    show('bad','不可达',dmsg,[
+      {t:'你的节点（PC）',sub:'默认 ROS 2 环境',ok:true},
+      {t:'rmw_fastrtps_cpp',sub:'Domain 0',ok:true},
+      {t:'× Zenoh Session 屏障',sub:'主板 Domain 178',ok:false}
+    ]);
+  });
+
+  reset.addEventListener('click',function(){
+    tsel.selectedIndex=0;
+    psel.selectedIndex=0;
+    clearLab();
+  });
+  tsel.addEventListener('change',clearLab);
+  psel.addEventListener('change',clearLab);
+})();
+</script>
+
+</body>
+</html>

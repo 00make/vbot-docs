@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5.1 物理-网络-中间件-应用 四层隔离排障法 | VBOT EDU 诊断与安全 FAQ</title>
+<style>
+/* ===== 风格契约 v1 · 预设 A 清爽技术文档风（全教程统一，勿改） ===== */
+:root{
+  --bg:#ffffff; --fg:#1f2937; --muted:#6b7280;
+  --accent:#0e7490; --accent-dark:#155e75; --accent-light:#ecfeff;
+  --code-bg:#f3f4f6; --code-fg:#111827; --code-border:#e5e7eb;
+  --border:#e5e7eb; --card:#f9fafb;
+  --warn-bg:#fffbeb; --warn-bd:#f59e0b;
+  --danger-bg:#fef2f2; --danger-bd:#ef4444;
+  --tip-bg:#ecfeff; --tip-bd:#0e7490;
+  --ok-bg:#f0fdf4; --ok-bd:#22c55e;
+  --radius:10px; --max-width:880px; --toc-w:250px;
+  --font-body:"Microsoft YaHei","Source Han Sans CN",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"Cascadia Code",Consolas,"JetBrains Mono","Courier New",monospace;
+}
+/* ===== 风格契约结束 ===== */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.8;font-size:16px}
+a{color:var(--accent)}
+a:hover{color:var(--accent-dark)}
+code{font-family:var(--font-mono);font-size:.875em;background:var(--code-bg);border:1px solid var(--code-border);border-radius:4px;padding:1px 6px;color:var(--code-fg)}
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:16px 18px;overflow:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;color:var(--code-fg);margin:0}
+pre code{background:none;border:none;padding:0;font-size:inherit}
+
+/* 布局：左 TOC + 右正文 */
+.toc{position:fixed;top:0;left:0;bottom:0;width:var(--toc-w);background:var(--card);border-right:1px solid var(--border);padding:28px 16px;overflow:auto}
+.toc .brand{font-weight:700;color:var(--accent-dark);font-size:17px;margin-bottom:2px}
+.toc .sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.toc ol{list-style:none;margin:0;padding:0;counter-reset:toc}
+.toc li{counter-increment:toc;margin-bottom:2px}
+.toc a{display:block;padding:7px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font-size:13.5px}
+.toc a::before{content:counter(toc) ". ";color:var(--accent);font-weight:600}
+.toc a:hover{background:var(--accent-light);color:var(--accent-dark)}
+.toc .home{display:inline-block;margin-top:18px;font-size:13px;color:var(--accent);text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--bg)}
+main{margin-left:var(--toc-w)}
+.wrap{max-width:var(--max-width);margin:0 auto;padding:40px 32px 24px}
+
+/* 页头 */
+header.lesson{border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:32px}
+header.lesson .hero-img{width:100%;max-height:280px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);margin-top:18px}
+.badges{margin-bottom:12px}
+.badge{display:inline-block;font-size:12px;font-weight:600;border-radius:99px;padding:2px 12px;margin-right:8px;vertical-align:middle}
+.badge.no{background:var(--accent);color:#fff}
+.badge.safe{background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.badge.ver{background:var(--card);color:var(--muted);border:1px solid var(--border)}
+h1{font-size:30px;line-height:1.4;margin:0 0 10px;color:var(--accent-dark)}
+.meta{font-size:13.5px;color:var(--muted)}
+.meta a{color:var(--accent)}
+
+/* 标题层级 */
+h2{font-size:22px;color:var(--accent-dark);margin:48px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--accent-light)}
+h3{font-size:17.5px;color:var(--fg);margin:28px 0 10px}
+
+/* 提示框 */
+.callout{border-left:4px solid var(--tip-bd);background:var(--tip-bg);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;margin:20px 0;font-size:15px}
+.callout.warn{border-color:var(--warn-bd);background:var(--warn-bg)}
+.callout.danger{border-color:var(--danger-bd);background:var(--danger-bg)}
+.callout.ok{border-color:var(--ok-bd);background:var(--ok-bg)}
+.callout .t{font-weight:700;display:block;margin-bottom:4px}
+
+/* 直播口播折叠 */
+details.talk{border:1px dashed var(--accent);border-radius:var(--radius);background:var(--bg);margin:20px 0}
+details.talk summary{cursor:pointer;padding:12px 18px;color:var(--accent);font-weight:600;font-size:14.5px}
+details.talk .body{padding:0 18px 14px;color:var(--muted);font-size:14.5px}
+
+/* 图片 */
+figure{margin:24px 0;text-align:center}
+figure img{max-width:100%;border:1px solid var(--border);border-radius:var(--radius);background:#fff}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+
+/* 表格 */
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px}
+th,td{border:1px solid var(--border);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--accent-light);color:var(--accent-dark);font-weight:700}
+tr:nth-child(even) td{background:var(--card)}
+td .no{color:var(--danger-bd);font-weight:700}
+
+/* 编号步骤 */
+ol.steps{list-style:none;counter-reset:st;padding:0;margin:18px 0}
+ol.steps>li{counter-increment:st;position:relative;padding:0 0 18px 48px}
+ol.steps>li::before{content:counter(st);position:absolute;left:0;top:2px;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;text-align:center;line-height:32px;font-size:15px}
+ol.steps>li>b:first-child{display:block;margin-bottom:4px}
+
+/* CSS 拓扑图 */
+.topo{display:flex;align-items:stretch;justify-content:center;gap:0;margin:24px 0;flex-wrap:wrap}
+.topo .node{background:var(--card);border:2px solid var(--accent);border-radius:var(--radius);padding:12px 16px;min-width:170px;text-align:center;font-size:13.5px}
+.topo .node b{display:block;color:var(--accent-dark);font-size:14.5px;margin-bottom:2px}
+.topo .node code{font-size:12px}
+.topo .node.dev{border-color:var(--muted)}
+.topo .node.gw{border-style:dashed}
+.topo .link{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 10px;color:var(--muted);font-size:12px;min-width:96px}
+.topo .link .arrow{font-size:20px;color:var(--accent);line-height:1.2}
+
+/* 代码块 + 复制按钮 + Tabs */
+.codewrap{position:relative;margin:14px 0}
+.codewrap .lang{position:absolute;top:0;right:88px;font-size:11px;color:var(--muted);background:var(--bg);border:1px solid var(--code-border);border-bottom:none;border-radius:6px 6px 0 0;padding:1px 8px}
+.copy{position:absolute;top:8px;right:8px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;font-family:var(--font-body)}
+.copy:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.tabs{display:flex;gap:6px;margin:18px 0 0}
+.tabs button{border:1px solid var(--border);border-bottom:none;background:var(--card);padding:8px 18px;border-radius:10px 10px 0 0;cursor:pointer;font-size:14px;color:var(--muted);font-family:var(--font-body)}
+.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+.panel{display:none;border:1px solid var(--border);border-radius:0 var(--radius) var(--radius) var(--radius);padding:16px 18px;background:var(--bg)}
+.panel.on{display:block}
+
+/* 目标清单 */
+ul.goals{margin:12px 0;padding-left:0;list-style:none}
+ul.goals li{padding:4px 0 4px 28px;position:relative}
+ul.goals li::before{content:"✓";position:absolute;left:4px;color:var(--accent);font-weight:700}
+
+/* 页脚导航 */
+footer.nav{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--border);margin-top:56px;padding:24px 0 40px;flex-wrap:wrap}
+footer.nav a{flex:1;min-width:200px;border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;text-decoration:none;background:var(--card)}
+footer.nav a:hover{border-color:var(--accent);background:var(--accent-light)}
+footer.nav .dir{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
+footer.nav .ttl{display:block;font-size:15px;color:var(--accent-dark);font-weight:600}
+footer.nav a.home-link{flex:0 0 auto;text-align:center}
+
+/* 甘特时间线 */
+.gantt{margin:20px 0}
+.gantt .row{display:flex;align-items:center;margin:8px 0}
+.gantt .lbl{width:190px;font-size:13.5px;color:var(--fg);flex-shrink:0}
+.gantt .track{flex:1;position:relative;height:28px;background:var(--card);border:1px solid var(--border);border-radius:6px}
+.gantt .bar{position:absolute;top:3px;bottom:3px;background:linear-gradient(90deg,var(--accent),#22d3ee);border-radius:5px;color:#fff;font-size:11.5px;display:flex;align-items:center;padding:0 8px;white-space:nowrap;overflow:hidden}
+.gantt .axis{display:flex;margin-left:190px;font-size:11.5px;color:var(--muted)}
+.gantt .axis span{flex:1;text-align:left}
+
+/* 决策流程图 */
+.flow{display:flex;flex-direction:column;align-items:center;margin:24px 0}
+.fnode{border:2px solid var(--accent);background:var(--accent-light);border-radius:var(--radius);padding:10px 18px;font-size:14px;text-align:center;max-width:460px}
+.fnode b{color:var(--accent-dark)}
+.fnode.start{border-radius:99px;background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.fnode.decision{background:var(--warn-bg);border-color:var(--warn-bd)}
+.fnode.end{border-radius:99px;background:var(--ok-bg);border-color:var(--ok-bd);color:#15803d;font-weight:600}
+.fdown{color:var(--accent);font-size:18px;line-height:1.5;text-align:center}
+.fdown small{display:block;font-size:12px;color:var(--muted)}
+.fbranch{display:flex;gap:28px;justify-content:center;align-items:flex-start;flex-wrap:wrap;margin:4px 0}
+.fcol{display:flex;flex-direction:column;align-items:center}
+.fcol .tag-y{font-size:12px;font-weight:700;color:#15803d;background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+.fcol .tag-n{font-size:12px;font-weight:700;color:#92400e;background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+
+/* 交互小实验 */
+.lab{background:var(--card);border:1px solid var(--accent);border-radius:var(--radius);padding:18px 20px;margin:26px 0}
+.lab h4{margin:0 0 6px;color:var(--accent-dark);font-size:16px}
+.lab p{margin:4px 0;font-size:14px;color:var(--muted)}
+.labrow{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;align-items:center}
+.lab input{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font-mono);font-size:14px;width:220px;background:var(--bg);color:var(--fg)}
+.lab button{padding:8px 18px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:14px;font-family:var(--font-body)}
+.lab button:hover{background:var(--accent-dark)}
+.result{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:14px;display:none}
+.result.ok{display:block;background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.result.bad{display:block;background:var(--danger-bg);color:#b91c1c;border:1px solid var(--danger-bd)}
+.result.warn{display:block;background:var(--warn-bg);color:#92400e;border:1px solid var(--warn-bd)}
+.lab pre{margin-top:10px}
+
+/* 移动端 */
+@media (max-width:768px){
+  .toc{position:static;width:auto;border-right:none;border-bottom:1px solid var(--border);padding:18px 16px}
+  .toc ol{columns:2}
+  main{margin-left:0}
+  .wrap{padding:24px 18px 12px}
+  h1{font-size:24px}
+  .topo{flex-direction:column;align-items:center}
+  .topo .link{min-width:auto;padding:6px 0}
+  .topo .link .arrow{transform:rotate(90deg)}
+  .gantt .lbl{width:110px;font-size:12px}
+  .gantt .axis{margin-left:110px}
+  .fbranch{flex-direction:column;align-items:center;gap:8px}
+}
+/* 打印 */
+@media print{
+  .toc,.copy,.tabs{display:none}
+  main{margin-left:0}
+  .panel{display:block!important;border:none;padding:8px 0}
+  body{font-size:12px}
+  a{color:var(--fg);text-decoration:none}
+}
+
+/* ===== 本课专属组件（只追加，不改配色/字体/间距体系） ===== */
+
+/* 四层阶梯图 */
+.stair{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:end;margin:26px 0 8px}
+.stair .lv{background:var(--card);border:1px solid var(--border);border-top:4px solid var(--accent);border-radius:var(--radius);padding:12px 12px 14px;display:flex;flex-direction:column;justify-content:flex-end}
+.stair .lv.l1{border-top-color:var(--danger-bd);min-height:158px}
+.stair .lv.l2{border-top-color:var(--warn-bd);min-height:190px}
+.stair .lv.l3{border-top-color:var(--accent);min-height:222px}
+.stair .lv.l4{border-top-color:var(--ok-bd);min-height:254px}
+.stair .num{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted)}
+.stair .lv b{display:block;color:var(--accent-dark);font-size:14.5px;line-height:1.45;margin:2px 0 0}
+.stair .en{font-size:11px;color:var(--muted);margin-bottom:8px}
+.stair ul{list-style:none;padding:0;margin:0;font-size:12px;color:var(--fg);line-height:1.6}
+.stair li{position:relative;padding-left:11px;margin:4px 0}
+.stair li::before{content:"";position:absolute;left:0;top:.68em;width:5px;height:5px;border-radius:50%;background:var(--muted)}
+.stair code{font-size:10.5px;padding:0 3px}
+.stair-scale{display:flex;justify-content:space-between;gap:12px;font-size:12px;color:var(--muted);border-top:1px dashed var(--border);padding-top:8px;margin:0 0 24px;flex-wrap:wrap}
+
+/* TOC 返回目录不参与编号 */
+.toc .home::before{content:none}
+
+/* 层级徽章 */
+.ly{display:inline-block;font-size:11.5px;font-weight:600;border-radius:99px;padding:1px 9px;white-space:nowrap;border:1px solid transparent;line-height:1.7}
+.ly-phy{background:var(--danger-bg);color:#b91c1c;border-color:var(--danger-bd)}
+.ly-net{background:var(--warn-bg);color:#92400e;border-color:var(--warn-bd)}
+.ly-mid{background:var(--tip-bg);color:var(--accent-dark);border-color:var(--tip-bd)}
+.ly-app{background:var(--ok-bg);color:#15803d;border-color:var(--ok-bd)}
+
+/* 症状标签 */
+.symtags{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 6px}
+.symtags span{font-size:12.5px;background:var(--card);border:1px solid var(--border);border-radius:99px;padding:3px 12px;color:var(--muted)}
+.symtags span b{color:var(--fg)}
+
+/* 判定标准表 */
+table.judge td:first-child{font-weight:600;color:var(--accent-dark)}
+table.judge td:last-child{color:var(--muted)}
+.tblresp{overflow-x:auto;margin:18px 0}
+.tblresp table{margin:0}
+
+/* 三入口诊断分流图 */
+.triage{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:22px 0 12px}
+.triage .lane{border:1px solid var(--border);border-radius:var(--radius);background:var(--card);padding:12px;display:flex;flex-direction:column}
+.triage .entry{background:var(--accent);color:#fff;border-radius:8px;padding:8px 10px;text-align:center;font-weight:700;font-size:14px;line-height:1.5}
+.triage .entry small{display:block;font-weight:400;font-size:11.5px;color:var(--accent-light)}
+.triage .hop{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12.5px;line-height:1.55}
+.triage .hop b{display:block;font-size:12px;color:var(--accent-dark);margin-bottom:1px}
+.triage .hop code{font-size:10.5px;padding:0 3px}
+.triage .ar{text-align:center;color:var(--accent);font-size:15px;line-height:1.5}
+.triage .fix{background:var(--ok-bg);border:1px solid var(--ok-bd);color:#15803d;border-radius:8px;padding:8px 10px;font-size:12.5px;font-weight:600;text-align:center;margin-top:auto}
+.triage-base{border:1px dashed var(--accent);background:var(--accent-light);border-radius:var(--radius);padding:10px 16px;font-size:13.5px;color:var(--accent-dark);text-align:center;margin:0 0 8px}
+
+/* FAQ 大字典 */
+.tblscroll{overflow-x:auto;margin:18px 0;border:1px solid var(--border);border-radius:var(--radius)}
+.tblscroll table{margin:0;min-width:820px;font-size:13.5px}
+.tblscroll th,.tblscroll td{border-left:none;border-right:none}
+.tblscroll tr td:first-child,.tblscroll tr th:first-child{border-left:none}
+.tblscroll tr td:last-child,.tblscroll tr th:last-child{border-right:none}
+table.faq td:first-child{font-weight:700;color:var(--accent);text-align:center;white-space:nowrap}
+table.faq th{white-space:nowrap}
+table.faq .ly{margin:0}
+.faq-note{font-size:13px;color:var(--muted);margin:-6px 0 14px}
+
+/* 问题诊断机器人 */
+.lab .opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.lab .opt{background:var(--bg);border:1px solid var(--border);color:var(--fg);border-radius:8px;padding:9px 12px;text-align:left;font-size:13.5px;line-height:1.5}
+.lab .opt small{display:block;color:var(--muted);font-size:11.5px;font-weight:400}
+.lab .opt:hover{background:var(--accent-light);color:var(--accent-dark);border-color:var(--accent)}
+.lab .opt.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.lab .opt.on small{color:var(--accent-light)}
+.lab .opt.on:hover{background:var(--accent-dark)}
+.result.idle{display:block;background:var(--tip-bg);color:var(--accent-dark);border:1px solid var(--tip-bd)}
+.result .r-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:700;margin-bottom:6px;font-size:14px}
+.result .r-sev{font-size:11.5px;border-radius:99px;padding:0 9px;border:1px solid currentColor;font-weight:700}
+.result .r-row{margin:8px 0;line-height:1.7}
+.result .r-row>b{display:block;font-size:12px;letter-spacing:.04em;opacity:.85;margin-bottom:2px}
+.result ol{margin:4px 0 0;padding-left:20px}
+.result ol li{margin:3px 0}
+.result ol li b::after{content:"：";font-weight:400}
+.result code{background:rgba(255,255,255,.78);border-color:transparent;color:var(--code-fg);font-size:.86em}
+.result .r-foot{font-size:12px;opacity:.85;margin-top:8px;border-top:1px dashed currentColor;padding-top:6px}
+
+/* 小结速查 */
+table.summary-layers td:first-child{font-weight:600;white-space:nowrap;color:var(--accent-dark)}
+
+@media (max-width:768px){
+  .stair{grid-template-columns:1fr;align-items:stretch}
+  .stair .lv,.stair .lv.l1,.stair .lv.l2,.stair .lv.l3,.stair .lv.l4{min-height:0}
+  .triage{grid-template-columns:1fr}
+  .triage .fix{margin-top:0}
+  .lab .opts{grid-template-columns:1fr}
+  .tblscroll table{min-width:700px}
+}
+@media print{
+  .lab .opts{display:none}
+}
+</style>
+</head>
+<body>
+<nav class="toc" id="nav">
+  <div class="brand">VBOT EDU 诊断与安全 FAQ</div>
+  <div class="sub">模块 05 · Lesson 01</div>
+  <ol>
+    <li><a href="#s0">四层排障总览</a></li>
+    <li><a href="#s1">第一层：物理层</a></li>
+    <li><a href="#s2">第二层：网络层</a></li>
+    <li><a href="#s3">第三层：中间件层</a></li>
+    <li><a href="#s4">第四层：应用层</a></li>
+    <li><a href="#s5">高频故障 FAQ 大字典</a></li>
+    <li><a href="#s6">小实验：故障问诊机器人</a></li>
+    <li><a href="#s7">本课小结</a></li>
+  </ol>
+  <a class="home" href="index.html">← 返回目录</a>
+</nav>
+
+<main>
+<div class="wrap">
+
+<header class="lesson">
+  <div class="badges">
+    <span class="badge no">Lesson 01</span>
+    <span class="badge safe">安全级别：只读（read_only）</span>
+    <span class="badge ver">固件基准 V1.6.0</span>
+  </div>
+  <h1>物理-网络-中间件-应用 四层隔离排障法</h1>
+  <p class="meta">预计阅读 14 分钟 · 前置知识：了解系统基础软硬件配置 · 全程只读，不改变机器狗状态</p>
+</header>
+
+<details class="talk">
+  <summary>🎙️ 展开直播口播导语（讲师版）</summary>
+  <div class="body">
+    <p>“在复杂的机器人系统中，当‘机器狗不动’或‘程序收不到数据’时，盲目重启或在代码里乱加 print 只会浪费宝贵的时间！老练的现场支持工程师手中都有一张‘故障定位地图’——从物理层、网络层、中间件层到应用层的四层分层隔离诊断法！哪怕遇到再离奇的灵异现象，跟着这张图走，3 分钟之内必定锁定根因！”</p>
+  </div>
+</details>
+
+<h2 id="goals" style="margin-top:24px;border-bottom:none;padding-bottom:0;font-size:17.5px">本课学习目标</h2>
+<ul class="goals">
+  <li>建立“物理 → 网络 → 中间件 → 应用”的自底向上排障顺序，不再盲目重启</li>
+  <li>用指示灯、电量与关节温度快速判定物理层状态</li>
+  <li>用 <code>ping</code> 与静态 IP 配置排除网络层故障，独立处理 Host Key 变更</li>
+  <li>用 <code>export ROS_DOMAIN_ID=178</code> 与 Aorta CLI 探针验证中间件总线</li>
+  <li>识别看门狗、CPU 饥饿、置信度未激活等应用层陷阱</li>
+  <li>在故障问诊机器人中完成 4 类症状的即时定位演练</li>
+</ul>
+
+<h2 id="s0">一、四层排障总览：先定位层级，再动手</h2>
+
+<p>机器狗不会说话，但它会在每一层留下证据。四层排障法的核心不是背命令，而是固定顺序：<b>先确认物理链路，再确认网络可达，然后验证中间件总线，最后才怀疑业务代码</b>。现场故障看似千奇百怪，根因几乎总能归入下面四层之一。</p>
+
+<div class="stair" role="img" aria-label="四层排障阶梯图：自底向上依次为物理层、网络层、中间件层、应用层，每层标注典型症状">
+  <div class="lv l1">
+    <span class="num">L1 · 第一层</span>
+    <b>物理层</b>
+    <span class="en">Physical Layer</span>
+    <ul>
+      <li>指示灯不亮 / 网口灯不亮</li>
+      <li>电量 &lt; 15% 预警</li>
+      <li>关节电机 &gt; 75°C 降扭</li>
+    </ul>
+  </div>
+  <div class="lv l2">
+    <span class="num">L2 · 第二层</span>
+    <b>网络层</b>
+    <span class="en">Network Layer</span>
+    <ul>
+      <li><code>ping</code> 不通 / SSH 超时</li>
+      <li>本机 IP 误配 <code>.2</code> 冲突</li>
+      <li>Host Key 指纹变更</li>
+    </ul>
+  </div>
+  <div class="lv l3">
+    <span class="num">L3 · 第三层</span>
+    <b>中间件层</b>
+    <span class="en">Middleware Layer</span>
+    <ul>
+      <li><code>topic list</code> 空空如也</li>
+      <li><code>echo</code> 收不到报文</li>
+      <li>ACL 白名单静默丢弃</li>
+    </ul>
+  </div>
+  <div class="lv l4">
+    <span class="num">L4 · 第四层</span>
+    <b>应用层</b>
+    <span class="en">Application Layer</span>
+    <ul>
+      <li>发包不足 10Hz 被刹车</li>
+      <li>置信度全被过滤</li>
+      <li>CPU 被 AI 占满</li>
+    </ul>
+  </div>
+</div>
+<div class="stair-scale">
+  <span>← 先查这里：地基，一切通信的前提</span>
+  <span>业务表象，最后查 →</span>
+</div>
+
+<div class="callout"><span class="t">🧭 使用原则：每层只回答一个问题</span>
+物理层问“电与线好不好”，网络层问“包能不能到”，中间件层问“话题与数据在不在”，应用层问“业务逻辑对不对”。<b>上一层不通时，不要在下层瞎改</b>；每层先取证（看灯 / <code>ping</code> / <code>topic echo</code>），再改一个变量并回归验证。</div>
+
+<h3>诊断决策流程：三个入口，逐层收敛到处置</h3>
+
+<p>现场提问通常只有三类：“连不上”“没数据”“不动”。从对应入口进入，不需要跳层，沿着箭头走到处置即可。</p>
+
+<div class="triage" role="img" aria-label="三入口诊断流程图：连不上、没数据、不动分别沿物理网络中间件应用层收敛到处置方案">
+  <div class="lane">
+    <div class="entry">① 连不上<small>SSH 超时 / ping 不通</small></div>
+    <div class="ar">↓</div>
+    <div class="hop"><b>物理层</b>转接头指示灯不亮 → 换插 Type-C 接口或更换线缆。</div>
+    <div class="ar">↓</div>
+    <div class="hop"><b>网络层</b><code>ping 192.168.126.2</code>；本机网卡必须是 <code>192.168.126.100</code>，不能是 <code>.2</code>。</div>
+    <div class="ar">↓</div>
+    <div class="hop"><b>网络层</b>Host Key 变更 → <code>ssh-keygen -R 192.168.126.2</code>。</div>
+    <div class="ar">↓</div>
+    <div class="fix">处置：纠正静态 IP，清除旧指纹</div>
+  </div>
+  <div class="lane">
+    <div class="entry">② 没数据<small>话题可见 / 订阅为空</small></div>
+    <div class="ar">↓</div>
+    <div class="hop"><b>网络层</b>先用 <code>ping 192.168.126.2</code> 确认链路可达。</div>
+    <div class="ar">↓</div>
+    <div class="hop"><b>中间件层</b><code>export ROS_DOMAIN_ID=178</code>，再用 <code>aorta topic echo /imu_raw --count 1</code> 采样。</div>
+    <div class="ar">↓</div>
+    <div class="hop"><b>应用层</b>相机延迟数秒 → 队列限定 <code>max_depth=16</code> 并丢弃旧帧。</div>
+    <div class="ar">↓</div>
+    <div class="fix">处置：对齐 Domain 与 ACL，限定队列深度</div>
+  </div>
+  <div class="lane">
+    <div class="entry">③ 不动<small>发指令无动作 / 步态无力</small></div>
+    <div class="ar">↓</div>
+    <div class="hop"><b>物理层</b>查电量与关节温度；&gt; 75°C 会降扭，关机静置 15 分钟。</div>
+    <div class="ar">↓</div>
+    <div class="hop"><b>中间件层</b><code>aorta topic list</code> 确认 <code>/vel_cmd</code> 有节点监听；停用已废弃的 <code>/vbot/sportmode_cmd</code>。</div>
+    <div class="ar">↓</div>
+    <div class="hop"><b>应用层</b>以 10Hz ~ 20Hz 循环发包；AI 负载用 <code>taskset -c 2-7</code> 隔离。</div>
+    <div class="ar">↓</div>
+    <div class="fix">处置：持续发包 + 充电散热 + 核心隔离</div>
+  </div>
+</div>
+<div class="triage-base">共同纪律：从物理层往上排查，每层先取证再动手；<b>一次只改一个变量</b>，改完立刻回归验证。</div>
+
+<h2 id="s1">二、第一层：物理层（Physical Layer）</h2>
+
+<p>物理层不写代码，只看三件事：<b>灯、电、温度</b>。这一层异常时，上层所有命令都会表现得很“玄学”，所以永远从这里开始。</p>
+
+<div class="symtags">
+  <span><b>典型症状：</b>整机无响应</span>
+  <span>指示灯不亮</span>
+  <span>网口灯不亮</span>
+  <span>步态无力、容易跪倒</span>
+  <span>红灯快闪、拒绝起立</span>
+</div>
+
+<h3>检查清单</h3>
+
+<ol class="steps">
+  <li><b>网口灯检查</b>插上有线网卡后，观察转接头指示灯。绿灯常亮、黄灯闪烁代表物理电气链路正常；若灯不亮，换插 Type-C 接口或检查转接头芯片。</li>
+  <li><b>电量检查</b>电量低于 <b>10%</b> 时，系统会限制大电流输出；总览清单以电量 <b>&lt; 15%</b> 作为预警线。若电池指示灯红光快速闪烁、机器狗拒绝起立，说明已进入低压自保模式，应插上官方动力充电器，充至 <b>30% 以上</b>再测试。</li>
+  <li><b>关节温度检查</b>若长时间高负荷测试导致任一关节电机温度超过 <b>75°C</b>，系统会触发自动降扭温控保护，表现为步态无力、容易跪倒。此时应关机静置散热 <b>15 分钟</b>。</li>
+</ol>
+
+<h3>判定标准</h3>
+
+<div class="tblresp"><table class="judge">
+  <thead>
+    <tr><th>观察项</th><th>正常判定</th><th>异常处置</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>转接头指示灯</td><td>绿灯常亮、黄灯闪烁 → 物理电气链路正常</td><td>灯不亮：换插 Type-C 接口，检查转接头芯片或更换线缆</td></tr>
+    <tr><td>电量</td><td>高于 15%，可正常测试</td><td>&lt; 10% 限制大电流输出；充至 30% 以上再测试</td></tr>
+    <tr><td>关节电机温度</td><td>不超过 75°C</td><td>&gt; 75°C 触发降扭：关机静置散热 15 分钟</td></tr>
+    <tr><td>机身指示灯</td><td>进入待命呼吸状态</td><td>不亮或红灯快闪：先充电，再检查供电与线缆</td></tr>
+  </tbody>
+</table></div>
+
+<div class="callout warn"><span class="t">⚠️ 物理层没解决，不要急着敲命令</span>网口灯不亮时，<code>ping</code> 必然不通；关节已经 &gt; 75°C 时，再怎么改代码也只会继续降扭。先让物理状态回到正常区间，再进入网络层。</div>
+
+<h2 id="s2">三、第二层：网络层（Network Layer）</h2>
+
+<p>物理链路确认正常后，网络层只回答两个问题：<b>电脑能不能到达 <code>192.168.126.2</code></b>，以及<b>本机地址有没有和机器狗撞车</b>。</p>
+
+<div class="symtags">
+  <span><b>典型症状：</b>ping 不通</span>
+  <span>SSH Connection refused 或超时</span>
+  <span>REMOTE HOST IDENTIFICATION HAS CHANGED</span>
+  <span>能连 WiFi 却进不了主板</span>
+</div>
+
+<h3>1. IP 冲突诊断</h3>
+
+<p>执行 <code>ping 192.168.126.2</code>。如果 ping 不通，首先检查电脑是否手抖将本机网卡配成了 <code>192.168.126.2</code>（自身与自身冲突）；正确配置应为 <code>192.168.126.100</code>。</p>
+
+<div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code>ping 192.168.126.2</code></pre>
+</div>
+
+<div class="callout ok"><span class="t">✅ 通的判定</span>返回类似 <code>64 bytes from 192.168.126.2: icmp_seq=1 ttl=64 time=0.8 ms</code>，说明物理链路与 IP 路由已经畅通，可以继续查中间件层。</div>
+
+<div class="callout danger"><span class="t">🚨 严禁本机使用 .2</span>电脑网卡若配成 <code>192.168.126.2</code>，会与机器狗自身地址冲突，表现为两头失联。请改为 <code>192.168.126.100</code>。</div>
+
+<h3>2. SSH 密钥冲突报错</h3>
+
+<p>若提示 <code>WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!</code>，通常是由于借测了另一台机器狗，指纹不一致。这不是网络故障，而是 SSH 的防中间人攻击机制在拦截旧指纹。在本地电脑执行一键清理：</p>
+
+<div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code>ssh-keygen -R 192.168.126.2</code></pre>
+</div>
+
+<p>清除后重新执行 <code>ssh vbot</code> 即可。注意：这条命令在<b>本地电脑</b>执行，不是登录机器狗之后再执行。</p>
+
+<h3>3. 判定标准</h3>
+
+<div class="tblresp"><table class="judge">
+  <thead>
+    <tr><th>检查项</th><th>正常判定</th><th>异常处置</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>ping 192.168.126.2</code></td><td>稳定返回 <code>64 bytes from 192.168.126.2</code>，延迟毫秒级</td><td>超时或不可达：回到物理层查灯与线缆，再查静态 IP</td></tr>
+    <tr><td>本机网卡地址</td><td><code>192.168.126.100</code></td><td>误配 <code>.2</code> 会与机器狗冲突，立即改回 <code>.100</code></td></tr>
+    <tr><td><code>ssh vbot</code></td><td>正常进入计算主板</td><td><code>Connection refused</code> 或超时：检查接线、是否连错 Wi-Fi、网卡 IP</td></tr>
+    <tr><td>Host Key 警告</td><td>无警告</td><td>执行 <code>ssh-keygen -R 192.168.126.2</code> 清除旧指纹</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="s3">四、第三层：中间件层（Middleware Layer）</h2>
+
+<p>网络通了，不代表总线在说话。中间件层要看的是：<b>所有终端是否在同一个 Domain、总线上有没有活跃话题、报文到底流不流</b>。</p>
+
+<div class="symtags">
+  <span><b>典型症状：</b>话题列表为空</span>
+  <span>能看到话题但收不到数据</span>
+  <span>服务列表缺失</span>
+  <span>自定义话题下游静默无数据</span>
+</div>
+
+<h3>1. Domain 178 对齐</h3>
+
+<p>确保所有终端与脚本均已执行 <code>export ROS_DOMAIN_ID=178</code>。新开一个终端就忘一次，是现场最常见的“话题消失术”。</p>
+
+<div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code>export ROS_DOMAIN_ID=178</code></pre>
+</div>
+
+<h3>2. Aorta 命令行万能探针</h3>
+
+<p>直接在主板终端使用 Aorta CLI 工具验证总线健康状态，三条命令按顺序执行：</p>
+
+<div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code># 1. 列出当前总线上所有活跃话题
+aorta topic list
+
+# 2. 采样 1 条 IMU 原始报文验证数据流
+aorta topic echo /imu_raw --count 1
+
+# 3. 列出所有可用服务
+aorta service list</code></pre>
+</div>
+
+<div class="callout"><span class="t">🔍 三条命令各管什么</span><code>aorta topic list</code> 证明“总线上有谁在说话”；<code>aorta topic echo /imu_raw --count 1</code> 证明“数据真的在流”；<code>aorta service list</code> 证明“服务端已经就位”。话题可见但 <code>echo</code> 无报文，问题通常在发布端、Domain 或 ACL，而不是网络。</div>
+
+<h3>3. ACL 拒绝静默丢弃</h3>
+
+<p>若向自定义话题发布数据但下游收不到，检查是否存在未授权的私有路由。<b>EDU 默认仅允许 Schema 白名单内的话题</b>，白名单外的话题可能被静默丢弃——没有报错，也没有数据，最容易被误判成“程序没跑起来”。</p>
+
+<h3>4. 判定标准</h3>
+
+<div class="tblresp"><table class="judge">
+  <thead>
+    <tr><th>检查项</th><th>正常判定</th><th>异常处置</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>export ROS_DOMAIN_ID=178</code></td><td>所有终端与脚本都在 Domain 178</td><td>新终端重新导出；脚本内也要显式设置</td></tr>
+    <tr><td><code>aorta topic list</code></td><td>能看到 <code>/imu_raw</code> 等活跃话题</td><td>清单为空：先查 Domain，再确认中间件服务已启动</td></tr>
+    <tr><td><code>aorta topic echo /imu_raw --count 1</code></td><td>收到 1 条 IMU 原始报文</td><td>无报文：查发布节点、总线状态与 ACL</td></tr>
+    <tr><td><code>aorta service list</code></td><td>列出可用服务</td><td>缺服务：服务端未启动或 Domain 不一致</td></tr>
+    <tr><td>自定义话题下行</td><td>话题在 Schema 白名单内</td><td>不在白名单：申请合规路由，避免被静默丢弃</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="s4">五、第四层：应用层（Application Layer）</h2>
+
+<p>物理、网络、中间件全部正常，机器狗还是“抽搐一下就不动”或“走着走着瘫倒”，就该查业务逻辑了。应用层最常见的三个坑：<b>看门狗、置信度、CPU 饥饿</b>。</p>
+
+<div class="symtags">
+  <span><b>典型症状：</b>四肢抽搐一下即停</span>
+  <span>突然四脚朝天瘫倒</span>
+  <span>姿态关键点全被过滤</span>
+  <span>音频脚本 Permission Denied</span>
+  <span>相机画面延迟数秒</span>
+</div>
+
+<h3>1. 发包频率抖动导致看门狗抽搐</h3>
+
+<p>检查发送循环是否加入了耗时的大型同步阻塞操作（如网络爬虫或高耗时图形绘制）。若发包间隔超过 <b>0.5s</b>，底层看门狗会自动刹车。必须将网络通信与运控拆解在独立线程中执行。</p>
+
+<p>只向 <code>/vel_cmd</code> 发单包，机器狗会四肢抽搐一下就不动——这是看门狗在保护，不是执行器坏了。必须编写循环，以 <b>10Hz ~ 20Hz</b> 的频率持续发包。</p>
+
+<div class="callout danger"><span class="t">⏱️ 0.5s 是生死线</span>任何一次同步阻塞只要把发包间隔拖过 0.5s，看门狗就会按“失联”处理并安全停机。把日志上传、图像绘制、HTTP 请求之类操作挪出运控线程。</div>
+
+<h3>2. 人体姿态置信度遗漏了 Sigmoid 转换</h3>
+
+<p>若 <code>/perception/poses</code> 的所有关键点置信度都被过滤，通常是误把未激活的 Logit 实数当成了 0~1 的置信度概率。对 confidence 应用公式：</p>
+
+<div class="codewrap"><span class="lang">formula</span><button class="copy">复制</button>
+<pre><code>prob = 1 / (1 + exp(-logit))</code></pre>
+</div>
+
+<p>应用 Sigmoid 之后，关键点置信度才会落在 0~1 区间，后处理阈值才有意义。</p>
+
+<h3>3. CPU 被占满导致运控进程饥饿</h3>
+
+<p>视觉 / 音频大模型占满 8 个 CPU 时，底层运控心跳会超时，机器狗可能走着走着突然四脚朝天瘫倒在地。使用 <code>taskset -c 2-7</code> 将 AI 脚本绑定至后置核心，给运控留出算力：</p>
+
+<div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code>taskset -c 2-7</code></pre>
+</div>
+
+<h3>4. 判定标准</h3>
+
+<div class="tblresp"><table class="judge">
+  <thead>
+    <tr><th>检查项</th><th>正常判定</th><th>异常处置</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>/vel_cmd</code> 发包</td><td>10Hz ~ 20Hz 持续循环，间隔稳定低于 0.5s</td><td>单包或阻塞导致超时：改循环发包，拆独立线程</td></tr>
+    <tr><td>关键点 confidence</td><td>经 Sigmoid 转换后位于 0~1</td><td>全是 Logit 实数：应用 <code>prob = 1 / (1 + exp(-logit))</code></td></tr>
+    <tr><td>CPU 占用</td><td>运控进程不被 AI 负载抢占</td><td>8 核被占满：<code>taskset -c 2-7</code> 绑定 AI 脚本</td></tr>
+    <tr><td>控制接口</td><td>只使用官方标准速度接口 <code>/vel_cmd</code></td><td><code>/vbot/sportmode_cmd</code> 在 1.6 已废弃，迁移至 <code>/vel_cmd</code></td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="s5">六、高频故障 FAQ 大字典：15 条症状速查</h2>
+
+<p>现场时间宝贵，先按报错关键词找到对应行，确认层级后再动手。下表把“症状 → 层级 → 处置”压缩到一屏可扫读，所有命令均来自本课诊断清单。</p>
+
+<p class="faq-note">扫读顺序：① 匹配症状 / 报错 → ② 看层级决定先复验哪一层 → ③ 执行 10 秒极速处置 → ④ 仍不恢复则回到对应分层指南。</p>
+
+<div class="tblscroll">
+<table class="faq">
+  <thead>
+    <tr><th>序号</th><th>故障报错现象</th><th>层级</th><th>根本诱因剖析</th><th>10 秒极速解决方案</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>01</td>
+      <td><code>ssh vbot</code> 提示 <code>Connection refused</code> 或超时</td>
+      <td><span class="ly ly-net">网络</span></td>
+      <td>有线网卡松动、连错 Wi-Fi、或电脑网卡未配静态 IP</td>
+      <td>检查物理接线，确认电脑 IP 为 <code>192.168.126.100</code></td>
+    </tr>
+    <tr>
+      <td>02</td>
+      <td><code>WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED</code></td>
+      <td><span class="ly ly-net">网络</span></td>
+      <td>借用了另一台同 IP 的机器狗，SSH 公钥指纹变动</td>
+      <td>本地电脑执行 <code>ssh-keygen -R 192.168.126.2</code></td>
+    </tr>
+    <tr>
+      <td>03</td>
+      <td>执行 <code>ros2 topic list</code> 终端空空如也，看不到任何话题</td>
+      <td><span class="ly ly-mid">中间件</span></td>
+      <td>终端环境变量未注入，或者默认 Domain ID 不匹配</td>
+      <td>执行 <code>export ROS_DOMAIN_ID=178</code></td>
+    </tr>
+    <tr>
+      <td>04</td>
+      <td>向 <code>/vel_cmd</code> 发布速度指令，机器狗四肢抽搐一下就不动了</td>
+      <td><span class="ly ly-app">应用</span></td>
+      <td>只发了单包，底层看门狗在 0.5s 无新指令后安全停机</td>
+      <td>必须编写循环，以 <b>10Hz ~ 20Hz</b> 的频率持续发包</td>
+    </tr>
+    <tr>
+      <td>05</td>
+      <td>向 <code>/vbot/sportmode_cmd</code> 发送指令没有任何反应</td>
+      <td><span class="ly ly-app">应用</span></td>
+      <td><b>该接口在 1.6 版本已彻底废弃</b>，系统无任何节点监听</td>
+      <td>全面迁移至官方唯一标准速度接口 <code>/vel_cmd</code></td>
+    </tr>
+    <tr>
+      <td>06</td>
+      <td>机器狗走着走着突然四脚朝天瘫倒在地</td>
+      <td><span class="ly ly-app">应用</span></td>
+      <td>视觉 / 音频大模型占满 8 个 CPU，底层运控心跳超时摔机</td>
+      <td>使用 <code>taskset -c 2-7</code> 将 AI 脚本绑定至后置核心</td>
+    </tr>
+    <tr>
+      <td>07</td>
+      <td>人体姿态识别 <code>/perception/poses</code> 所有关键点置信度全被过滤</td>
+      <td><span class="ly ly-app">应用</span></td>
+      <td>误把未激活的 Logit 实数当成了 0~1 的置信度概率</td>
+      <td>对 confidence 应用公式 <code>prob = 1 / (1 + exp(-logit))</code></td>
+    </tr>
+    <tr>
+      <td>08</td>
+      <td>执行音频相关脚本报错提示权限被拒绝（Permission Denied）</td>
+      <td><span class="ly ly-app">应用</span></td>
+      <td>官方合规要求：麦克风监听必须经由用户显式授权</td>
+      <td>在命令行参数中追加 <code>--consent</code> 授权标志</td>
+    </tr>
+    <tr>
+      <td>09</td>
+      <td>机器狗行走时四肢疲软无力，甚至无法正常站立</td>
+      <td><span class="ly ly-phy">物理</span></td>
+      <td>关节高负荷运转导致电机温度超过 <b>75°C</b>，触发降扭</td>
+      <td>关机静置 15 分钟，待机身降温后重新开机</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>电池指示灯红光快速闪烁，拒绝起立</td>
+      <td><span class="ly ly-phy">物理</span></td>
+      <td>动力电池电量低于 <b>10%</b>，系统进入低压自保模式</td>
+      <td>插上官方动力充电器，充至 30% 以上再测试</td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td>在主板执行 <code>pip install</code> 提示网络连接失败</td>
+      <td><span class="ly ly-app">应用</span></td>
+      <td>计算主板默认未配置外网网关，无法直接联网</td>
+      <td>使用本文档推荐的离线 Wheelhouse 或容器化编译</td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td>订阅双目相机画面时，程序延迟高达数秒</td>
+      <td><span class="ly ly-app">应用</span></td>
+      <td>接收队列无界导致历史帧积压在内存中</td>
+      <td>将接收队列深度严格限定为 <code>max_depth=16</code> 并丢弃旧帧</td>
+    </tr>
+    <tr>
+      <td>13</td>
+      <td>机器狗开机后卡死在开机自启动脚本中，无法登录</td>
+      <td><span class="ly ly-app">应用</span></td>
+      <td>在自启动脚本中写了前台死循环，阻塞了系统登录终端</td>
+      <td>将自启动脚本改用 <code>nohup ... &amp;</code> 并放入后台运行</td>
+    </tr>
+    <tr>
+      <td>14</td>
+      <td>RCP 任务下发后返回被拒绝（Rejected）</td>
+      <td><span class="ly ly-app">应用</span></td>
+      <td>资源冲突（例如身体动作正在执行，又重复请求了 LEGS）</td>
+      <td>检查当前是否有未退出的 Daemon 动作占用资源</td>
+    </tr>
+    <tr>
+      <td>15</td>
+      <td>激光雷达点云坐标系漂移严重</td>
+      <td><span class="ly ly-app">应用</span></td>
+      <td>在大理石反光地面导致点云产生镜面噪点</td>
+      <td>调高轮式里程计融合权重，增加原地微小旋转重定位</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout"><span class="t">📌 怎么用这张表</span>FAQ 帮你“快速止痛”，分层指南帮你“找到病根”。例如第 04 条抽搐，处置是持续发包；但若复验时发现 Joint 温度 &gt; 75°C，还得回到物理层先散热——同一症状可能叠加多层诱因。</div>
+
+<h2 id="s6">七、🧪 小实验：故障问诊机器人</h2>
+
+<p>把今天的分层法变成一次“问诊”。从四个最典型的现场症状中选一个，机器人会即时给出：<b>定位层级、按顺序执行的诊断命令、最可能原因、下一步</b>。四个选项可以反复点击对比，观察同一套流程如何在不同层收敛。</p>
+
+<h3>四个入口，四套处置</h3>
+
+<div class="lab">
+  <h4>🩺 选择最接近的症状</h4>
+  <p>点击按钮即可刷新下方结论，无需提交；每个选项对应不同的层级严重度。</p>
+  <div class="opts" role="group" aria-label="故障症状选择">
+    <button class="opt" type="button" data-k="ping" aria-pressed="false">① ping 不通<small>ping 192.168.126.2 无回包 / SSH 超时</small></button>
+    <button class="opt" type="button" data-k="nodata" aria-pressed="false">② 能看到话题但收不到数据<small>topic list 有清单，echo 或订阅没报文</small></button>
+    <button class="opt" type="button" data-k="nomove" aria-pressed="false">③ 发指令机器狗不动<small>抽搐一下、步态无力或完全无动作</small></button>
+    <button class="opt" type="button" data-k="error" aria-pressed="false">④ 脚本运行报错<small>权限、装包、RCP 拒绝或启动卡死</small></button>
+  </div>
+  <div id="diagres" class="result idle" role="status" aria-live="polite">选择上方任一症状，机器人会立即给出定位层级、命令顺序、最可能原因与下一步。</div>
+  <div class="callout" style="margin-bottom:0"><span class="t">💡 使用提示</span>结论里的命令按编号顺序执行；每执行一步就复验一次，不要一次性把所有命令跑完。问诊结果仅用于定位，不替代物理层的看灯与测温。</div>
+</div>
+
+<h2 id="s7">八、本课小结</h2>
+
+<p>四层隔离排障法的价值，在于把“玄学故障”拆成四个可以独立验证的问题。记住顺序，现场就不会被表象牵着走。</p>
+
+<div class="tblresp"><table class="summary-layers">
+  <thead>
+    <tr><th>层级</th><th>一句话判定</th><th>代表处置</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>物理层</td><td>灯不亮、电不足、温度高</td><td>充电至 30% 以上、关机静置散热 15 分钟、换线换口</td></tr>
+    <tr><td>网络层</td><td><code>ping</code> 不通、IP 冲突、Host Key 变更</td><td>电脑改为 <code>192.168.126.100</code>；<code>ssh-keygen -R 192.168.126.2</code></td></tr>
+    <tr><td>中间件层</td><td>话题空、无报文、ACL 静默丢弃</td><td>对齐 <code>ROS_DOMAIN_ID=178</code>；用 Aorta CLI 三连探针；核对白名单</td></tr>
+    <tr><td>应用层</td><td>抽搐、瘫倒、置信度全 0、CPU 饥饿</td><td>10Hz ~ 20Hz 持续发包、Sigmoid 转换、<code>taskset -c 2-7</code></td></tr>
+  </tbody>
+</table></div>
+
+<ul class="goals">
+  <li>排障顺序固定为物理 → 网络 → 中间件 → 应用，上一层不通不跳层</li>
+  <li>物理层看灯、电、温度：电量 &lt; 15% 预警，关节 &gt; 75°C 降扭</li>
+  <li>网络层用 <code>ping 192.168.126.2</code> 取证，本机地址永远是 <code>.100</code></li>
+  <li>中间件层先 <code>export ROS_DOMAIN_ID=178</code>，再用 Aorta 三连探针验证数据流</li>
+  <li>应用层守住 0.5s 看门狗生死线，以 10Hz ~ 20Hz 循环发包</li>
+  <li>每层取证、一次只改一个变量，改完立即回归验证</li>
+</ul>
+
+<div class="callout"><span class="t">⏭️ 下一课预告</span>会排障，还要会“防事故”。下一课进入安全关键主题：开发者安全守法规约、物理急停与软件取消的边界，以及如何用防重入与有界控制避免自启动脚本把机器狗锁死——<a href="lesson_02.html">5.2 开发者安全守法规约与自启动防死锁</a>。</div>
+
+</div>
+
+<div class="wrap" style="padding-top:0">
+<footer class="nav">
+  <a href="../04-hardware-recipes/lesson_03.html"><span class="dir">← 上一课</span><span class="ttl">04 模块 · Lesson 03</span></a>
+  <a class="home-link" href="index.html"><span class="dir">目录</span><span class="ttl">返回目录</span></a>
+  <a href="lesson_02.html" style="text-align:right"><span class="dir">下一课 →</span><span class="ttl">5.2 安全守法规约与自启动防死锁</span></a>
+</footer>
+</div>
+
+</main>
+
+<script>
+var DIAG = {
+  ping: {
+    sev: 'bad',
+    sevLabel: '阻断级',
+    layer: '物理层 → 网络层',
+    layerClass: 'ly-phy',
+    title: '连不上：先证物理链路，再查 IP 地址',
+    cmds: [
+      '<b>看灯</b>转接头绿灯常亮、黄灯闪烁 = 物理电气链路正常；不亮先换插 Type-C 接口或换线。',
+      '<b>连通性</b><code>ping 192.168.126.2</code>',
+      '<b>本机地址</b>确认电脑网卡为 <code>192.168.126.100</code>，绝不能配成 <code>192.168.126.2</code>。',
+      '<b>若 SSH 报 Host Key 变更</b><code>ssh-keygen -R 192.168.126.2</code>'
+    ],
+    cause: '有线网卡松动、连错 Wi-Fi、电脑网卡未配静态 IP，或误把本机配成 192.168.126.2 造成自身冲突。',
+    next: '灯不亮就换口换线；ping 仍不通时把电脑静态 IP 改为 192.168.126.100，网关与 DNS 留空，再复测连通性。'
+  },
+  nodata: {
+    sev: 'warn',
+    sevLabel: '数据级',
+    layer: '中间件层 → 应用层',
+    layerClass: 'ly-mid',
+    title: '有话题但无数据：总线通，数据流断',
+    cmds: [
+      '<b>对齐域</b><code>export ROS_DOMAIN_ID=178</code>',
+      '<b>列话题</b><code>aorta topic list</code>',
+      '<b>采样</b><code>aorta topic echo /imu_raw --count 1</code>',
+      '<b>列服务</b><code>aorta service list</code>',
+      '<b>若为相机订阅</b>把接收队列深度限定为 <code>max_depth=16</code> 并丢弃旧帧。'
+    ],
+    cause: 'ROS_DOMAIN_ID 不一致；自定义话题不在 Aorta ACL / Schema 白名单被静默丢弃；或订阅队列无界导致历史帧积压。',
+    next: '所有终端与脚本对齐 178 后重跑探针；下游仍无数据就核对 ACL 白名单；相机延迟时把接收队列限定 max_depth=16 并丢弃旧帧。'
+  },
+  nomove: {
+    sev: 'bad',
+    sevLabel: '高风险',
+    layer: '物理层 → 中间件层 → 应用层',
+    layerClass: 'ly-phy',
+    title: '发指令不动：先排物理自保，再查接口与看门狗',
+    cmds: [
+      '<b>物理自保</b>电量充至 30% 以上；任一关节 &gt; 75°C 会降扭，关机静置散热 15 分钟。',
+      '<b>连通性</b><code>ping 192.168.126.2</code>',
+      '<b>对齐域</b><code>export ROS_DOMAIN_ID=178</code>',
+      '<b>列话题</b><code>aorta topic list</code>，确认 <code>/vel_cmd</code> 有节点监听（<code>/vbot/sportmode_cmd</code> 已废弃）。',
+      '<b>采样</b><code>aorta topic echo /imu_raw --count 1</code>',
+      '<b>核心隔离</b><code>taskset -c 2-7</code>'
+    ],
+    cause: '只发单包，底层看门狗在 0.5s 无新指令后安全停机；/vbot/sportmode_cmd 在 1.6 已废弃；也可能叠加电量或温度自保。',
+    next: '写循环以 10Hz ~ 20Hz 持续向 /vel_cmd 发包；废弃接口全面迁移；先充电与散热，再用 taskset -c 2-7 隔离 AI 负载。'
+  },
+  error: {
+    sev: 'warn',
+    sevLabel: '逻辑级',
+    layer: '应用层',
+    layerClass: 'ly-app',
+    title: '脚本报错：按报错关键词定位应用层旁支',
+    cmds: [
+      '<b>音频权限</b>在命令行参数中追加 <code>--consent</code> 授权标志。',
+      '<b>装包失败</b>改用离线 Wheelhouse 或容器化编译。',
+      '<b>CPU 饥饿</b><code>taskset -c 2-7</code>',
+      '<b>自启动卡死</b>改用 <code>nohup ... &amp;</code> 并放入后台运行。',
+      '<b>RCP 被拒</b>检查是否有未退出的 Daemon 动作占用资源。'
+    ],
+    cause: '麦克风未显式授权；主板无外网网关；AI 占满 8 核；自启动脚本前台死循环；RCP 资源冲突。',
+    next: '按报错关键词对照 FAQ 大字典逐条处置；改完只重启相关脚本并复验，不要同时改多个变量。'
+  }
+};
+
+function showDiag(key) {
+  var d = DIAG[key];
+  if (!d) return;
+  var box = document.getElementById('diagres');
+  var list = d.cmds.map(function (c) { return '<li>' + c + '</li>'; }).join('');
+  box.className = 'result ' + d.sev;
+  box.innerHTML =
+    '<div class="r-head"><span class="r-sev">' + d.sevLabel + '</span>' +
+    '<span class="ly ' + d.layerClass + '">' + d.layer + '</span>' +
+    '<span>' + d.title + '</span></div>' +
+    '<div class="r-row"><b>按顺序执行的诊断命令</b><ol>' + list + '</ol></div>' +
+    '<div class="r-row"><b>最可能原因</b>' + d.cause + '</div>' +
+    '<div class="r-row"><b>下一步</b>' + d.next + '</div>' +
+    '<div class="r-foot">问诊结论已即时刷新 · 每层取证后再改一个变量</div>';
+}
+
+document.querySelectorAll('.lab .opt').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    document.querySelectorAll('.lab .opt').forEach(function (b) {
+      b.classList.remove('on');
+      b.setAttribute('aria-pressed', 'false');
+    });
+    btn.classList.add('on');
+    btn.setAttribute('aria-pressed', 'true');
+    showDiag(btn.getAttribute('data-k'));
+  });
+});
+
+document.querySelectorAll('.copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var pre = btn.parentElement.querySelector('pre');
+    var text = pre ? pre.textContent : '';
+    function done() {
+      btn.textContent = '已复制';
+      setTimeout(function () { btn.textContent = '复制'; }, 1500);
+    }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(fallback);
+    } else {
+      fallback();
+    }
+  });
+});
+</script>
+</body>
+</html>

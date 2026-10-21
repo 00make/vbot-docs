@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.2 硬件改装、机械臂与外接算力板 | VBOT EDU 硬件改装与黑客松蓝本</title>
+<style>
+/* ===== 风格契约 v1 · 预设 A 清爽技术文档风（全教程统一，勿改） ===== */
+:root{
+  --bg:#ffffff; --fg:#1f2937; --muted:#6b7280;
+  --accent:#0e7490; --accent-dark:#155e75; --accent-light:#ecfeff;
+  --code-bg:#f3f4f6; --code-fg:#111827; --code-border:#e5e7eb;
+  --border:#e5e7eb; --card:#f9fafb;
+  --warn-bg:#fffbeb; --warn-bd:#f59e0b;
+  --danger-bg:#fef2f2; --danger-bd:#ef4444;
+  --tip-bg:#ecfeff; --tip-bd:#0e7490;
+  --ok-bg:#f0fdf4; --ok-bd:#22c55e;
+  --radius:10px; --max-width:880px; --toc-w:250px;
+  --font-body:"Microsoft YaHei","Source Han Sans CN",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"Cascadia Code",Consolas,"JetBrains Mono","Courier New",monospace;
+}
+/* ===== 风格契约结束 ===== */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.8;font-size:16px}
+a{color:var(--accent)}
+a:hover{color:var(--accent-dark)}
+code{font-family:var(--font-mono);font-size:.875em;background:var(--code-bg);border:1px solid var(--code-border);border-radius:4px;padding:1px 6px;color:var(--code-fg)}
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:16px 18px;overflow:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;color:var(--code-fg);margin:0}
+pre code{background:none;border:none;padding:0;font-size:inherit}
+
+/* 布局：左 TOC + 右正文 */
+.toc{position:fixed;top:0;left:0;bottom:0;width:var(--toc-w);background:var(--card);border-right:1px solid var(--border);padding:28px 16px;overflow:auto}
+.toc .brand{font-weight:700;color:var(--accent-dark);font-size:17px;margin-bottom:2px}
+.toc .sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.toc ol{list-style:none;margin:0;padding:0;counter-reset:toc}
+.toc li{counter-increment:toc;margin-bottom:2px}
+.toc a{display:block;padding:7px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font-size:13.5px}
+.toc a::before{content:counter(toc) ". ";color:var(--accent);font-weight:600}
+.toc a:hover{background:var(--accent-light);color:var(--accent-dark)}
+.toc .home{display:inline-block;margin-top:18px;font-size:13px;color:var(--accent);text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--bg)}
+main{margin-left:var(--toc-w)}
+.wrap{max-width:var(--max-width);margin:0 auto;padding:40px 32px 24px}
+
+/* 页头 */
+header.lesson{border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:32px}
+header.lesson .hero-img{width:100%;max-height:280px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);margin-top:18px}
+.badges{margin-bottom:12px}
+.badge{display:inline-block;font-size:12px;font-weight:600;border-radius:99px;padding:2px 12px;margin-right:8px;vertical-align:middle}
+.badge.no{background:var(--accent);color:#fff}
+.badge.safe{background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.badge.ver{background:var(--card);color:var(--muted);border:1px solid var(--border)}
+h1{font-size:30px;line-height:1.4;margin:0 0 10px;color:var(--accent-dark)}
+.meta{font-size:13.5px;color:var(--muted)}
+.meta a{color:var(--accent)}
+
+/* 标题层级 */
+h2{font-size:22px;color:var(--accent-dark);margin:48px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--accent-light)}
+h3{font-size:17.5px;color:var(--fg);margin:28px 0 10px}
+
+/* 提示框 */
+.callout{border-left:4px solid var(--tip-bd);background:var(--tip-bg);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;margin:20px 0;font-size:15px}
+.callout.warn{border-color:var(--warn-bd);background:var(--warn-bg)}
+.callout.danger{border-color:var(--danger-bd);background:var(--danger-bg)}
+.callout.ok{border-color:var(--ok-bd);background:var(--ok-bg)}
+.callout .t{font-weight:700;display:block;margin-bottom:4px}
+
+/* 直播口播折叠 */
+details.talk{border:1px dashed var(--accent);border-radius:var(--radius);background:var(--bg);margin:20px 0}
+details.talk summary{cursor:pointer;padding:12px 18px;color:var(--accent);font-weight:600;font-size:14.5px}
+details.talk .body{padding:0 18px 14px;color:var(--muted);font-size:14.5px}
+
+/* 图片 */
+figure{margin:24px 0;text-align:center}
+figure img{max-width:100%;border:1px solid var(--border);border-radius:var(--radius);background:#fff}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+
+/* 表格 */
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px}
+th,td{border:1px solid var(--border);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--accent-light);color:var(--accent-dark);font-weight:700}
+tr:nth-child(even) td{background:var(--card)}
+td .no{color:var(--danger-bd);font-weight:700}
+
+/* 编号步骤 */
+ol.steps{list-style:none;counter-reset:st;padding:0;margin:18px 0}
+ol.steps>li{counter-increment:st;position:relative;padding:0 0 18px 48px}
+ol.steps>li::before{content:counter(st);position:absolute;left:0;top:2px;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;text-align:center;line-height:32px;font-size:15px}
+ol.steps>li>b:first-child{display:block;margin-bottom:4px}
+
+/* CSS 拓扑图 */
+.topo{display:flex;align-items:stretch;justify-content:center;gap:0;margin:24px 0;flex-wrap:wrap}
+.topo .node{background:var(--card);border:2px solid var(--accent);border-radius:var(--radius);padding:12px 16px;min-width:170px;text-align:center;font-size:13.5px}
+.topo .node b{display:block;color:var(--accent-dark);font-size:14.5px;margin-bottom:2px}
+.topo .node code{font-size:12px}
+.topo .node.dev{border-color:var(--muted)}
+.topo .node.gw{border-style:dashed}
+.topo .link{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 10px;color:var(--muted);font-size:12px;min-width:96px}
+.topo .link .arrow{font-size:20px;color:var(--accent);line-height:1.2}
+
+/* 代码块 + 复制按钮 + Tabs */
+.codewrap{position:relative;margin:14px 0}
+.codewrap .lang{position:absolute;top:0;right:88px;font-size:11px;color:var(--muted);background:var(--bg);border:1px solid var(--code-border);border-bottom:none;border-radius:6px 6px 0 0;padding:1px 8px}
+.copy{position:absolute;top:8px;right:8px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;font-family:var(--font-body)}
+.copy:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.tabs{display:flex;gap:6px;margin:18px 0 0}
+.tabs button{border:1px solid var(--border);border-bottom:none;background:var(--card);padding:8px 18px;border-radius:10px 10px 0 0;cursor:pointer;font-size:14px;color:var(--muted);font-family:var(--font-body)}
+.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+.panel{display:none;border:1px solid var(--border);border-radius:0 var(--radius) var(--radius) var(--radius);padding:16px 18px;background:var(--bg)}
+.panel.on{display:block}
+
+/* 目标清单 */
+ul.goals{margin:12px 0;padding-left:0;list-style:none}
+ul.goals li{padding:4px 0 4px 28px;position:relative}
+ul.goals li::before{content:"✓";position:absolute;left:4px;color:var(--accent);font-weight:700}
+
+/* 页脚导航 */
+footer.nav{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--border);margin-top:56px;padding:24px 0 40px;flex-wrap:wrap}
+footer.nav a{flex:1;min-width:200px;border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;text-decoration:none;background:var(--card)}
+footer.nav a:hover{border-color:var(--accent);background:var(--accent-light)}
+footer.nav .dir{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
+footer.nav .ttl{display:block;font-size:15px;color:var(--accent-dark);font-weight:600}
+footer.nav a.home-link{flex:0 0 auto;text-align:center}
+
+/* 甘特时间线 */
+.gantt{margin:20px 0}
+.gantt .row{display:flex;align-items:center;margin:8px 0}
+.gantt .lbl{width:190px;font-size:13.5px;color:var(--fg);flex-shrink:0}
+.gantt .track{flex:1;position:relative;height:28px;background:var(--card);border:1px solid var(--border);border-radius:6px}
+.gantt .bar{position:absolute;top:3px;bottom:3px;background:linear-gradient(90deg,var(--accent),#22d3ee);border-radius:5px;color:#fff;font-size:11.5px;display:flex;align-items:center;padding:0 8px;white-space:nowrap;overflow:hidden}
+.gantt .axis{display:flex;margin-left:190px;font-size:11.5px;color:var(--muted)}
+.gantt .axis span{flex:1;text-align:left}
+
+/* 决策流程图 */
+.flow{display:flex;flex-direction:column;align-items:center;margin:24px 0}
+.fnode{border:2px solid var(--accent);background:var(--accent-light);border-radius:var(--radius);padding:10px 18px;font-size:14px;text-align:center;max-width:460px}
+.fnode b{color:var(--accent-dark)}
+.fnode.start{border-radius:99px;background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.fnode.decision{background:var(--warn-bg);border-color:var(--warn-bd)}
+.fnode.end{border-radius:99px;background:var(--ok-bg);border-color:var(--ok-bd);color:#15803d;font-weight:600}
+.fdown{color:var(--accent);font-size:18px;line-height:1.5;text-align:center}
+.fdown small{display:block;font-size:12px;color:var(--muted)}
+.fbranch{display:flex;gap:28px;justify-content:center;align-items:flex-start;flex-wrap:wrap;margin:4px 0}
+.fcol{display:flex;flex-direction:column;align-items:center}
+.fcol .tag-y{font-size:12px;font-weight:700;color:#15803d;background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+.fcol .tag-n{font-size:12px;font-weight:700;color:#92400e;background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+
+/* 交互小实验 */
+.lab{background:var(--card);border:1px solid var(--accent);border-radius:var(--radius);padding:18px 20px;margin:26px 0}
+.lab h4{margin:0 0 6px;color:var(--accent-dark);font-size:16px}
+.lab p{margin:4px 0;font-size:14px;color:var(--muted)}
+.labrow{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;align-items:center}
+.lab input{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font-mono);font-size:14px;width:220px;background:var(--bg);color:var(--fg)}
+.lab button{padding:8px 18px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:14px;font-family:var(--font-body)}
+.lab button:hover{background:var(--accent-dark)}
+.result{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:14px;display:none}
+.result.ok{display:block;background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.result.bad{display:block;background:var(--danger-bg);color:#b91c1c;border:1px solid var(--danger-bd)}
+.result.warn{display:block;background:var(--warn-bg);color:#92400e;border:1px solid var(--warn-bd)}
+.lab pre{margin-top:10px}
+
+/* 移动端 */
+@media (max-width:768px){
+  .toc{position:static;width:auto;border-right:none;border-bottom:1px solid var(--border);padding:18px 16px}
+  .toc ol{columns:2}
+  main{margin-left:0}
+  .wrap{padding:24px 18px 12px}
+  h1{font-size:24px}
+  .topo{flex-direction:column;align-items:center}
+  .topo .link{min-width:auto;padding:6px 0}
+  .topo .link .arrow{transform:rotate(90deg)}
+  .gantt .lbl{width:110px;font-size:12px}
+  .gantt .axis{margin-left:110px}
+  .fbranch{flex-direction:column;align-items:center;gap:8px}
+}
+/* 打印 */
+@media print{
+  .toc,.copy,.tabs{display:none}
+  main{margin-left:0}
+  .panel{display:block!important;border:none;padding:8px 0}
+  body{font-size:12px}
+  a{color:var(--fg);text-decoration:none}
+}
+
+/* ===== 本课专属组件（04 / L02） ===== */
+.badge.hw{background:var(--warn-bg);color:#92400e;border:1px solid var(--warn-bd)}
+
+/* 关键参数卡片 */
+.spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:20px 0}
+.spec .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
+.spec .k{display:block;font-size:12.5px;color:var(--muted)}
+.spec .v{display:block;font-size:18px;font-weight:700;color:var(--accent-dark);line-height:1.45;margin-top:2px}
+.spec .v small{font-size:12px;font-weight:400;color:var(--muted)}
+
+/* 横向改装流程 */
+.rail{display:flex;align-items:stretch;flex-wrap:wrap;gap:8px;margin:22px 0}
+.rail .step{flex:1 1 132px;min-width:126px;background:var(--card);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:var(--radius);padding:10px 12px}
+.rail .step .no{font-family:var(--font-mono);font-size:11.5px;font-weight:700;color:var(--accent)}
+.rail .step b{display:block;font-size:14px;color:var(--accent-dark);margin:2px 0 4px}
+.rail .step .tip{display:block;font-size:12px;color:var(--muted);line-height:1.55}
+.rail .arw{align-self:center;color:var(--accent);font-size:16px}
+
+/* 供电母线拓扑补充 */
+.topo.mid{align-items:center}
+.topo .stack{display:flex;flex-direction:column;gap:10px}
+.topo .node .lim{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.topo .node.hot{border-color:var(--warn-bd);background:var(--warn-bg)}
+
+/* 供电预算计算器 */
+.budget{margin:16px 0 6px}
+.budget .rowtop{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:13px;color:var(--muted);margin-bottom:6px;flex-wrap:wrap}
+.budget .rowtop b{font-size:15px;color:var(--accent-dark)}
+.meter{position:relative;height:20px;border:1px solid var(--border);border-radius:99px;background:var(--bg);overflow:hidden}
+.meter .fill{height:100%;width:0;background:var(--ok-bd);transition:width .28s ease,background .28s ease}
+.meter .fill.warn{background:var(--warn-bd)}
+.meter .fill.bad{background:var(--danger-bd)}
+.meter .mark{position:absolute;top:0;bottom:0;left:80%;width:2px;background:var(--fg);opacity:.28}
+.budget .scale{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:4px}
+.budget .nums{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:8px}
+.budget .nums b{color:var(--fg);font-family:var(--font-mono)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{font-size:12.5px;border:1px solid var(--border);border-radius:99px;padding:3px 12px;background:var(--bg);color:var(--muted)}
+.chip b{color:var(--accent-dark);font-family:var(--font-mono)}
+
+/* 实验表单 */
+.lab .fields{display:flex;gap:14px;flex-wrap:wrap;margin:12px 0}
+.lab .fields label{font-size:13px;color:var(--fg);display:flex;flex-direction:column;gap:4px;flex:1 1 180px}
+.lab .fields input{width:100%;max-width:200px}
+.lab .hint{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.lab .advice{margin:8px 0 0;padding-left:20px;font-size:13.5px}
+.lab .advice li{margin:3px 0}
+.lab button.ghost{background:var(--bg);color:var(--accent);border:1px solid var(--border)}
+.lab button.ghost:hover{background:var(--accent-light);color:var(--accent-dark)}
+
+@media (max-width:768px){
+  .spec{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rail .arw{display:none}
+  .rail .step{flex:1 1 100%}
+  .lab .fields input{max-width:100%}
+  th,td{overflow-wrap:anywhere}
+}
+</style>
+</head>
+<body>
+
+<nav class="toc" id="nav">
+  <div class="brand">VBOT EDU 硬件改装</div>
+  <div class="sub">模块 04 · Lesson 02</div>
+  <ol>
+    <li><a href="#s0">改装全景与设计顺序</a></li>
+    <li><a href="#s1">背板孔位与 3D 打印外壳</a></li>
+    <li><a href="#s2">PiPER 六轴机械臂集成</a></li>
+    <li><a href="#s3">外接 RDK / Orin 算力板</a></li>
+    <li><a href="#s4">小实验：供电预算计算器</a></li>
+    <li><a href="#s5">本课小结</a></li>
+  </ol>
+  <a class="home" href="index.html">← 返回目录</a>
+</nav>
+
+<main>
+<div class="wrap">
+
+<header class="lesson">
+  <div class="badges">
+    <span class="badge no">Lesson 02</span>
+    <span class="badge hw">安全级别：硬件工程（hardware_engineering）</span>
+    <span class="badge ver">固件基准 V1.6.0</span>
+  </div>
+  <h1>硬件改装、机械臂与外接算力板</h1>
+  <p class="meta">预计阅读 14 分钟 · 前置课程：<a href="lesson_01.html">4.1 硬件工程规格与核心约束</a> · 改装前提：背板额定承重 5 kg、重心已核算</p>
+</header>
+
+<details class="talk">
+  <summary>🎙️ 展开直播口播导语（讲师版）</summary>
+  <div class="body">
+    <p>“从‘只会在地上走的四足狗’进化为‘能够抓取物品、检测隐患、协同操作’的复合型机器人系统，硬件外挂改装是必经之路！很多同学看到别人给机器狗装上机械臂端茶倒水、背上全景相机巡检，心里直痒痒，恨不得把市面上所有好玩的传感器和硬件一股脑全装上去！但四足机器人是靠动力学动态平衡活着的。背多重、重心怎么放、加装 PiPER 六轴机械臂怎么走 CAN 总线？本章将详细拆解背板机械孔位规范、3D 打印材质选型、CAN 总线加装 PiPER 六轴机械臂，以及扩展地平线 RDK / NVIDIA Orin 算力板的标准工程指南！”</p>
+  </div>
+</details>
+
+<h2 id="goals" style="margin-top:24px;border-bottom:none;padding-bottom:0;font-size:17.5px">本课学习目标</h2>
+<ul class="goals">
+  <li>在背板 <b>M3 / M4 标准孔位阵列</b>上规划机械臂、全景相机与算力板三个挂点</li>
+  <li>依据振动环境选对 3D 打印材料：<b>PETG 或 PA-CF（尼龙碳纤维）</b>可用，<b>PLA 严禁</b></li>
+  <li>按 <b>24V DC、峰值瞬间 10A</b> 为 PiPER 取电，并通过 <b>CAN 2.0B / CAN-FD</b> 打通 1Mbps 总线</li>
+  <li>用千兆以太网 + <code>192.168.126.x</code> 静态子网接入 RDK / Orin，跑通 <code>/image_left_raw</code> 与雷达话题到 <code>/vel_cmd</code> 的数据流</li>
+  <li>用供电预算计算器判断外设组合是否越过 <b>24V/10A</b> 边界，并给出错峰、独立供电或降载方案</li>
+</ul>
+
+<h2 id="s0">改装全景：从“会走”到“会干活”</h2>
+
+<p>四足机器人是靠动力学动态平衡活着的。加装机械臂、算力板和传感器，不只是“多背几公斤”，而是在同时改写三件事：<b>背板承重与重心</b>、<b>24V 供电预算</b>、<b>总线与网络的数据通路</b>。任何一件没算清，联调时都会以“狗站不稳”“主板掉压重启”“机械臂不动”的形式找你算账。</p>
+
+<p>源文档给出的改装主线可以压成五步——先设计孔位，再打印外壳，然后装配、打通 CAN，最后整机联调：</p>
+
+<div class="rail" role="img" aria-label="硬件改装流程：孔位设计、3D 打印、装配、CAN 打通、联调">
+  <div class="step"><span class="no">STEP 01</span><b>孔位设计</b><span class="tip">M3 / M4 标准孔位阵列，先核算承重与重心</span></div>
+  <div class="arw">→</div>
+  <div class="step"><span class="no">STEP 02</span><b>3D 打印</b><span class="tip">PETG 或 PA-CF；严禁 PLA</span></div>
+  <div class="arw">→</div>
+  <div class="step"><span class="no">STEP 03</span><b>装配</b><span class="tip">机械臂转接板、相机高支架、算力板夹层</span></div>
+  <div class="arw">→</div>
+  <div class="step"><span class="no">STEP 04</span><b>CAN 打通</b><span class="tip">CAN_H / CAN_L、120Ω 终端、1Mbps 使能</span></div>
+  <div class="arw">→</div>
+  <div class="step"><span class="no">STEP 05</span><b>联调</b><span class="tip">供电、总线、数据流逐项对齐</span></div>
+</div>
+
+<figure>
+  <img src="../assets/07-cases-other/02-photo-她的视界多体协作.png" alt="黑客松现场：四足机器狗搭载外设与人形机器人同台多体协作" loading="lazy">
+  <figcaption>图 4-1：黑客松现场实拍：四足机器狗搭载外设与人形机器人同台多体协作</figcaption>
+</figure>
+
+<div class="callout"><span class="t">📌 本课数据口径</span>本课所有电压、电流、总线与结构参数均照录 4.2 源文档；外接算力板与传感器的具体电压/电流请以板卡和模组铭牌为准——本课不替你猜数字。</div>
+
+<h2 id="s1">一、背板机械孔位与 3D 打印定制外壳</h2>
+
+<p>VBOT 狗背配备了通用的金属加强筋骨架与标准孔位阵列。所有外挂件都从这套 <b>M3 / M4 螺纹孔</b>矩阵长出来，按位置分工：</p>
+
+<div class="topo mid" role="img" aria-label="背板孔位分区：中心基座装 PiPER 转接板，前端高支架装 Insta360 全景相机，尾部夹层装 RDK 或 Orin 扩展盒">
+  <div class="node"><b>背板标准矩阵</b>M3 / M4 螺纹孔<br>金属加强筋骨架</div>
+  <div class="link"><span class="arrow">→</span>分区挂载</div>
+  <div class="stack">
+    <div class="node"><b>中心基座</b>PiPER 机械臂转接板</div>
+    <div class="node"><b>前端高支架</b>Insta360 全景相机</div>
+    <div class="node"><b>尾部夹层</b>地平线 RDK / Orin 扩展盒</div>
+  </div>
+</div>
+
+<p>三个挂点不是随便挑的：机械臂放中心基座，力臂最短、重心最居中；相机抬到前端高支架换视野；算力板塞进尾部夹层，把发热与走线都赶到机身后面。</p>
+
+<h3>1. 3D 打印材质工艺建议</h3>
+
+<table>
+  <thead>
+    <tr><th>材料</th><th>判定</th><th>源文档依据</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>PETG</b></td>
+      <td style="white-space:nowrap">✅ 推荐</td>
+      <td>定制外壳的推荐打印材料之一</td>
+    </tr>
+    <tr>
+      <td><b>PA-CF（尼龙碳纤维）</b></td>
+      <td style="white-space:nowrap">✅ 推荐</td>
+      <td>四足机器人在行走与小跑时机身存在持续高频振动，尼龙碳纤维兼具高刚性与抗疲劳韧性</td>
+    </tr>
+    <tr>
+      <td><b>PLA</b></td>
+      <td style="white-space:nowrap"><span class="no">⛔ 严禁</span></td>
+      <td>在户外高温或持续震动下极易发生脆性断裂，导致高价值传感器坠地摔损</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout danger"><span class="t">🚨 材料红线</span>别拿桌面上打手办的 PLA 直接上狗背。户外高温 + 持续震动是 PLA 的死穴，一旦支架脆断，掉下去的是你的全景相机或算力板，不是几克塑料。</div>
+
+<h3>2. 拆分打印与装配：牛来芭比的实战做法</h3>
+
+<p>当成型仓装不下整件外壳时，源文档给出的办法是<b>拆件打印</b>：把牛头拆成“前脸面具 + 后脑头盔”，再用<b>定位凸台与卡扣</b>合体。这样既绕开了打印尺寸限制，也让外壳可以分段更换。</p>
+
+<figure>
+  <img src="../assets/06-cases-moobie/05-demo-现场3D打印拆分结构成型.jpg" alt="牛来芭比分体 3D 打印外壳成型：前脸面具与后脑头盔通过定位凸台和卡扣合体" loading="lazy">
+  <figcaption>📸 实例：成型仓不足时把牛头拆成“前脸面具 + 后脑头盔”，用定位凸台与卡扣合体；头部外壳超约 400 g 会让前侧关节过载</figcaption>
+</figure>
+
+<div class="callout warn"><span class="t">⚖️ 400 g 经验值</span>头部外壳超过约 400 g，前侧关节就会过载。外壳减重不是审美问题，而是关节寿命与步态稳定问题——能镂空就别实心，能分件就别一体成型。</div>
+
+<figure>
+  <img src="../assets/06-cases-moobie/05-demo-芭比牛来站立姿态全貌.jpg" alt="完成外壳与服装装配的牛来芭比整机站立姿态全貌" loading="lazy">
+  <figcaption>📸 实例：完成外壳与服装装配的牛来芭比</figcaption>
+</figure>
+
+<h2 id="s2">二、背板集成 PiPER 六轴机械臂</h2>
+
+<p><b>松灵 PiPER 轻量化六轴机械臂</b>与 VBOT 5kg 的额定背板承重完美匹配，是黑客松与高校研发移动操作 (Mobile Manipulation) 的黄金搭档。先记住它的几个硬指标：</p>
+
+<div class="spec">
+  <div class="card"><span class="k">机械臂自重</span><span class="v">约 3.8 kg</span></div>
+  <div class="card"><span class="k">额定负载</span><span class="v">1.5 kg</span></div>
+  <div class="card"><span class="k">背板额定承重</span><span class="v">5 kg</span></div>
+  <div class="card"><span class="k">工作电压</span><span class="v">24V DC</span></div>
+  <div class="card"><span class="k">峰值瞬间电流</span><span class="v">10 A</span></div>
+  <div class="card"><span class="k">总线</span><span class="v">CAN 2.0B / CAN-FD</span></div>
+</div>
+
+<p>自重 3.8 kg 已经吃掉背板额定承重的绝大部分余量，再加上转接板、外壳、相机与线束，装完必须重新确认整机重心。机械臂一旦伸展，力矩会明显前移——这也是它必须装在<b>中心基座</b>而不是前端的原因。</p>
+
+<h3>1. 供电引脚与电气规范</h3>
+
+<ul>
+  <li><b>电压要求</b>：PiPER 机械臂工作电压为 <b>24V DC</b>，峰值瞬间电流可达 <b>10A</b>。</li>
+  <li><b>取电方案</b>：推荐通过背板专用的 <b>24V 航空插头</b>取电，或在机身内加装<b>独立轻量动力电池组</b>，以避免机械臂大功率抽载拉低主板电压。</li>
+</ul>
+
+<div class="topo mid" role="img" aria-label="24V 供电拓扑：电池或背板 24V 航空插头经 24V 母线，分别供给 PiPER 机械臂、外接算力板与传感器">
+  <div class="node"><b>24V 动力电池 / 背板 24V 航空插头</b>整机 24V 输出<br><span class="lim">连续 10A · 瞬时峰值 15A</span></div>
+  <div class="link"><span class="arrow">→</span>24V 母线<br>独立回路分配</div>
+  <div class="stack">
+    <div class="node hot"><b>PiPER 机械臂</b>24V DC · 峰值瞬间 10A<span class="lim">大功率抽载源，优先独立回路</span></div>
+    <div class="node"><b>外接算力板（RDK / Orin）</b>按板卡铭牌供电<span class="lim">不与机械臂共用大电流回路</span></div>
+    <div class="node"><b>传感器 / 相机</b>按模组铭牌取电<span class="lim">小电流，注意共地</span></div>
+  </div>
+</div>
+
+<div class="callout warn"><span class="t">⚠️ 为什么不能让机械臂和主板抢电</span>机械臂起动瞬间的 10A 抽载会直接把 24V 母线拉出压降。主板一旦掉压，轻则 ROS 2 节点掉线，重则整机重启——所以源文档才把“独立轻量动力电池组”写成并列的取电方案。</div>
+
+<h3>2. CAN 总线与串口通信打通</h3>
+
+<p>背板预留了标准 <b>CAN 2.0B / CAN-FD</b> 物理总线引出，接口标识为 <code>CAN_H</code> 与 <code>CAN_L</code>，终端已集成 <b>120Ω 匹配电阻</b>——这意味着你不必自己再并一个终端电阻，接上即可。</p>
+
+<table>
+  <thead>
+    <tr><th>项目</th><th>规格</th><th>说明</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>物理总线</td><td><b>CAN 2.0B / CAN-FD</b></td><td>背板预留引出</td></tr>
+    <tr><td>接口标识</td><td><code>CAN_H</code> / <code>CAN_L</code></td><td>差分信号，注意不要与电源线序混淆</td></tr>
+    <tr><td>终端电阻</td><td><b>120Ω</b></td><td>终端已集成匹配电阻</td></tr>
+    <tr><td>示例波特率</td><td><code>1000000</code>（1Mbps）</td><td>与下方使能命令一致</td></tr>
+    <tr><td>机械臂侧 ROS 2 包</td><td><code>piper_description</code>、<code>piper_control</code></td><td>松灵官方 ROS 2 功能包</td></tr>
+  </tbody>
+</table>
+
+<p>在计算主板上使能板载 <code>can0</code>：</p>
+
+<div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code># 激活板载 can0 接口，设置波特率为 1Mbps
+sudo ip link set can0 type can bitrate 1000000
+sudo ip link set can0 up</code></pre>
+</div>
+
+<p>总线通了之后，通过松灵官方 ROS 2 功能包 <code>piper_description</code> 与 <code>piper_control</code>，可直接在计算主板上发布关节轨迹规划包，让机械臂按轨迹动起来。</p>
+
+<h3>3. 装配与联调顺序</h3>
+
+<ol class="steps">
+  <li><b>机械安装</b>把 PiPER 转接板固定在背板中心基座的 M3 / M4 孔位上，确认螺钉长度不穿透背板、不压线束。</li>
+  <li><b>电气连接</b>按 24V DC 规范接背板专用 24V 航空插头；若走独立电池组方案，确保机械臂回路与主板回路分开。插拔前先断电。</li>
+  <li><b>总线使能</b>执行上面的 <code>ip link</code> 两条命令，把 <code>can0</code> 拉到 1Mbps 并 up。</li>
+  <li><b>控制联调</b>启动 <code>piper_description</code> 与 <code>piper_control</code>，先发小幅度关节轨迹确认方向与限位，再逐步放大行程。</li>
+</ol>
+
+<div class="callout danger"><span class="t">🚨 联调安全</span>第一次动机械臂时，狗必须处于稳定支撑状态、机械臂行程内不得有人手和线缆。先在空载、小行程下确认关节方向，再上抓取任务——别让 3.8 kg 的臂在整机动态平衡时给你惊喜。</div>
+
+<h2 id="s3">三、外挂地平线 RDK / NVIDIA Orin 算力板</h2>
+
+<p>当需要部署 <b>7B 级别端侧视觉大语言模型</b>时，可将外部算力板通过<b>夹层无损固定</b>在狗背——不破坏原机结构，也不占用机械臂的中心基座。</p>
+
+<h3>1. 网络与数据流通讯</h3>
+
+<ul>
+  <li>外部算力板与 VBOT 计算主板之间，推荐通过 <b>千兆以太网口直连</b>（配静态子网 <code>192.168.126.x</code>）。</li>
+  <li>算力板作为 <b>ROS 2 客户端</b>，直接订阅主板发布的 <code>/image_left_raw</code> 与雷达话题，推理出的控制决策再回传至 <code>/vel_cmd</code>，整机物理链路互不干涉。</li>
+</ul>
+
+<div class="topo" role="img" aria-label="算力板数据流：算力板作为 ROS 2 客户端经千兆以太网连接计算主板，订阅图像与雷达话题并回传速度指令">
+  <div class="node"><b>外接算力板</b>RDK / Orin<br>ROS 2 客户端 · 7B 端侧推理</div>
+  <div class="link"><span class="arrow">⇄</span>千兆以太网直连<br>静态子网 <code>192.168.126.x</code></div>
+  <div class="node"><b>VBOT 计算主板</b>发布 <code>/image_left_raw</code><br>与雷达话题 · 执行 <code>/vel_cmd</code></div>
+</div>
+
+<table>
+  <thead>
+    <tr><th>方向</th><th>话题 / 链路</th><th>作用</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>算力板订阅</td><td><code>/image_left_raw</code> 与雷达话题</td><td>拿到视觉与雷达原始数据，供端侧模型推理</td></tr>
+    <tr><td>算力板回传</td><td><code>/vel_cmd</code></td><td>把推理出的控制决策交回计算主板执行</td></tr>
+    <tr><td>物理链路</td><td>千兆以太网 · <code>192.168.126.x</code></td><td>与整机其它链路互不干涉，带宽足够跑图像流</td></tr>
+  </tbody>
+</table>
+
+<p>这套分工的关键是“<b>算力在外、控制在内</b>”：算力板只做重推理，运动控制仍留在计算主板，链路出问题也不会把整机拖进失控。</p>
+
+<h3>2. 减震与散热</h3>
+
+<ul>
+  <li>算力板与背板接触面<b>必须加装硅胶减震阻尼球 (Damping Balls)</b>，过滤电机换向引起的高频共振。</li>
+  <li>算力板风扇进风口<b>严禁被定制外壳遮挡</b>，保持风道畅通。</li>
+</ul>
+
+<div class="callout warn"><span class="t">🌡️ 减震球不是可选项</span>四足行走时电机换向的高频振动会直接传到板卡焊点与接插件上。硅胶减震阻尼球是源文档明确要求的“必须加装”，同时别忘了在外壳上给风扇留出进风口——闷在壳里的算力板降频比掉线更难排查。</div>
+
+<div class="callout ok"><span class="t">🔎 现成范例</span>源文档提到的“小安搜救机器狗”就是 <b>Vbot + Insta360 X4 + RDK</b> 的组合：全景相机装前端高支架、RDK 走尾部夹层、数据回计算主板。完整项目复盘见下一课 <a href="lesson_03.html">4.3 黑客松标杆案例复盘</a>。</div>
+
+<h2 id="s4">🧪 小实验：外设供电预算计算器</h2>
+
+<p>机械臂、算力板、传感器装上去之前，先做一道小学算术：它们同时工作时的功率，会不会超过狗背的 24V 输出能力？这个实验把 PiPER 的电气规范和整机预算放在一张表上，让你在拧第一颗螺丝之前就看到红黄绿。</p>
+
+<h3>预算口径与实验目标</h3>
+
+<table>
+  <thead>
+    <tr><th>口径</th><th>数值</th><th>来源 / 算法</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>整机 24V 连续预算</td><td><b>240 W</b></td><td>24V × 10A（源文档给出的 24V/10A 预算）</td></tr>
+    <tr><td>瞬时峰值参考</td><td><b>360 W</b></td><td>24V × 15A（峰值 15A，仅作瞬时冲击参考）</td></tr>
+    <tr><td>PiPER 机械臂</td><td><b>24V DC · 峰值瞬间 10A</b></td><td>4.2 源文档电气规范</td></tr>
+    <tr><td>算力板 / 传感器</td><td>按铭牌填写</td><td>源文档未给出具体功耗，不猜数字</td></tr>
+  </tbody>
+</table>
+
+<ul class="goals">
+  <li>把三路外设功率相加，算出占 240 W 连续预算的比例</li>
+  <li>观察占比条在 80%（预警）与 100%（越界）两个节点上的颜色变化</li>
+  <li>依据结论选择错峰供电、独立电源或降载</li>
+</ul>
+
+<div class="lab">
+  <h4>🧪 外设供电预算计算器</h4>
+  <p>改动任一数值即时重算，不需要点按钮。默认值取 PiPER 的 24V × 10A 瞬时峰值，外加一块中等功耗算力板与少量传感器。</p>
+
+  <div class="fields">
+    <label>PiPER 机械臂峰值功率（W）
+      <input id="pw-arm" type="number" min="0" step="5" value="240" inputmode="decimal">
+    </label>
+    <label>外接算力板功率（W）
+      <input id="pw-board" type="number" min="0" step="5" value="25" inputmode="decimal">
+    </label>
+    <label>其他外设功率（W）
+      <input id="pw-other" type="number" min="0" step="5" value="10" inputmode="decimal">
+    </label>
+  </div>
+  <p class="hint">功率请查板卡与模组铭牌，或按实测电流 × 电压估算；只填数字，单位统一为 W。</p>
+
+  <div class="budget">
+    <div class="rowtop">
+      <span>合计 <b id="pw-total">275 W</b> / 连续预算 240 W</span>
+      <span id="pw-pct">114.6%</span>
+    </div>
+    <div class="meter">
+      <div class="fill" id="pw-fill"></div>
+      <div class="mark" title="80% 预警线"></div>
+    </div>
+    <div class="scale"><span>0 W</span><span>80% · 192 W 预警</span><span>240 W 预算</span></div>
+    <div class="nums">
+      <span>峰值电流 <b id="pw-amp">11.5 A</b></span>
+      <span>余量 <b id="pw-left">−35 W</b></span>
+      <span>机械臂占比 <b id="pw-share">87%</b></span>
+    </div>
+  </div>
+
+  <div class="chips">
+    <span class="chip">机械臂 <b id="pw-chip-arm">240 W · 87%</b></span>
+    <span class="chip">算力板 <b id="pw-chip-board">25 W · 9%</b></span>
+    <span class="chip">其他 <b id="pw-chip-other">10 W · 4%</b></span>
+  </div>
+
+  <div id="pw-res" class="result bad" role="status">🚨 超出 24V/10A 连续预算</div>
+  <ul class="advice" id="pw-advice">
+    <li>机械臂改为独立供电：背板专用 24V 航空插头独立回路，或机身内加装独立轻量动力电池组。</li>
+    <li>降低机械臂峰值负载，或关闭非必要外设（降载）。</li>
+  </ul>
+
+  <div class="labrow" style="margin-bottom:0">
+    <button id="pw-reset" class="ghost" type="button">恢复默认值</button>
+  </div>
+</div>
+
+<div class="callout"><span class="t">💡 读数怎么用</span>占比 ≤ 80% 记绿灯；80%～100% 是黄灯，必须安排错峰；&gt; 100% 就是红灯，说明这组外设不能同时从 24V/10A 预算里取电。占比条最多画到 240 W，超出部分用百分比数字和结论呈现。</div>
+
+<h2 id="s5">本课小结</h2>
+
+<p>改装不是“把好东西都装上去”，而是让每个挂点、每根线、每条总线都落在规范内。把下面四条红线背下来，联调能少熬三个通宵：</p>
+
+<table>
+  <thead>
+    <tr><th>改装层</th><th>必须照做的规范</th><th>一条红线</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>背板与外壳</b></td>
+      <td>M3 / M4 标准孔位阵列；PETG 或 PA-CF（尼龙碳纤维）</td>
+      <td><span class="no">严禁 PLA</span>；头部外壳超约 400 g 会让前侧关节过载</td>
+    </tr>
+    <tr>
+      <td><b>PiPER 机械臂</b></td>
+      <td>24V DC、峰值瞬间 10A；自重约 3.8 kg、负载 1.5 kg；背板额定承重 5 kg</td>
+      <td>别让机械臂与主板抢同一条供电回路</td>
+    </tr>
+    <tr>
+      <td><b>CAN 总线</b></td>
+      <td>CAN 2.0B / CAN-FD，CAN_H / CAN_L，终端 120Ω，示例 1Mbps</td>
+      <td>未使能 <code>can0</code> 就发轨迹，等于对着空气挥手</td>
+    </tr>
+    <tr>
+      <td><b>外接算力板</b></td>
+      <td>千兆以太网直连，静态子网 <code>192.168.126.x</code>；订阅 <code>/image_left_raw</code> 与雷达话题，回传 <code>/vel_cmd</code></td>
+      <td>硅胶减震阻尼球必装，风扇进风口不得被外壳遮挡</td>
+    </tr>
+  </tbody>
+</table>
+
+<ul class="goals">
+  <li>背板三个挂点：中心基座放 PiPER 转接板、前端高支架放 Insta360、尾部夹层放 RDK / Orin</li>
+  <li>材料只用 PETG / PA-CF，PLA 直接出局；分件打印用定位凸台与卡扣合体</li>
+  <li>机械臂 24V DC、峰值 10A，优先走背板专用航空插头或独立轻量动力电池组</li>
+  <li><code>can0</code> 设 1Mbps 并 up，再用 <code>piper_description</code> / <code>piper_control</code> 发轨迹</li>
+  <li>算力板走千兆网 + <code>192.168.126.x</code>，减震球与风道一个都不能省</li>
+</ul>
+
+<div class="callout"><span class="t">⏭️ 下一课预告</span>规范讲完，接下来看真实项目怎么用：聆灵、伽伽狗、牛来芭比、小安搜救狗等六个黑客松标杆案例，会把本课的孔位、24V、CAN 与算力板方案逐一落到现场细节里——<a href="lesson_03.html">4.3 黑客松标杆案例复盘（6 大真实项目）</a>。</div>
+
+</div>
+
+<div class="wrap" style="padding-top:0">
+<footer class="nav">
+  <a href="lesson_01.html"><span class="dir">← 上一课</span><span class="ttl">4.1 硬件工程规格与核心约束</span></a>
+  <a class="home-link" href="index.html"><span class="dir">目录</span><span class="ttl">返回目录</span></a>
+  <a href="lesson_03.html" style="text-align:right"><span class="dir">下一课 →</span><span class="ttl">4.3 黑客松标杆案例复盘</span></a>
+</footer>
+</div>
+
+</main>
+
+<script>
+document.querySelectorAll('.copy').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var pre=btn.parentElement.querySelector('pre');
+    navigator.clipboard.writeText(pre.textContent).then(function(){
+      btn.textContent='已复制'; setTimeout(function(){btn.textContent='复制'},1500);
+    });
+  });
+});
+
+(function(){
+  var armEl=document.getElementById('pw-arm');
+  var boardEl=document.getElementById('pw-board');
+  var otherEl=document.getElementById('pw-other');
+  var fill=document.getElementById('pw-fill');
+  if(!armEl||!boardEl||!otherEl||!fill){return;}
+  var BUDGET=240, PEAK=360;
+  var out={
+    total:document.getElementById('pw-total'),
+    pct:document.getElementById('pw-pct'),
+    amp:document.getElementById('pw-amp'),
+    left:document.getElementById('pw-left'),
+    share:document.getElementById('pw-share'),
+    chipArm:document.getElementById('pw-chip-arm'),
+    chipBoard:document.getElementById('pw-chip-board'),
+    chipOther:document.getElementById('pw-chip-other'),
+    res:document.getElementById('pw-res'),
+    advice:document.getElementById('pw-advice')
+  };
+  function val(el){
+    var n=parseFloat(el.value);
+    if(isNaN(n)||n<0){return 0;}
+    return n;
+  }
+  function r1(n){return Math.round(n*10)/10;}
+  function putAdvice(list){
+    out.advice.innerHTML='';
+    list.forEach(function(t){
+      var li=document.createElement('li');
+      li.textContent=t;
+      out.advice.appendChild(li);
+    });
+  }
+  function run(){
+    var arm=val(armEl), board=val(boardEl), other=val(otherEl);
+    var total=arm+board+other;
+    var pct=BUDGET>0?total/BUDGET*100:0;
+    var cls=pct>100?'bad':(pct>80?'warn':'ok');
+    var left=BUDGET-total;
+    var shareArm=total>0?Math.round(arm/total*100):0;
+
+    fill.style.width=Math.min(pct,100)+'%';
+    fill.className='fill'+(cls==='ok'?'':' '+cls);
+
+    out.total.textContent=r1(total)+' W';
+    out.pct.textContent=(total>0?r1(pct):0)+'%';
+    out.amp.textContent=r1(total/24)+' A';
+    out.left.textContent=(left<0?'−':'')+r1(Math.abs(left))+' W';
+    out.share.textContent=shareArm+'%';
+
+    out.chipArm.textContent=r1(arm)+' W · '+(total>0?Math.round(arm/total*100):0)+'%';
+    out.chipBoard.textContent=r1(board)+' W · '+(total>0?Math.round(board/total*100):0)+'%';
+    out.chipOther.textContent=r1(other)+' W · '+(total>0?Math.round(other/total*100):0)+'%';
+
+    var head='', tips=[];
+    if(total<=0){
+      cls='warn';
+      head='⚠️ 还没有输入任何功耗：先查清板卡与模组铭牌，再来算预算。';
+      tips.push('机械臂按 24V DC、峰值瞬间 10A 计；算力板与传感器请按铭牌填写。');
+    }else if(pct<=80){
+      head='✅ 预算充裕：合计占 24V/10A 连续预算的 '+r1(pct)+'%，余量 '+r1(left)+' W。';
+      tips.push('可直接使用背板专用 24V 航空插头取电，机械臂与主板共用 24V 母线。');
+      tips.push('联调时仍要观察母线压降：机械臂起动瞬间的峰值电流远高于均值。');
+    }else if(pct<=100){
+      head='⚠️ 接近预算上限：已占 '+r1(pct)+'%，只剩 '+r1(left)+' W 余量。';
+      tips.push('错峰供电：机械臂动作时暂停算力板的高负载推理，动作完成后再恢复。');
+      tips.push('为机械臂准备独立轻量动力电池组，减少对主板的抽载。');
+    }else{
+      head='🚨 超出 24V/10A 连续预算：合计 '+r1(total)+' W，占 '+r1(pct)+'%，超出 '+r1(-left)+' W。';
+      tips.push('机械臂改为独立供电：背板专用 24V 航空插头独立回路，或机身内加装独立轻量动力电池组。');
+      tips.push('降低机械臂峰值负载，或关闭非必要外设（降载）。');
+      tips.push('重新核对背板承重与重心：减重不能以结构强度为代价。');
+    }
+    if(total>0&&arm/total>0.7){
+      tips.push('机械臂占总功耗 '+Math.round(arm/total*100)+'%，大功率抽载最容易拉低主板电压，优先给它独立回路。');
+    }
+    if(total>PEAK){
+      tips.push('合计已超过 24V × 15A = 360 W 的瞬时峰值参考线，这组外设没有可用的供电窗口。');
+    }else if(total>BUDGET){
+      tips.push('合计仍在 24V × 15A = 360 W 瞬时峰值参考以内，但连续运行不可依赖瞬时限值，必须降载或独立供电。');
+    }
+    out.res.className='result '+cls;
+    out.res.textContent=head;
+    putAdvice(tips);
+  }
+  [armEl,boardEl,otherEl].forEach(function(el){
+    el.addEventListener('input',run);
+    el.addEventListener('change',run);
+  });
+  var reset=document.getElementById('pw-reset');
+  if(reset){
+    reset.addEventListener('click',function(){
+      armEl.value=240; boardEl.value=25; otherEl.value=10; run();
+    });
+  }
+  run();
+})();
+</script>
+</body>
+</html>

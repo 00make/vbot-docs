@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.3 多模态大模型集成与设备端 MCP 工具 | VBOT EDU 具身智能体开发</title>
+<style>
+/* ===== 风格契约 v1 · 预设 A 清爽技术文档风（全教程统一，勿改） ===== */
+:root{
+  --bg:#ffffff; --fg:#1f2937; --muted:#6b7280;
+  --accent:#0e7490; --accent-dark:#155e75; --accent-light:#ecfeff;
+  --code-bg:#f3f4f6; --code-fg:#111827; --code-border:#e5e7eb;
+  --border:#e5e7eb; --card:#f9fafb;
+  --warn-bg:#fffbeb; --warn-bd:#f59e0b;
+  --danger-bg:#fef2f2; --danger-bd:#ef4444;
+  --tip-bg:#ecfeff; --tip-bd:#0e7490;
+  --ok-bg:#f0fdf4; --ok-bd:#22c55e;
+  --radius:10px; --max-width:880px; --toc-w:250px;
+  --font-body:"Microsoft YaHei","Source Han Sans CN",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"Cascadia Code",Consolas,"JetBrains Mono","Courier New",monospace;
+}
+/* ===== 风格契约结束 ===== */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.8;font-size:16px}
+a{color:var(--accent)}
+a:hover{color:var(--accent-dark)}
+code{font-family:var(--font-mono);font-size:.875em;background:var(--code-bg);border:1px solid var(--code-border);border-radius:4px;padding:1px 6px;color:var(--code-fg)}
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:16px 18px;overflow:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.65;color:var(--code-fg);margin:0}
+pre code{background:none;border:none;padding:0;font-size:inherit}
+
+/* 布局：左 TOC + 右正文 */
+.toc{position:fixed;top:0;left:0;bottom:0;width:var(--toc-w);background:var(--card);border-right:1px solid var(--border);padding:28px 16px;overflow:auto}
+.toc .brand{font-weight:700;color:var(--accent-dark);font-size:17px;margin-bottom:2px}
+.toc .sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.toc ol{list-style:none;margin:0;padding:0;counter-reset:toc}
+.toc li{counter-increment:toc;margin-bottom:2px}
+.toc a{display:block;padding:7px 10px;border-radius:8px;color:var(--muted);text-decoration:none;font-size:13.5px}
+.toc a::before{content:counter(toc) ". ";color:var(--accent);font-weight:600}
+.toc a:hover{background:var(--accent-light);color:var(--accent-dark)}
+.toc .home{display:inline-block;margin-top:18px;font-size:13px;color:var(--accent);text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:var(--bg)}
+main{margin-left:var(--toc-w)}
+.wrap{max-width:var(--max-width);margin:0 auto;padding:40px 32px 24px}
+
+/* 页头 */
+header.lesson{border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:32px}
+header.lesson .hero-img{width:100%;max-height:280px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);margin-top:18px}
+.badges{margin-bottom:12px}
+.badge{display:inline-block;font-size:12px;font-weight:600;border-radius:99px;padding:2px 12px;margin-right:8px;vertical-align:middle}
+.badge.no{background:var(--accent);color:#fff}
+.badge.safe{background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.badge.ver{background:var(--card);color:var(--muted);border:1px solid var(--border)}
+h1{font-size:30px;line-height:1.4;margin:0 0 10px;color:var(--accent-dark)}
+.meta{font-size:13.5px;color:var(--muted)}
+.meta a{color:var(--accent)}
+
+/* 标题层级 */
+h2{font-size:22px;color:var(--accent-dark);margin:48px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--accent-light)}
+h3{font-size:17.5px;color:var(--fg);margin:28px 0 10px}
+
+/* 提示框 */
+.callout{border-left:4px solid var(--tip-bd);background:var(--tip-bg);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;margin:20px 0;font-size:15px}
+.callout.warn{border-color:var(--warn-bd);background:var(--warn-bg)}
+.callout.danger{border-color:var(--danger-bd);background:var(--danger-bg)}
+.callout.ok{border-color:var(--ok-bd);background:var(--ok-bg)}
+.callout .t{font-weight:700;display:block;margin-bottom:4px}
+
+/* 直播口播折叠 */
+details.talk{border:1px dashed var(--accent);border-radius:var(--radius);background:var(--bg);margin:20px 0}
+details.talk summary{cursor:pointer;padding:12px 18px;color:var(--accent);font-weight:600;font-size:14.5px}
+details.talk .body{padding:0 18px 14px;color:var(--muted);font-size:14.5px}
+
+/* 图片 */
+figure{margin:24px 0;text-align:center}
+figure img{max-width:100%;border:1px solid var(--border);border-radius:var(--radius);background:#fff}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+
+/* 表格 */
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px}
+th,td{border:1px solid var(--border);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--accent-light);color:var(--accent-dark);font-weight:700}
+tr:nth-child(even) td{background:var(--card)}
+td .no{color:var(--danger-bd);font-weight:700}
+
+/* 编号步骤 */
+ol.steps{list-style:none;counter-reset:st;padding:0;margin:18px 0}
+ol.steps>li{counter-increment:st;position:relative;padding:0 0 18px 48px}
+ol.steps>li::before{content:counter(st);position:absolute;left:0;top:2px;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;text-align:center;line-height:32px;font-size:15px}
+ol.steps>li>b:first-child{display:block;margin-bottom:4px}
+
+/* CSS 拓扑图 */
+.topo{display:flex;align-items:stretch;justify-content:center;gap:0;margin:24px 0;flex-wrap:wrap}
+.topo .node{background:var(--card);border:2px solid var(--accent);border-radius:var(--radius);padding:12px 16px;min-width:170px;text-align:center;font-size:13.5px}
+.topo .node b{display:block;color:var(--accent-dark);font-size:14.5px;margin-bottom:2px}
+.topo .node code{font-size:12px}
+.topo .node.dev{border-color:var(--muted)}
+.topo .node.gw{border-style:dashed}
+.topo .link{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 10px;color:var(--muted);font-size:12px;min-width:96px}
+.topo .link .arrow{font-size:20px;color:var(--accent);line-height:1.2}
+
+/* 代码块 + 复制按钮 + Tabs */
+.codewrap{position:relative;margin:14px 0}
+.codewrap .lang{position:absolute;top:0;right:88px;font-size:11px;color:var(--muted);background:var(--bg);border:1px solid var(--code-border);border-bottom:none;border-radius:6px 6px 0 0;padding:1px 8px}
+.copy{position:absolute;top:8px;right:8px;background:var(--bg);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;font-family:var(--font-body)}
+.copy:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.tabs{display:flex;gap:6px;margin:18px 0 0}
+.tabs button{border:1px solid var(--border);border-bottom:none;background:var(--card);padding:8px 18px;border-radius:10px 10px 0 0;cursor:pointer;font-size:14px;color:var(--muted);font-family:var(--font-body)}
+.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+.panel{display:none;border:1px solid var(--border);border-radius:0 var(--radius) var(--radius) var(--radius);padding:16px 18px;background:var(--bg)}
+.panel.on{display:block}
+
+/* 目标清单 */
+ul.goals{margin:12px 0;padding-left:0;list-style:none}
+ul.goals li{padding:4px 0 4px 28px;position:relative}
+ul.goals li::before{content:"✓";position:absolute;left:4px;color:var(--accent);font-weight:700}
+
+/* 页脚导航 */
+footer.nav{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--border);margin-top:56px;padding:24px 0 40px;flex-wrap:wrap}
+footer.nav a{flex:1;min-width:200px;border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;text-decoration:none;background:var(--card)}
+footer.nav a:hover{border-color:var(--accent);background:var(--accent-light)}
+footer.nav .dir{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
+footer.nav .ttl{display:block;font-size:15px;color:var(--accent-dark);font-weight:600}
+footer.nav a.home-link{flex:0 0 auto;text-align:center}
+
+/* 甘特时间线 */
+.gantt{margin:20px 0}
+.gantt .row{display:flex;align-items:center;margin:8px 0}
+.gantt .lbl{width:190px;font-size:13.5px;color:var(--fg);flex-shrink:0}
+.gantt .track{flex:1;position:relative;height:28px;background:var(--card);border:1px solid var(--border);border-radius:6px}
+.gantt .bar{position:absolute;top:3px;bottom:3px;background:linear-gradient(90deg,var(--accent),#22d3ee);border-radius:5px;color:#fff;font-size:11.5px;display:flex;align-items:center;padding:0 8px;white-space:nowrap;overflow:hidden}
+.gantt .axis{display:flex;margin-left:190px;font-size:11.5px;color:var(--muted)}
+.gantt .axis span{flex:1;text-align:left}
+
+/* 决策流程图 */
+.flow{display:flex;flex-direction:column;align-items:center;margin:24px 0}
+.fnode{border:2px solid var(--accent);background:var(--accent-light);border-radius:var(--radius);padding:10px 18px;font-size:14px;text-align:center;max-width:460px}
+.fnode b{color:var(--accent-dark)}
+.fnode.start{border-radius:99px;background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.fnode.decision{background:var(--warn-bg);border-color:var(--warn-bd)}
+.fnode.end{border-radius:99px;background:var(--ok-bg);border-color:var(--ok-bd);color:#15803d;font-weight:600}
+.fdown{color:var(--accent);font-size:18px;line-height:1.5;text-align:center}
+.fdown small{display:block;font-size:12px;color:var(--muted)}
+.fbranch{display:flex;gap:28px;justify-content:center;align-items:flex-start;flex-wrap:wrap;margin:4px 0}
+.fcol{display:flex;flex-direction:column;align-items:center}
+.fcol .tag-y{font-size:12px;font-weight:700;color:#15803d;background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+.fcol .tag-n{font-size:12px;font-weight:700;color:#92400e;background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:99px;padding:1px 10px;margin-bottom:4px}
+
+/* 交互小实验 */
+.lab{background:var(--card);border:1px solid var(--accent);border-radius:var(--radius);padding:18px 20px;margin:26px 0}
+.lab h4{margin:0 0 6px;color:var(--accent-dark);font-size:16px}
+.lab p{margin:4px 0;font-size:14px;color:var(--muted)}
+.labrow{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;align-items:center}
+.lab input{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font-mono);font-size:14px;width:220px;background:var(--bg);color:var(--fg)}
+.lab button{padding:8px 18px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:14px;font-family:var(--font-body)}
+.lab button:hover{background:var(--accent-dark)}
+.result{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:14px;display:none}
+.result.ok{display:block;background:var(--ok-bg);color:#15803d;border:1px solid var(--ok-bd)}
+.result.bad{display:block;background:var(--danger-bg);color:#b91c1c;border:1px solid var(--danger-bd)}
+.result.warn{display:block;background:var(--warn-bg);color:#92400e;border:1px solid var(--warn-bd)}
+.lab pre{margin-top:10px}
+
+/* 移动端 */
+@media (max-width:768px){
+  .toc{position:static;width:auto;border-right:none;border-bottom:1px solid var(--border);padding:18px 16px}
+  .toc ol{columns:2}
+  main{margin-left:0}
+  .wrap{padding:24px 18px 12px}
+  h1{font-size:24px}
+  .topo{flex-direction:column;align-items:center}
+  .topo .link{min-width:auto;padding:6px 0}
+  .topo .link .arrow{transform:rotate(90deg)}
+  .gantt .lbl{width:110px;font-size:12px}
+  .gantt .axis{margin-left:110px}
+  .fbranch{flex-direction:column;align-items:center;gap:8px}
+}
+/* 打印 */
+@media print{
+  .toc,.copy,.tabs{display:none}
+  main{margin-left:0}
+  .panel{display:block!important;border:none;padding:8px 0}
+  body{font-size:12px}
+  a{color:var(--fg);text-decoration:none}
+}
+
+/* ===== Lesson 03 专属组件（仅追加，不改基础契约的配色 / 字体 / 间距体系） ===== */
+/* 全链路图 */
+.pipeline{display:flex;align-items:stretch;margin:24px 0 10px}
+.pipeline .pstep{flex:1 1 0;min-width:0;background:var(--card);border:2px solid var(--accent);border-radius:var(--radius);padding:10px 10px;text-align:center;font-size:12.5px;color:var(--muted);line-height:1.55}
+.pipeline .pstep b{display:block;color:var(--accent-dark);font-size:13.5px;margin-bottom:3px}
+.pipeline .pstep .pno{display:inline-block;font-family:var(--font-mono);font-size:10px;color:var(--accent);border:1px solid var(--accent);border-radius:99px;padding:0 7px;margin-bottom:5px;background:var(--bg);line-height:1.6}
+.pipeline .pstep.exec{border-style:dashed}
+.pipeline .pstep code{font-size:10.5px;padding:0 4px;white-space:nowrap}
+.pipeline .parrow{flex:0 0 54px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;font-size:10.5px;color:var(--muted);line-height:1.3;padding:0 3px}
+.pipeline .parrow .a{font-size:18px;color:var(--accent);line-height:1.1}
+
+/* MCP 时序图 */
+.seq-scroll{overflow-x:auto;margin:22px 0 6px;padding-bottom:4px}
+.seq{min-width:720px;position:relative}
+.seq-head{display:grid;grid-template-columns:repeat(3,1fr);position:relative;z-index:2}
+.seq-head .actor{margin:0 6px;background:var(--accent-light);border:1px solid var(--accent);border-radius:var(--radius);padding:9px 8px;text-align:center;font-size:13px;line-height:1.55}
+.seq-head .actor b{display:block;color:var(--accent-dark);font-size:13.5px}
+.seq-head .actor small{display:block;color:var(--muted);font-size:11px}
+.seq-canvas{position:relative;margin-top:12px;padding:6px 0}
+.seq-line{position:absolute;top:0;bottom:0;border-left:1px dashed var(--border)}
+.seq-line.l1{left:16.666%}
+.seq-line.l2{left:50%}
+.seq-line.l3{left:83.333%}
+.seq-row{position:relative;height:64px}
+.seq-msg{position:absolute;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:7px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:4px 9px;font-size:11.8px;line-height:1.45;color:var(--fg);z-index:1}
+.seq-msg .n{flex:0 0 auto;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;font-size:10.5px;line-height:18px;text-align:center;font-weight:700}
+.seq-msg .ar{color:var(--accent);font-weight:700;font-size:14px;line-height:1}
+.seq-msg.a2b,.seq-msg.b2a,.seq-msg.c2b{left:calc(16.666% + 8px);width:calc(33.333% - 16px)}
+.seq-msg.b2c{left:calc(50% + 8px);width:calc(33.333% - 16px)}
+.seq-msg.a2b .ar,.seq-msg.b2c .ar{margin-left:auto}
+.seq-note{font-size:12.5px;color:var(--muted);margin:4px 0 0}
+.seq-note code{font-size:12px}
+
+/* 工具标签 */
+.tool-chip{display:inline-block;font-family:var(--font-mono);font-size:11.5px;background:var(--accent-light);border:1px solid var(--accent);color:var(--accent-dark);border-radius:99px;padding:0 8px;line-height:1.8;margin:1px 0}
+.tool-strip{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:10px 0 4px}
+.tool-strip .ts-label{font-size:12px;color:var(--muted);font-family:var(--font-mono)}
+
+/* 模拟器 */
+.scenarios{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.scenarios button{padding:8px 16px;border:1px solid var(--accent);border-radius:99px;background:var(--bg);color:var(--accent-dark);cursor:pointer;font-size:13.5px;font-family:var(--font-body)}
+.scenarios button:hover{background:var(--accent-light)}
+.scenarios button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.mcp-status{font-family:var(--font-mono);font-size:12.5px;line-height:1.6;color:var(--muted);border:1px dashed var(--border);border-radius:8px;padding:7px 11px;margin:10px 0 14px;background:var(--bg)}
+.mcp-status.ok{color:#15803d;background:var(--ok-bg);border-color:var(--ok-bd)}
+.mcp-status.bad{color:#b91c1c;background:var(--danger-bg);border-color:var(--danger-bd)}
+.msteps{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+.mstep[data-i="2"],.mstep[data-i="3"]{grid-column:1/-1}
+.mstep{border:1px solid var(--border);border-radius:8px;padding:10px 12px;background:var(--bg);opacity:.45;transition:opacity .25s ease,border-color .25s ease,box-shadow .25s ease,transform .25s ease;min-height:92px}
+.mstep.active{opacity:1;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light);transform:translateY(-1px)}
+.mstep.done{opacity:1}
+.mstep.bad{border-color:var(--danger-bd);background:var(--danger-bg)}
+.mstep.bad.active{box-shadow:0 0 0 3px var(--danger-bg)}
+.mstep.skip{border-style:dashed;background:var(--card)}
+.mstep .st-h{display:flex;align-items:center;gap:8px;font-size:13.5px}
+.mstep .st-h b{color:var(--accent-dark)}
+.mstep .st-n{flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:11.5px;line-height:20px;text-align:center;font-weight:700}
+.mstep.bad .st-n{background:var(--danger-bd)}
+.mstep.skip .st-n{background:var(--muted)}
+.mstep .st-body{font-size:12.8px;line-height:1.7;color:var(--fg);margin-top:5px}
+.mstep .st-body pre{font-size:11.3px;line-height:1.5;padding:8px 10px;margin:5px 0 0;max-height:230px;border-radius:8px}
+.mstep .st-body code{font-size:11.5px}
+.json-cap{font-family:var(--font-mono);font-size:10.5px;color:var(--muted);margin-top:6px}
+.json-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:2px}
+.json-pair .json-cap{margin-top:4px}
+.lab h3{margin:0 0 6px;font-size:16px;color:var(--accent-dark)}
+.lab-note{font-size:12px;color:var(--muted);margin-top:10px!important}
+@media (max-width:768px){
+  .pipeline{flex-direction:column}
+  .pipeline .parrow{flex:0 0 auto;padding:4px 0}
+  .pipeline .parrow .a{transform:rotate(90deg)}
+  .msteps{grid-template-columns:1fr}
+  .mstep[data-i="2"],.mstep[data-i="3"]{grid-column:auto}
+  .json-pair{grid-template-columns:1fr}
+  .seq{min-width:680px}
+}
+@media print{
+  .mcp-status,.mstep{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<nav class="toc" id="nav">
+  <div class="brand">VBOT EDU 具身智能</div>
+  <div class="sub">模块 03 · Lesson 03</div>
+  <ol>
+    <li><a href="#s0">多模态全链路总览</a></li>
+    <li><a href="#s1">板载音频与自定义唤醒词</a></li>
+    <li><a href="#s2">VLM 视觉认知决策</a></li>
+    <li><a href="#s3">设备端 MCP 工具服务</a></li>
+    <li><a href="#s4">小实验：MCP 工具调用模拟器</a></li>
+    <li><a href="#s5">本课小结</a></li>
+  </ol>
+  <a class="home" href="index.html">← 返回目录</a>
+</nav>
+
+<main>
+<div class="wrap">
+
+<header class="lesson">
+  <div class="badges">
+    <span class="badge no">Lesson 03</span>
+    <span class="badge safe">安全级别：智能体扩展（agent_extension）</span>
+    <span class="badge ver">固件基准 V1.6.0</span>
+  </div>
+  <h1>多模态大模型集成与设备端 MCP 工具</h1>
+  <p class="meta">预计阅读 16 分钟 · 前置课程：<a href="lesson_02.html">3.2 激光雷达、双目视觉与骨骼姿态感知</a> · 核心端口：<code>18080</code> / <code>8787</code>（仅内网）</p>
+</header>
+
+<details class="talk">
+  <summary>🎙️ 展开直播口播导语（讲师版）</summary>
+  <div class="body">
+    <p>“如果大模型只能在屏幕聊天框里陪你打字，那它不过是一个昂贵的统计学文字玩具；但如果给大模型插上一双‘能看、能走、能表达’的物理手脚，它就是真正能够改造现实世界的具身智能体！最近，Anthropic 主导的 <b>MCP (Model Context Protocol, 模型上下文协议)</b> 彻底引爆了全球 AI 圈。你知道吗？VBOT 官方在底座设计中，早已为端侧 MCP 与 Agent Harness 留好了原生接口！今天这节课，我们就手把手带你在计算主板上拉起一个高性能的 <b>18080 MCP 工具服务器</b>，让 Cursor、Claude Code 或者任何大模型智能体，直接像调用本地函数一样操纵这台钢铁猛兽！”</p>
+  </div>
+</details>
+
+<h2 id="goals" style="margin-top:24px;border-bottom:none;padding-bottom:0;font-size:17.5px">本课学习目标</h2>
+<ul class="goals">
+  <li>复述头部四麦克风阵列的三条音频入口，以及原始音频流所需的 <code>--consent</code> 授权</li>
+  <li>用 OpenWakeWord / Sherpa-ONNX 热替换唤醒词，再接 SenseVoice / Whisper 完成流式识别</li>
+  <li>按“1 帧/秒 + 结构化 JSON”设计 VLM 决策，避免把 30fps 全量视频喂给云端</li>
+  <li>在 18080 挂载 MCP 服务，暴露行走、表情、抓帧三个具身工具</li>
+  <li>面对“无匹配工具”时正确降级，并守住 18080 / 8787 的内网边界</li>
+</ul>
+
+<h2 id="s0">多模态全链路总览：从一句话到一次动作</h2>
+
+<p>这条链路把声音、画面和动作串成闭环：头部四麦克风阵列先“听见”，唤醒后由 ASR 把语音转成文本；VLM 结合相机画面理解现场并做出决策；决策被编译成标准的 MCP 工具调用，最终由 RCP 与运控系统落成物理动作。</p>
+
+<div class="pipeline" role="img" aria-label="多模态全链路图：语音唤醒到 ASR，再到 LLM 与 VLM 决策，经 MCP 工具调用，最后由 RCP 与运控执行">
+  <div class="pstep">
+    <span class="pno">01</span>
+    <b>语音唤醒</b>
+    四麦阵列 + 降噪<br>OpenWakeWord<br>Sherpa-ONNX
+  </div>
+  <div class="parrow"><span class="a">→</span>唤醒命中</div>
+  <div class="pstep">
+    <span class="pno">02</span>
+    <b>流式 ASR</b>
+    SenseVoice / Whisper<br>识别文本入 LLM
+  </div>
+  <div class="parrow"><span class="a">→</span>转写文本</div>
+  <div class="pstep">
+    <span class="pno">03</span>
+    <b>LLM/VLM<br>决策</b>
+    1fps 抽帧 + 语音<br>JSON 工具调用
+  </div>
+  <div class="parrow"><span class="a">→</span>工具调用</div>
+  <div class="pstep">
+    <span class="pno">04</span>
+    <b>MCP 工具调用</b>
+    <code>18080/mcp</code><br>JSON-RPC 2.0
+  </div>
+  <div class="parrow"><span class="a">→</span>工具执行</div>
+  <div class="pstep exec">
+    <span class="pno">05</span>
+    <b>RCP / 运控执行</b>
+    行走 · 表情<br>语音播报
+  </div>
+</div>
+
+<figure>
+  <img src="../assets/06-cases-moobie/05-diagram-大模型情绪计算与动作执行五大环节技术架构.png" alt="牛来芭比：大模型情绪计算与动作执行五大环节技术架构" loading="lazy">
+  <figcaption>案例参照：牛来芭比“多模态输入 → 情绪语义理解 → 动作生成 → 物理执行”五环节链路，3~5 秒云端延迟用“微动作垫场”化解（详见 4.3 CASE-03）</figcaption>
+</figure>
+
+<div class="callout"><span class="t">📌 端侧 MCP 的定位</span>MCP 不是替代运控，而是把设备能力以标准工具的形式暴露给任意兼容 Agent。真正让机器狗动起来的，仍然是设备自身的 RCP 与运控执行链路；MCP 负责把“大模型的决策”翻译成“设备能执行的调用”。</div>
+
+<h2 id="s1">一、板载音频链路与自定义唤醒词</h2>
+
+<p>机器狗头部集成了四麦克风阵列与降噪算法。官方底座把音频能力拆成三条入口，分别对应“原始音频、识别文本、语音播报”三种用法：</p>
+
+<table>
+  <thead>
+    <tr><th>入口 / 话题</th><th>能力</th><th>使用要点</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>/raw_audio_dump</code></td>
+      <td>原始音频流</td>
+      <td>需用户显式传递 <code>--consent</code> 权限，未获授权不要截流</td>
+    </tr>
+    <tr>
+      <td><code>/speech/asr_result</code></td>
+      <td>板载识别文本</td>
+      <td>实时输出 ASR 识别出的文字，可直接作为 LLM 的文本输入</td>
+    </tr>
+    <tr>
+      <td>音频节点</td>
+      <td>语音播报服务</td>
+      <td>直接投递 WAV / PCM 音频包，播放语音反馈</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout warn"><span class="t">🔐 原始音频的授权边界</span><code>/raw_audio_dump</code> 必须由用户显式传入 <code>--consent</code>。没有拿到授权时，优先使用 <code>/speech/asr_result</code> 的识别文本，而不是在后台偷偷截流麦克风原始数据。</div>
+
+<h3>唤醒词热替换与离线语音栈</h3>
+
+<p>黑客松实战中（如“聆灵陪诊”“伽伽狗”），选手们通常会旁路系统内置唤醒词，构建独立的语音闭环：</p>
+
+<ol class="steps">
+  <li><b>音频流截流</b>在后台启动轻量 Python 节点监听麦克风流；</li>
+  <li><b>轻量语音唤醒</b>接入 OpenWakeWord 或 Sherpa-ONNX，加载专属唤醒词模型（如唤醒“小安”或“聆灵”）；</li>
+  <li><b>流式语音识别</b>唤醒后启动阿里 SenseVoice 或 OpenAI Whisper 进行高精度语音转文字，随后注入 LLM。</li>
+</ol>
+
+<figure>
+  <img src="../assets/05-cases-yogago/03-interview-三人沙发访谈现场.jpg" alt="伽伽狗团队三人沙发访谈现场，分享多模态交互与唤醒词改装经验" loading="lazy">
+  <figcaption>案例参照：伽伽狗团队用 Sherpa 在外部接管音频流，把唤醒词换成“伽伽”</figcaption>
+</figure>
+
+<p>这条路线不改系统内置的唤醒逻辑，而是在外部重建一套“唤醒 + ASR”闭环：唤醒词模型决定“什么时候开始听”，ASR 决定“听到了什么”，两者都把结果以文本形式交给 LLM，后续决策链路与板载语音入口完全一致。</p>
+
+<h2 id="s2">二、VLM 视觉认知决策流水线</h2>
+
+<p>传统机器人只知道“前方 0.8 米有障碍物”，而搭载视觉大模型的机器狗知道<b>“地上有一双散落的瑜伽袜，或者有一位老人摔倒需要呼救”</b>。差别不在于相机分辨率，而在于决策层能不能把画面、语音与设备能力放在同一个上下文里理解。</p>
+
+<h3>双输入决策链</h3>
+
+<div class="flow" role="img" aria-label="VLM 视觉认知决策流水线：双目相机抽帧与麦克风语音识别汇入多模态大模型，输出 Function Call 到设备端 MCP 工具，再执行底盘导航、表情与语音反馈">
+  <div class="fbranch">
+    <div class="fcol">
+      <span class="tag-y">视觉输入</span>
+      <div class="fnode"><b>双目相机（H.265）</b><br>前端实拍画面</div>
+      <div class="fdown">↓</div>
+      <div class="fnode"><b>OpenCV 解码抽帧</b><br>1fps</div>
+    </div>
+    <div class="fcol">
+      <span class="tag-n">语音输入</span>
+      <div class="fnode"><b>麦克风阵列</b><br>四麦 + 降噪</div>
+      <div class="fdown">↓</div>
+      <div class="fnode"><b>SenseVoice 语音识别</b><br>转写文本</div>
+    </div>
+  </div>
+  <div class="fdown">↓ <small>视觉与语音在此汇合</small></div>
+  <div class="fnode"><b>多模态大模型</b><br>GPT-4o / Qwen2-VL</div>
+  <div class="fdown">↓</div>
+  <div class="fnode decision"><b>推理决策（Function Call）</b><br>输出 tool_name 与 arguments</div>
+  <div class="fdown">↓</div>
+  <div class="fnode"><b>设备端 MCP 工具调用</b><br><code>192.168.127.2:18080/mcp</code></div>
+  <div class="fdown">↓</div>
+  <div class="fnode end">执行底盘导航 / 表情 / 语音反馈</div>
+</div>
+
+<h3>决策设计准则</h3>
+
+<table>
+  <thead>
+    <tr><th>准则</th><th>做法</th><th>为什么</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>抽帧降频</b></td>
+      <td>通常以 <b>1 帧/秒</b> 抽帧；或在检测到用户提问时按需触发单帧截取</td>
+      <td>不要把 30fps 全量视频喂给云端 VLM，延迟与 Token 成本不可接受</td>
+    </tr>
+    <tr>
+      <td><b>结构化输出</b></td>
+      <td>强制大模型以 JSON 格式输出 <code>tool_name</code> 与 <code>arguments</code></td>
+      <td>让决策可以直接映射为 MCP 的 <code>tools/call</code> 参数，避免自由文本解析歧义</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout warn"><span class="t">⚠️ 别把“看得清”当成“看得起”</span>30fps 全量视频直送云端，等于把带宽、延迟和 Token 账单同时拉满。教学与实战都从 1fps 起步；只有当用户明确提问、需要看清细节时，再补一帧。</div>
+
+<h2 id="s3">三、设备端 MCP 工具服务：把能力暴露给任意 Agent</h2>
+
+<p>Anthropic 提出的 <b>MCP (Model Context Protocol，模型上下文协议)</b> 已经成为连接 AI 与物理世界的标准接口。通过在机器狗上部署 MCP 服务，任何兼容的大模型（Claude Code、Cursor、AutoGPT 等）都能自然地操纵机器狗。</p>
+
+<h3>1. 端口与网络规约</h3>
+
+<table>
+  <thead>
+    <tr><th>用途</th><th>地址</th><th>说明</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>MCP 服务统一入口</b></td>
+      <td><code>http://192.168.127.2:18080/mcp</code></td>
+      <td>所有 MCP 请求走这一个入口，示例服务监听 18080</td>
+    </tr>
+    <tr>
+      <td><b>设备 Skill 动态注入入口</b></td>
+      <td><code>http://192.168.127.10:8787/api/skills/{name}</code></td>
+      <td>按 <code>{name}</code> 动态注入设备 Skill</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout danger"><span class="t">🚨 网络安全底线</span>18080 与 8787 端口<b>仅留在内网</b>，<b>严禁使用 frp 或公网穿透直接暴露到公网</b>！把设备工具裸奔到公网，等于把机器狗的行动能力交给任何人。</div>
+
+<h3>2. MCP 服务调用时序</h3>
+
+<p>外部 Agent 不直接碰设备接口，而是通过 18080 的 MCP 服务完成“发现工具 → 调用工具 → 收取回执”三步：</p>
+
+<div class="seq-scroll">
+  <div class="seq" role="img" aria-label="MCP 调用时序图：外部 Agent 与 18080 MCP 服务之间进行 tools/list 与 tools/call，MCP 服务再调用设备能力并返回结果">
+    <div class="seq-head">
+      <div class="actor"><b>外部 Agent</b><small>Claude Code / Cursor</small></div>
+      <div class="actor"><b>设备端 MCP 服务</b><small>192.168.127.2:18080/mcp</small></div>
+      <div class="actor"><b>设备能力</b><small>运控 / 表情 / 相机</small></div>
+    </div>
+    <div class="seq-canvas">
+      <div class="seq-line l1"></div>
+      <div class="seq-line l2"></div>
+      <div class="seq-line l3"></div>
+      <div class="seq-row">
+        <div class="seq-msg a2b"><span class="n">1</span><span><code>POST /mcp</code> · <code>tools/list</code></span><span class="ar">→</span></div>
+      </div>
+      <div class="seq-row">
+        <div class="seq-msg b2a"><span class="n">2</span><span class="ar">←</span><span>3 个工具：walk / emotion / capture</span></div>
+      </div>
+      <div class="seq-row">
+        <div class="seq-msg a2b"><span class="n">3</span><span><code>tools/call</code> · name + arguments</span><span class="ar">→</span></div>
+      </div>
+      <div class="seq-row">
+        <div class="seq-msg b2c"><span class="n">4</span><span>下发运控 / 表情 / 抓帧指令</span><span class="ar">→</span></div>
+      </div>
+      <div class="seq-row">
+        <div class="seq-msg c2b"><span class="n">5</span><span class="ar">←</span><span>执行状态 / 一帧画面</span></div>
+      </div>
+      <div class="seq-row">
+        <div class="seq-msg b2a"><span class="n">6</span><span class="ar">←</span><span><code>result.content</code> 文本回执</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="seq-note">注意：示例代码中行走分支仍以 <code>time.sleep(0.1)</code> 模拟，并留下 <code>TODO</code>——实际执行需调用 <code>/vel_cmd</code> 发布器做 20Hz 连续投递。时序图里的“设备能力”在示例中先以日志与文本回执代替。</p>
+
+<h3>3. 对外暴露的三个具身工具</h3>
+
+<table>
+  <thead>
+    <tr><th>工具名</th><th>能力</th><th>关键参数（* 为 required）</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>vbot_locomotion_walk</code></td>
+      <td>驱动机器狗以指定线速度平稳移动一段指定时间，支持前后与转向</td>
+      <td><code>linear_x</code>*：前进线速度（m/s），建议范围 -0.3 ~ 0.5<br><code>angular_z</code>：旋转角速度（rad/s），正值为左转，负值为右转<br><code>duration</code>*：持续秒数，范围 (0.5, 10.0]</td>
+    </tr>
+    <tr>
+      <td><code>vbot_set_emotion</code></td>
+      <td>在头部 LCD 屏幕上渲染预设表情，并伴随耳灯 RGB 呼吸效果</td>
+      <td><code>emotion</code>*：<code>happy</code> / <code>wink</code> / <code>surprised</code> / <code>confused</code> / <code>sad</code> / <code>neutral</code></td>
+    </tr>
+    <tr>
+      <td><code>vbot_capture_environment</code></td>
+      <td>抓取当前双目相机前端的一帧高清实拍画面，供多模态视觉大模型做空间分析</td>
+      <td><code>camera_select</code>：<code>left</code> / <code>right</code>，默认 <code>left</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>4. 生产级 MCP 工具服务端示例</h3>
+
+<p>下面这份 <code>vbot_mcp_service.py</code> 照录源文档：用 FastAPI 暴露 <code>/mcp</code> 单入口，<code>tools/list</code> 返回工具清单，<code>tools/call</code> 按工具名分发执行，最后以 uvicorn 绑定板载内网 <code>18080</code>。</p>
+
+<div class="codewrap"><span class="lang">python</span><button class="copy">复制</button>
+<pre><code>#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+VBOT 设备端生产级 MCP (Model Context Protocol) 核心服务
+运行端口：18080
+"""
+
+from fastapi import FastAPI, Request
+import uvicorn
+import time
+
+app = FastAPI(title="VBOT Embodied MCP Gateway", version="1.6.0")
+
+# 声明向大模型暴露的具身工具清单
+TOOLS_CATALOG = [
+    {
+        "name": "vbot_locomotion_walk",
+        "description": "驱动机器狗以指定线速度平稳移动一段指定时间，支持前后与转向",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "linear_x": {"type": "number", "description": "前进线速度 (m/s)，建议范围 -0.3 ~ 0.5"},
+                "angular_z": {"type": "number", "description": "旋转角速度 (rad/s)，正值为左转，负值为右转"},
+                "duration": {"type": "number", "description": "持续秒数，范围 (0.5, 10.0]"}
+            },
+            "required": ["linear_x", "duration"]
+        }
+    },
+    {
+        "name": "vbot_set_emotion",
+        "description": "在头部 LCD 屏幕上渲染预设表情，并伴随耳灯 RGB 呼吸效果",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "emotion": {
+                    "type": "string",
+                    "enum": ["happy", "wink", "surprised", "confused", "sad", "neutral"],
+                    "description": "表情类型"
+                }
+            },
+            "required": ["emotion"]
+        }
+    },
+    {
+        "name": "vbot_capture_environment",
+        "description": "抓取当前双目相机前端的一帧高清实拍画面，供多模态视觉大模型做空间分析",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "camera_select": {"type": "string", "enum": ["left", "right"], "default": "left"}
+            }
+        }
+    }
+]
+
+@app.post("/mcp")
+async def handle_mcp_request(request: Request):
+    payload = await request.json()
+    rpc_method = payload.get("method")
+    call_id = payload.get("id")
+    params = payload.get("params", {})
+
+    # 1. 响应工具清单查询
+    if rpc_method == "tools/list":
+        return {
+            "jsonrpc": "2.0",
+            "id": call_id,
+            "result": {"tools": TOOLS_CATALOG}
+        }
+
+    # 2. 响应具体工具执行
+    elif rpc_method == "tools/call":
+        tool_name = params.get("name")
+        args = params.get("arguments", {})
+
+        if tool_name == "vbot_locomotion_walk":
+            vx = float(args.get("linear_x", 0.0))
+            wz = float(args.get("angular_z", 0.0))
+            dur = float(args.get("duration", 1.0))
+            print(f"🐾 [MCP 运控] 收到行走指令: vx={vx}m/s, wz={wz}rad/s, 持续={dur}s")
+            
+            # TODO: 实际代码中调用 /vel_cmd 发布器执行 20Hz 连续投递
+            time.sleep(0.1)
+            return {
+                "jsonrpc": "2.0",
+                "id": call_id,
+                "result": {
+                    "content": [{"type": "text", "text": f"✅ 机器狗成功完成行走: vx={vx}, wz={wz}, 耗时={dur}秒"}]
+                }
+            }
+
+        elif tool_name == "vbot_set_emotion":
+            emo = args.get("emotion")
+            print(f"🐶 [MCP 表情] 切换头部屏幕表情至: {emo}")
+            return {
+                "jsonrpc": "2.0",
+                "id": call_id,
+                "result": {
+                    "content": [{"type": "text", "text": f"✅ 面部表情与耳灯已成功切换为 {emo}"}]
+                }
+            }
+
+        elif tool_name == "vbot_capture_environment":
+            print("📷 [MCP 视觉] 正在抓取一帧现场画面...")
+            return {
+                "jsonrpc": "2.0",
+                "id": call_id,
+                "result": {
+                    "content": [{"type": "text", "text": "✅ 已捕获当前帧，分辨率 1920x1080，等待视觉模型处理"}]
+                }
+            }
+
+        else:
+            return {
+                "jsonrpc": "2.0",
+                "id": call_id,
+                "error": {"code": -32601, "message": f"未找到名为 {tool_name} 的具身工具"}
+            }
+
+    return {"jsonrpc": "2.0", "id": call_id, "error": {"code": -32600, "message": "无效的 RPC 请求"}}
+
+if __name__ == '__main__':
+    # 绑定在板载内网端口 18080
+    print("🚀 VBOT MCP 生产级服务正在启动，监听端口 18080...")
+    uvicorn.run(app, host="0.0.0.0", port=18080)</code></pre>
+</div>
+
+<div class="callout warn"><span class="t">🧩 示例不是成品运控</span>代码里行走分支只做了 <code>time.sleep(0.1)</code> 并把成功文本返回，真正让机器狗动起来还得把 <code>TODO</code> 换成 <code>/vel_cmd</code> 发布器的 20Hz 连续投递。表情与抓帧分支同样以日志和文本回执演示协议，不要拿“返回 ✅”当成“硬件已动作”。</div>
+
+<h3>5. 启动与联调边界</h3>
+
+<p>把脚本保存为 <code>vbot_mcp_service.py</code>，在计算主板上以脚本入口启动：</p>
+
+<div class="codewrap"><span class="lang">bash</span><button class="copy">复制</button>
+<pre><code>python3 vbot_mcp_service.py
+# 🚀 VBOT MCP 生产级服务正在启动，监听端口 18080...</code></pre>
+</div>
+
+<p>服务就绪后，把兼容 MCP 的客户端指向 <code>http://192.168.127.2:18080/mcp</code>。它先发 <code>tools/list</code> 拿到三个工具，再按需发 <code>tools/call</code>；服务端返回 JSON-RPC 2.0 的 <code>result.content</code> 或标准错误码（未知工具为 <code>-32601</code>）。</p>
+
+<div class="callout danger"><span class="t">🚨 部署红线</span>示例用 <code>host="0.0.0.0"</code> 监听所有网卡，因此更要守住内网边界：设备入口只能留在内网 <code>192.168.127.2:18080</code>。不要用 frp、反向代理或公网端口映射把 <code>18080</code> 与 <code>8787</code> 暴露出去。</div>
+
+<h2 id="s4">🧪 小实验：MCP 工具调用模拟器</h2>
+
+<p>真实 Agent 不会“看见一句话就直接动手”，它要先发现工具有哪些，再决定用哪个、传什么参数。下面的模拟器把这条链路拆成四步，工具集严格来自本页服务端暴露的三个具身工具。</p>
+
+<div class="lab" id="mcpLab">
+  <h3>让 Agent 自己选工具</h3>
+  <p>点一个场景按钮，观察“理解意图 → 选择工具 → 生成 JSON → 执行结果”的逐步高亮；每步间隔约 300ms。</p>
+  <div class="tool-strip">
+    <span class="ts-label">tools/list →</span>
+    <span class="tool-chip">vbot_locomotion_walk</span>
+    <span class="tool-chip">vbot_set_emotion</span>
+    <span class="tool-chip">vbot_capture_environment</span>
+  </div>
+  <div class="scenarios" id="scenarios">
+    <button type="button" data-k="living">🗣️ 去客厅看看</button>
+    <button type="button" data-k="down">🐾 趴下</button>
+    <button type="button" data-k="time">🕐 现在几点了？</button>
+  </div>
+  <div class="mcp-status" id="mcpStatus" role="status" aria-live="polite">等待指令：点击上方任一场景，观察 4 步工具调用链。</div>
+  <div class="msteps" id="mcpSteps">
+    <div class="mstep" data-i="0">
+      <div class="st-h"><span class="st-n">1</span><b>理解意图</b></div>
+      <div class="st-body">—</div>
+    </div>
+    <div class="mstep" data-i="1">
+      <div class="st-h"><span class="st-n">2</span><b>选择工具</b></div>
+      <div class="st-body">—</div>
+    </div>
+    <div class="mstep" data-i="2">
+      <div class="st-h"><span class="st-n">3</span><b>生成工具调用 JSON</b></div>
+      <div class="st-body">—</div>
+    </div>
+    <div class="mstep" data-i="3">
+      <div class="st-h"><span class="st-n">4</span><b>执行结果</b></div>
+      <div class="st-body">—</div>
+    </div>
+  </div>
+  <p class="lab-note">说明：参数值只是符合 <code>inputSchema</code> 的演示值；真实设备执行仍受 <code>/vel_cmd</code> 发布器与安全策略约束。</p>
+</div>
+
+<h3>工具发现与降级策略</h3>
+
+<ol class="steps">
+  <li><b>先列清单，再调用</b><code>tools/list</code> 是唯一的能力事实来源；模型不得凭想象拼工具名，也不该把自然语言目标直接当函数名。</li>
+  <li><b>无匹配就明说</b>工具集里没有对应能力时，明确回复“当前不支持”，不要为了用上工具而硬调行走或表情，更不要伪造一次 <code>tools/call</code>。</li>
+  <li><b>先拆解，再降级</b>高层目标可以拆成原子工具组合（“去客厅看看”= 行走 + 抓帧）；拆不出来时，转 RCP 动作流或请求人工接管。</li>
+  <li><b>参数守 schema</b>调用前校验 <code>required</code>、<code>enum</code> 与范围，例如 <code>duration</code> 必须在 (0.5, 10.0] 内、表情只能取六个枚举值。</li>
+</ol>
+
+<div class="callout ok"><span class="t">✅ 一句话原则</span>能被工具清单证明的能力才调用；证明不了，就诚实降级。MCP 的价值是“标准化的可发现能力”，不是“让模型假装什么都会”。</div>
+
+<h2 id="s5">本课小结</h2>
+
+<table>
+  <thead>
+    <tr><th>层面</th><th>必须记住的事实</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>音频链路</b></td>
+      <td><code>/raw_audio_dump</code> 需 <code>--consent</code>；<code>/speech/asr_result</code> 是板载 ASR 文本；唤醒可用 OpenWakeWord / Sherpa-ONNX，识别可用 SenseVoice / Whisper</td>
+    </tr>
+    <tr>
+      <td><b>VLM 决策</b></td>
+      <td>1fps 抽帧或按需单帧；强制 JSON 输出 <code>tool_name</code> 与 <code>arguments</code></td>
+    </tr>
+    <tr>
+      <td><b>MCP 服务</b></td>
+      <td>入口 <code>http://192.168.127.2:18080/mcp</code>；Skill 注入 <code>http://192.168.127.10:8787/api/skills/{name}</code>；三工具 walk / emotion / capture</td>
+    </tr>
+    <tr>
+      <td><b>安全边界</b></td>
+      <td>18080 与 8787 仅留内网，严禁 frp 或公网穿透；示例里的 <code>/vel_cmd</code> 仍是 TODO，上线前必须接真实运控</td>
+    </tr>
+  </tbody>
+</table>
+
+<ul class="goals">
+  <li>语音链路先唤醒后 ASR，原始音频必须拿到 <code>--consent</code></li>
+  <li>MCP 先 <code>tools/list</code> 再 <code>tools/call</code>，无匹配工具不硬调</li>
+  <li>“返回 ✅”不等于“硬件已动作”，运控发布器要自己接上</li>
+</ul>
+
+<div class="callout"><span class="t">⏭️ 下一课预告</span>有了完整的具身多模态基础，接下来进入 <a href="../04-hardware-recipes/lesson_01.html">04 硬件扩展与标杆案例库</a>，深入了解背板加装机械臂与真实黑客松得奖作品的设计全貌！</div>
+
+</div>
+
+<div class="wrap" style="padding-top:0">
+<footer class="nav">
+  <a href="lesson_02.html"><span class="dir">← 上一课</span><span class="ttl">3.2 激光雷达、双目视觉与骨骼姿态感知</span></a>
+  <a class="home-link" href="index.html"><span class="dir">目录</span><span class="ttl">返回目录</span></a>
+  <a href="../04-hardware-recipes/lesson_01.html" style="text-align:right"><span class="dir">下一课 →</span><span class="ttl">4.1 硬件扩展与标杆案例库</span></a>
+</footer>
+</div>
+
+</main>
+
+<script>
+document.querySelectorAll('.tabs').forEach(function(g){
+  g.addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b)return;
+    g.querySelectorAll('button').forEach(function(x){x.classList.remove('on')});
+    b.classList.add('on');
+    var wrap=g.parentElement;
+    wrap.querySelectorAll(':scope > .panel').forEach(function(p){p.classList.remove('on')});
+    var t=wrap.querySelector('#'+b.dataset.t); if(t)t.classList.add('on');
+  });
+});
+document.querySelectorAll('.copy').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var pre=btn.parentElement.querySelector('pre');
+    var text=pre.textContent;
+    function done(){
+      btn.textContent='已复制';
+      setTimeout(function(){btn.textContent='复制'},1500);
+    }
+    function fallback(){
+      var ta=document.createElement('textarea');
+      ta.value=text;
+      ta.setAttribute('readonly','');
+      ta.style.position='fixed';
+      ta.style.left='-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try{document.execCommand('copy');done();}catch(e){btn.textContent='请手动复制';}
+      document.body.removeChild(ta);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(fallback);
+    }else{
+      fallback();
+    }
+  });
+});
+(function(){
+  var scenarios={
+    living:{
+      status:'✅ 执行完成：vbot_locomotion_walk → vbot_capture_environment',
+      statusCls:'ok',
+      steps:[
+        {
+          name:'理解意图',
+          cls:'',
+          html:'目标：<b>前往客厅并观察环境</b>。工具清单里没有“导航到房间”的高层工具，因此拆成“移动 + 抓帧”两个原子动作。'
+        },
+        {
+          name:'选择工具',
+          cls:'ok',
+          html:'<span class="tool-chip">vbot_locomotion_walk</span> 负责低速前进，<span class="tool-chip">vbot_capture_environment</span> 负责取回左目画面。两者均来自 <code>tools/list</code> 的返回结果。'
+        },
+        {
+          name:'生成工具调用 JSON',
+          cls:'',
+          json:[
+            {jsonrpc:'2.0',id:1,method:'tools/call',params:{name:'vbot_locomotion_walk',arguments:{linear_x:0.3,angular_z:0,duration:5}}},
+            {jsonrpc:'2.0',id:2,method:'tools/call',params:{name:'vbot_capture_environment',arguments:{camera_select:'left'}}}
+          ]
+        },
+        {
+          name:'执行结果',
+          cls:'ok',
+          html:'<b>✅ 机器狗成功完成行走: vx=0.3, wz=0.0, 耗时=5.0秒</b><br><b>✅ 已捕获当前帧，分辨率 1920x1080，等待视觉模型处理</b>'
+        }
+      ]
+    },
+    down:{
+      status:'⚠️ 无匹配工具：已拦截 tools/call，转 RCP 动作流或人工确认',
+      statusCls:'bad',
+      steps:[
+        {
+          name:'理解意图',
+          cls:'',
+          html:'目标：<b>把身体切换到趴下姿态</b>。这属于全身姿态控制，不是“给定线速度走一段”的速度控制。'
+        },
+        {
+          name:'选择工具',
+          cls:'bad',
+          html:'<code>tools/list</code> 只返回了 <span class="tool-chip">vbot_locomotion_walk</span>、<span class="tool-chip">vbot_set_emotion</span>、<span class="tool-chip">vbot_capture_environment</span>，没有趴下或姿态工具。模型不得臆造“趴下”专用工具名。'
+        },
+        {
+          name:'生成工具调用 JSON',
+          cls:'skip',
+          html:'<b>未生成 tools/call。</b>没有匹配工具时不发送请求，避免服务端返回 <code>-32601</code>，也避免硬套 walk 参数做出危险动作。'
+        },
+        {
+          name:'执行结果',
+          cls:'bad',
+          html:'<b>无匹配工具，已降级。</b>Agent 应明确告知当前工具集不支持“趴下”，建议转 RCP 动作流或请求人工确认，而不是继续尝试调用行走工具。'
+        }
+      ]
+    },
+    time:{
+      status:'⚠️ 无匹配工具：应由模型直接回答，或由宿主注入系统时间',
+      statusCls:'bad',
+      steps:[
+        {
+          name:'理解意图',
+          cls:'',
+          html:'目标：<b>查询当前时间</b>。这不涉及任何物理动作，先判断是否真的需要设备工具。'
+        },
+        {
+          name:'选择工具',
+          cls:'bad',
+          html:'<code>tools/list</code> 只有行走、表情、抓帧三个具身工具，没有时间查询能力。'
+        },
+        {
+          name:'生成工具调用 JSON',
+          cls:'skip',
+          html:'<b>未生成 tools/call。</b>为了“用上工具”而调用表情或行走，是典型的错误示范。'
+        },
+        {
+          name:'执行结果',
+          cls:'bad',
+          html:'<b>无匹配工具，应由模型直接回答。</b>时间可由模型直接回答，或由宿主在上下文注入系统时间；不必占用 18080 的设备工具。'
+        }
+      ]
+    }
+  };
+
+  var stepEls=Array.prototype.slice.call(document.querySelectorAll('#mcpSteps .mstep'));
+  var statusEl=document.getElementById('mcpStatus');
+  var buttons=Array.prototype.slice.call(document.querySelectorAll('#scenarios button'));
+  var runToken=0;
+
+  function setStatus(text,cls){
+    statusEl.textContent=text;
+    statusEl.className='mcp-status'+(cls?' '+cls:'');
+  }
+
+  function resetSteps(){
+    stepEls.forEach(function(el){
+      el.className='mstep';
+      el.querySelector('.st-body').textContent='—';
+    });
+  }
+
+  function fillStep(el,step){
+    el.className='mstep active'+(step.cls?' '+step.cls:'');
+    var body=el.querySelector('.st-body');
+    body.innerHTML='';
+    if(step.html){
+      body.innerHTML=step.html;
+    }
+    if(step.json){
+      var holder=body;
+      if(step.json.length>1){
+        holder=document.createElement('div');
+        holder.className='json-pair';
+        body.appendChild(holder);
+      }
+      step.json.forEach(function(req,idx){
+        var cell=document.createElement('div');
+        var cap=document.createElement('div');
+        cap.className='json-cap';
+        cap.textContent=(step.json.length>1?(idx===0?'① ':'② '):'')+'tools/call · JSON-RPC 2.0';
+        var pre=document.createElement('pre');
+        var code=document.createElement('code');
+        code.textContent=JSON.stringify(req,null,2);
+        pre.appendChild(code);
+        cell.appendChild(cap);
+        cell.appendChild(pre);
+        holder.appendChild(cell);
+      });
+    }
+  }
+
+  buttons.forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var sc=scenarios[btn.getAttribute('data-k')];
+      if(!sc)return;
+      var token=++runToken;
+      buttons.forEach(function(b){b.classList.toggle('on',b===btn);});
+      resetSteps();
+      setStatus('⏳ 正在解析「'+btn.textContent.trim()+'」…','');
+      var i=0;
+      function tick(){
+        if(token!==runToken)return;
+        if(i>=sc.steps.length){
+          stepEls.forEach(function(el){el.classList.add('done');});
+          setStatus(sc.status,sc.statusCls);
+          return;
+        }
+        if(i>0){
+          stepEls[i-1].classList.remove('active');
+          stepEls[i-1].classList.add('done');
+        }
+        setStatus('⏳ 步骤 '+(i+1)+'/4 · '+sc.steps[i].name+'…','');
+        fillStep(stepEls[i],sc.steps[i]);
+        i++;
+        setTimeout(tick,300);
+      }
+      tick();
+    });
+  });
+})();
+</script>
+</body>
+</html>
