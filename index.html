@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VBOT EDU 网页版教程 · 全课程</title>
+<title>VBOT EDU 开发者知识库 · 网页版教程</title>
 <style>
-/* ===== 风格契约 v2 · 预设 A 清爽技术文档风（与 lesson_01~03 一致） ===== */
+/* ===== 风格契约 v3 · 飞书蓝知识库枢纽（首页）；课页沿用同色变量 ===== */
 :root{
   --bg:#ffffff; --fg:#1f2937; --muted:#6b7280;
-  --accent:#0e7490; --accent-dark:#155e75; --accent-light:#ecfeff;
+  --accent:#3370FF; --accent-dark:#245BDB; --accent-light:#EEF3FF;
   --code-bg:#f3f4f6; --code-fg:#111827; --code-border:#e5e7eb;
   --border:#e5e7eb; --card:#f9fafb;
   --warn-bg:#fffbeb; --warn-bd:#f59e0b;
   --danger-bg:#fef2f2; --danger-bd:#ef4444;
-  --tip-bg:#ecfeff; --tip-bd:#0e7490;
+  --tip-bg:#EEF3FF; --tip-bd:#3370FF;
   --ok-bg:#f0fdf4; --ok-bd:#22c55e;
-  --radius:10px; --max-width:880px; --toc-w:250px;
+  --radius:10px; --max-width:880px; --toc-w:264px;
   --font-body:"Microsoft YaHei","Source Han Sans CN",system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-mono:"Cascadia Code",Consolas,"JetBrains Mono","Courier New",monospace;
 }
@@ -26,18 +26,45 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);
 a{color:var(--accent);text-decoration:none}
 a:hover{color:var(--accent-dark)}
 code{font-family:var(--font-mono);font-size:.875em;background:var(--code-bg);border:1px solid var(--code-border);border-radius:4px;padding:1px 6px}
-.wrap{max-width:960px;margin:0 auto;padding:48px 24px 32px}
+/* --- 枢纽布局：左侧目录树 + 右侧导读 --- */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:var(--toc-w);flex:0 0 var(--toc-w);border-right:1px solid var(--border);background:var(--card);padding:20px 14px 28px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sidebar .brand{font-size:17px;font-weight:800;color:var(--accent-dark);padding:2px 8px 14px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.sidebar .brand span{display:block;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.08em}
+.sidebar a{display:block;padding:5px 8px 5px 26px;border-radius:6px;color:var(--fg);font-size:13.5px;line-height:1.55}
+.sidebar a:hover{background:var(--accent-light);color:var(--accent-dark)}
+.sidebar a.home{padding-left:8px;font-weight:600}
+.sidebar details{margin:4px 0}
+.sidebar summary{cursor:pointer;font-weight:700;font-size:13.5px;color:var(--accent-dark);padding:6px 8px;border-radius:6px;list-style:none}
+.sidebar summary:hover{background:var(--accent-light)}
+.sidebar summary::-webkit-details-marker{display:none}
+.sidebar summary::before{content:"▸";display:inline-block;margin-right:6px;color:var(--accent);transition:transform .15s}
+.sidebar details[open] summary::before{transform:rotate(90deg)}
+.main{flex:1;min-width:0}
+.wrap{max-width:960px;margin:0 auto;padding:40px 28px 32px}
+/* --- 首页导读 --- */
 .hero{border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);background:linear-gradient(135deg,var(--accent-dark),var(--accent));color:#fff;padding:44px 40px}
 .hero-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:32px;align-items:center}
 .hero-video{width:100%;max-width:290px;justify-self:center}
 .hero-video video{width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:16px;border:1px solid rgba(255,255,255,.35);background:#000;display:block;box-shadow:0 20px 50px rgba(0,0,0,.3)}
 .hero-video .cap{font-size:12px;opacity:.85;margin-top:8px;text-align:center}
 .hero .kicker{font-size:13px;letter-spacing:.18em;opacity:.85;text-transform:uppercase;margin-bottom:10px}
-.hero h1{font-size:34px;line-height:1.35;margin:0 0 12px}
+.hero h1{font-size:32px;line-height:1.35;margin:0 0 12px}
 .hero p{margin:0;max-width:640px;font-size:15.5px;opacity:.92}
 .hero .badges{margin-top:20px}
 .badge{display:inline-block;font-size:12.5px;border-radius:99px;padding:3px 13px;margin:0 8px 6px 0;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.35)}
+.mission{border-left:4px solid var(--accent);background:var(--accent-light);padding:14px 18px;border-radius:0 var(--radius) var(--radius) 0;margin:22px 0;font-size:15px}
+.mission .t{font-weight:700;color:var(--accent-dark);display:block;margin-bottom:4px}
 h2{font-size:21px;color:var(--accent-dark);margin:44px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--accent-light)}
+.lead{font-size:15px;color:var(--fg)}
+/* --- 通关 14 步 --- */
+.steps{counter-reset:step;list-style:none;padding:0;margin:16px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:10px}
+.steps li{counter-increment:step;position:relative;padding:12px 14px 12px 50px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg)}
+.steps li::before{content:counter(step,decimal-leading-zero);position:absolute;left:12px;top:13px;width:27px;height:27px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.steps li:hover{border-color:var(--accent);background:var(--accent-light)}
+.steps a{font-weight:600;font-size:14.5px}
+.steps .mod{display:block;font-size:12px;color:var(--muted)}
+/* --- 模块卡片 --- */
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:20px 0}
 .card{display:block;border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;background:var(--bg);color:var(--fg);transition:border-color .15s,background .15s}
 .card:hover{border-color:var(--accent);background:var(--accent-light);color:var(--fg)}
@@ -46,17 +73,36 @@ h2{font-size:21px;color:var(--accent-dark);margin:44px 0 14px;padding-bottom:8px
 .card p{margin:0 0 14px;font-size:14px;color:var(--muted);line-height:1.7}
 .card .meta{font-size:12.5px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .card .go{font-size:14px;font-weight:600;color:var(--accent)}
+/* --- 硬件速查 --- */
+.specs{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px;margin:16px 0}
+.spec{border:1px solid var(--border);border-radius:var(--radius);padding:13px 16px;background:var(--card)}
+.spec .k{font-size:12.5px;color:var(--muted)}
+.spec .v{font-size:15.5px;font-weight:700;color:var(--accent-dark);line-height:1.5}
+.src{font-size:13px;color:var(--muted)}
+/* --- 案例入口 --- */
+.cases{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:14px;margin:16px 0}
+.case{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--bg);display:block;color:var(--fg)}
+.case img{width:100%;height:132px;object-fit:cover;display:block;background:var(--card)}
+.case .body{padding:12px 14px}
+.case h3{margin:0 0 6px;font-size:15.5px;color:var(--accent-dark)}
+.case p{margin:0;font-size:13px;color:var(--muted);line-height:1.6}
+.case:hover{border-color:var(--accent)}
+.case.more{display:flex;align-items:center;justify-content:center;text-align:center;background:var(--accent-light);font-weight:600;color:var(--accent-dark);padding:18px}
+/* --- 通用 --- */
 ul.check{list-style:none;padding:0;margin:12px 0}
 ul.check li{padding:4px 0 4px 28px;position:relative}
 ul.check li::before{content:"✓";position:absolute;left:4px;color:var(--accent);font-weight:700}
 .callout{border-left:4px solid var(--warn-bd);background:var(--warn-bg);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;margin:20px 0;font-size:14.5px}
 .callout .t{font-weight:700;display:block;margin-bottom:4px}
+.callout.tip{border-left-color:var(--tip-bd);background:var(--tip-bg)}
 table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
 th,td{border:1px solid var(--border);padding:9px 12px;text-align:left}
 th{background:var(--accent-light);color:var(--accent-dark)}
 tr:nth-child(even) td{background:var(--card)}
 footer.page{border-top:1px solid var(--border);margin-top:52px;padding:22px 0 8px;font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
-@media (max-width:768px){
+@media (max-width:900px){
+  .layout{display:block}
+  .sidebar{position:static;width:auto;height:auto;border-right:none;border-bottom:1px solid var(--border);padding:16px 14px}
   .wrap{padding:24px 16px 20px}
   .hero{padding:28px 22px}
   .hero h1{font-size:25px}
@@ -64,6 +110,7 @@ footer.page{border-top:1px solid var(--border);margin-top:52px;padding:22px 0 8p
   .hero-video{max-width:240px}
 }
 @media print{
+  .sidebar{display:none}
   body{font-size:12px}
   .hero{background:#fff;color:var(--fg);border:1px solid var(--border)}
   .badge{background:#fff;color:var(--fg);border:1px solid var(--border)}
@@ -72,18 +119,71 @@ footer.page{border-top:1px solid var(--border);margin-top:52px;padding:22px 0 8p
 </style>
 </head>
 <body>
+<div class="layout">
+
+<nav class="sidebar" aria-label="课程目录">
+  <div class="brand">VBOT EDU<span>开发者知识库 · 5 模块 14 课</span></div>
+  <a class="home" href="#top">🏠 首页导读</a>
+  <a class="home" href="#path">🧭 通关 14 步</a>
+  <a class="home" href="#specs">📊 硬件规格速查</a>
+  <a class="home" href="#cases">🏆 黑客松标杆案例</a>
+  <details open>
+    <summary>01 快速开始</summary>
+    <a href="01-getting-started/index.html">模块首页</a>
+    <a href="01-getting-started/lesson_01.html">1.0 走进大头 EDU</a>
+    <a href="01-getting-started/lesson_02.html">1.1 开箱与网络接入</a>
+    <a href="01-getting-started/lesson_03.html">1.2 Hello World 运控</a>
+  </details>
+  <details open>
+    <summary>02 架构拓扑与通信</summary>
+    <a href="02-architecture-comm/index.html">模块首页</a>
+    <a href="02-architecture-comm/lesson_01.html">2.1 双大脑硬件架构</a>
+    <a href="02-architecture-comm/lesson_02.html">2.2 Aorta 与 ROS 2 桥接</a>
+    <a href="02-architecture-comm/lesson_03.html">2.3 开发环境与骨架</a>
+  </details>
+  <details open>
+    <summary>03 具身智能体开发</summary>
+    <a href="03-embodied-agent/index.html">模块首页</a>
+    <a href="03-embodied-agent/lesson_01.html">3.1 运控进阶与 RCP</a>
+    <a href="03-embodied-agent/lesson_02.html">3.2 雷达·双目·骨骼感知</a>
+    <a href="03-embodied-agent/lesson_03.html">3.3 多模态与 MCP 工具</a>
+  </details>
+  <details open>
+    <summary>04 硬件改装与案例</summary>
+    <a href="04-hardware-recipes/index.html">模块首页</a>
+    <a href="04-hardware-recipes/lesson_01.html">4.1 规格与核心约束</a>
+    <a href="04-hardware-recipes/lesson_02.html">4.2 改装·机械臂·算力板</a>
+    <a href="04-hardware-recipes/lesson_03.html">4.3 黑客松案例复盘</a>
+  </details>
+  <details open>
+    <summary>05 诊断与安全</summary>
+    <a href="05-diagnostics-faq/index.html">模块首页</a>
+    <a href="05-diagnostics-faq/lesson_01.html">5.1 四层隔离排障法</a>
+    <a href="05-diagnostics-faq/lesson_02.html">5.2 安全守规与自启动</a>
+  </details>
+  <details>
+    <summary>📦 资源与规约</summary>
+    <a href="README.md">文档库总纲 README</a>
+    <a href="AGENTS.md">AI Agent 任务路由规约</a>
+    <a href="catalog/capabilities.json">14 项能力索引 JSON</a>
+    <a href="https://00make.github.io/vbot-docs/">网页版课程（GitHub Pages）</a>
+  </details>
+</nav>
+
+<div class="main" id="top">
 <div class="wrap">
 
 <header class="hero">
   <div class="hero-grid">
     <div>
-      <div class="kicker">VBOT EDU · 网页版教程</div>
-      <h1>从小白到整机实战：五模块通关开发链路</h1>
-      <p>五个模块、十四课，覆盖硬件边界、通信中间件、运动与感知、多模态 Agent、硬件改装与安全排障。每课含 CSS 图示与可交互小实验，固件基准 V1.6.0。</p>
+      <div class="kicker">VBOT EDU · 开发者知识库</div>
+      <h1>欢迎来到 VBOT EDU 具身智能开发教程</h1>
+      <p>面向具身智能极客、机器人创客、高校科研团队，以及 AI Coding Agent（Cursor / Claude Code）的全景入门与实战指南。五个模块、十四课，从开箱到整机实战，固件基准 V1.6.0。</p>
       <div class="badges">
         <span class="badge">5 模块 · 14 课</span>
         <span class="badge">固件基准 V1.6.0</span>
         <span class="badge">ROS 2 Humble + Aorta(Zenoh)</span>
+        <span class="badge">128 TOPS 板载算力</span>
       </div>
     </div>
     <div class="hero-video">
@@ -96,8 +196,33 @@ footer.page{border-top:1px solid var(--border);margin-top:52px;padding:22px 0 8p
   </div>
 </header>
 
-<h2>选择模块</h2>
+<div class="mission">
+  <span class="t">🎓 教学范式</span>
+  案例先导 ➔ 双脑地基 ➔ Agent-Native 编排 ➔ 硬件改装 ➔ 分层排障 —— 兼具人类极客直播讲授与大模型机器自动路由的双驱动架构。
+</div>
 
+<p class="lead">保姆级全流程覆盖：开箱接线、静态 IP 规划与 SSH 免密 → <code>/vel_cmd</code> 20Hz 安全运控 → 双大脑硬件边界与 Aorta(Zenoh) 46 核心话题、ROS 2 桥接 → DevContainer 与生产级 Python 骨架 → RCP DAG 动作流编排 → 激光点云切片、双目 H.265 硬解与 17 点骨骼姿态 → 语音唤醒词替换、VLM 视觉决策与设备端 18080 MCP 工具服务 → 5kg/12kg 负重边界、PiPER 六轴机械臂 CAN 接入、3D 打印外壳与外接算力板 → 6 大黑客松获奖案例深度复盘 → 四层隔离排障法与 flock 开机自启动守护收官。</p>
+
+<h2 id="path">通关 14 步</h2>
+<p class="src">新手按序通关；做项目时可按需跳读——控制代码看 03，硬件改装看 04，排障看 05。</p>
+<ol class="steps">
+  <li><a href="01-getting-started/lesson_01.html">走进大头 EDU：产品全景与规格</a><span class="mod">模块 01 · 快速开始</span></li>
+  <li><a href="01-getting-started/lesson_02.html">极速开箱与网络接入</a><span class="mod">模块 01 · 快速开始</span></li>
+  <li><a href="01-getting-started/lesson_03.html">Hello World：/vel_cmd 20Hz 运控</a><span class="mod">模块 01 · 快速开始</span></li>
+  <li><a href="02-architecture-comm/lesson_01.html">双大脑硬件架构与物理边界</a><span class="mod">模块 02 · 架构通信</span></li>
+  <li><a href="02-architecture-comm/lesson_02.html">Aorta(Zenoh) 主干道与 ROS 2 桥接</a><span class="mod">模块 02 · 架构通信</span></li>
+  <li><a href="02-architecture-comm/lesson_03.html">开发环境搭建与生产级骨架</a><span class="mod">模块 02 · 架构通信</span></li>
+  <li><a href="03-embodied-agent/lesson_01.html">运动控制进阶与 RCP DAG</a><span class="mod">模块 03 · 具身智能</span></li>
+  <li><a href="03-embodied-agent/lesson_02.html">激光雷达、双目视觉与骨骼感知</a><span class="mod">模块 03 · 具身智能</span></li>
+  <li><a href="03-embodied-agent/lesson_03.html">多模态大模型与设备端 MCP</a><span class="mod">模块 03 · 具身智能</span></li>
+  <li><a href="04-hardware-recipes/lesson_01.html">硬件工程规格与核心约束</a><span class="mod">模块 04 · 硬件改装</span></li>
+  <li><a href="04-hardware-recipes/lesson_02.html">硬件改装、机械臂与外接算力板</a><span class="mod">模块 04 · 硬件改装</span></li>
+  <li><a href="04-hardware-recipes/lesson_03.html">黑客松标杆案例复盘（6 大项目）</a><span class="mod">模块 04 · 硬件改装</span></li>
+  <li><a href="05-diagnostics-faq/lesson_01.html">四层隔离排障法与 15+ FAQ</a><span class="mod">模块 05 · 诊断安全</span></li>
+  <li><a href="05-diagnostics-faq/lesson_02.html">安全守法规约与自启动防死锁</a><span class="mod">模块 05 · 诊断安全</span></li>
+</ol>
+
+<h2>选择模块</h2>
 <div class="cards">
   <a class="card" href="01-getting-started/index.html">
     <span class="no">01</span>
@@ -136,13 +261,55 @@ footer.page{border-top:1px solid var(--border);margin-top:52px;padding:22px 0 8p
   </a>
 </div>
 
-<h2>阅读方式</h2>
+<h2 id="specs">硬件规格速查</h2>
+<div class="specs">
+  <div class="spec"><div class="k">算力平台</div><div class="v">地瓜 S100P · 128 TOPS @ INT8</div></div>
+  <div class="spec"><div class="k">CPU</div><div class="v">8 核 ARM Cortex-A78AE</div></div>
+  <div class="spec"><div class="k">关节电机</div><div class="v">14 × VGeer · 峰值 24.5 N·m</div></div>
+  <div class="spec"><div class="k">激光雷达</div><div class="v">360° 16 线 · 0.1 ~ 30 m</div></div>
+  <div class="spec"><div class="k">视觉</div><div class="v">SC230AI 双目 · H.265 硬解</div></div>
+  <div class="spec"><div class="k">听觉</div><div class="v">4 麦克风环形阵列 · DOA</div></div>
+  <div class="spec"><div class="k">负载能力</div><div class="v">额定 5 kg / 极限 12 kg</div></div>
+  <div class="spec"><div class="k">电池续航</div><div class="v">594 Wh · 2 ~ 4 小时</div></div>
+  <div class="spec"><div class="k">外设取电</div><div class="v">24V DC / 10A（峰值 15A）</div></div>
+  <div class="spec"><div class="k">工业总线</div><div class="v">双路隔离 CAN-FD</div></div>
+  <div class="spec"><div class="k">网络</div><div class="v">Type-C eth2 · WiFi 6 · UWB</div></div>
+  <div class="spec"><div class="k">系统栈</div><div class="v">Ubuntu 22.04 + ROS 2 Humble + Aorta</div></div>
+</div>
+<p class="src">数据来源：<a href="https://www.vbot.cn/Detail">维他动力官方产品规格库 (vbot.cn/Detail)</a> · 完整解读见 <a href="01-getting-started/lesson_01.html">1.0 课</a>。SSH 默认入口 <code>vbot@192.168.126.2</code>（普通用户，1.6 固件未开放 root/sudo）。</p>
 
+<h2 id="cases">黑客松标杆案例</h2>
+<div class="cases">
+  <a class="case" href="04-hardware-recipes/lesson_03.html">
+    <img src="assets/04-cases-linbot/04-cover-聆灵陪诊机器狗.jpg" alt="聆灵陪诊机器狗" loading="lazy">
+    <div class="body"><h3>聆灵 LinBot · 医院陪诊</h3><p>导医陪诊 + 智能药篮 + AED 急救响应，戴护士帽的"大头"。</p></div>
+  </a>
+  <a class="case" href="04-hardware-recipes/lesson_03.html">
+    <img src="assets/05-cases-yogago/03-cover-为什么做一只瑜伽机器狗.jpg" alt="伽伽狗瑜伽机器狗" loading="lazy">
+    <div class="body"><h3>伽伽狗 YogaGo · 瑜伽搭子</h3><p>下犬式、直立动作演示，Sherpa 接管音频流自定义唤醒词。</p></div>
+  </a>
+  <a class="case" href="04-hardware-recipes/lesson_03.html">
+    <img src="assets/06-cases-moobie/05-cover-当四足机器人穿上3D打印外壳.jpg" alt="牛来芭比 3D 打印外壳" loading="lazy">
+    <div class="body"><h3>牛来芭比 MooBie · 潮玩机甲</h3><p>3D 打印外壳 + 大模型情绪计算五环节，路演高人气。</p></div>
+  </a>
+  <a class="case" href="04-hardware-recipes/lesson_03.html">
+    <img src="assets/07-cases-other/02-photo-她的视界多体协作.png" alt="她的视界多体协作" loading="lazy">
+    <div class="body"><h3>她的视界 · 多体协作</h3><p>四足与人形机器人同台协作的现场实拍。</p></div>
+  </a>
+  <a class="case more" href="04-hardware-recipes/lesson_03.html">全部 6 大案例深度复盘<br>（含 PoopSense、小安搜救）→</a>
+</div>
+
+<h2>阅读方式</h2>
 <ul class="check">
   <li>新手按 01 → 02 → 03 → 04 → 05 顺序学习；每课页脚可上一课/下一课连续阅读</li>
   <li>做项目时按需跳读：控制代码看 03，硬件改装看 04，排障看 05</li>
   <li>配合 <code>vbot-docs/AGENTS.md</code> 把教程喂给 AI Coding Agent 效果更佳</li>
 </ul>
+
+<div class="callout tip">
+  <span class="t">🤖 AI Agent 协作规约</span>
+  事实第一：接口与字段以 Schema 和 <a href="catalog/capabilities.json">capabilities.json</a> 为准，严禁臆造 Topic；离线安全优先：默认离线预览，仅显式 <code>--execute</code> 与 <code>--confirm-motion</code> 才下发物理运动；算力隔离：高负载推理强制 <code>taskset -c 2-7</code>，为底盘运控保留 CPU 0/1。
+</div>
 
 <div class="callout">
   <span class="t">⚠️ 版本与安全</span>
@@ -150,10 +317,12 @@ footer.page{border-top:1px solid var(--border);margin-top:52px;padding:22px 0 8p
 </div>
 
 <footer class="page">
-  <span>源文档：<code>vbot-docs/</code> · 风格契约 v2</span>
-  <span>VBOT EDU 开发者教程 · 维他动力生态</span>
+  <span>源文档：<code>vbot-docs/</code> · 风格契约 v3（飞书蓝）</span>
+  <span><a href="https://00make.github.io/vbot-docs/">网页版课程</a> · VBOT EDU 开发者教程 · 维他动力生态</span>
 </footer>
 
+</div>
+</div>
 </div>
 </body>
 </html>
